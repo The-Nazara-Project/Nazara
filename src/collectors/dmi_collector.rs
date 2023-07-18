@@ -1,6 +1,14 @@
+/*
+ * TODO:
+ * 1. Implement Error checking.
+ * 2. Check netbox api documentation for correct information type.
+ * 3. REMOVE DEBUG PRINT STATEMENTS.
+ * */
+
 use std::{str::Split, process::{Command, Output}};
 use super::util::{find_table, split_output};
 
+// Fully collected DMI information
 #[derive(Debug)]
 pub struct DmiInformation {
    system_information: SystemInformation,
@@ -8,6 +16,7 @@ pub struct DmiInformation {
    cpu_information: CpuInformation,
 }
 
+// General system information
 #[derive(Debug)]
 pub struct SystemInformation {
     vendor: String,
@@ -21,6 +30,7 @@ pub struct ChassisInformation {
     asset: String,
 }
 
+// CPU Information
 #[derive(Debug)]
 pub struct CpuInformation {
     version: String,
@@ -35,7 +45,9 @@ pub struct CpuInformation {
 
 fn execute_dmidecode(dmidecode_table: i32) -> String {
     /*
-     * Collect DMI information from System
+     * Collect DMI information from System.
+     *
+     * This function executes the dmidecode command for the table type provided.
      */
     let output: Output = Command::new("sudo")
         .arg("dmidecode")
@@ -48,7 +60,12 @@ fn execute_dmidecode(dmidecode_table: i32) -> String {
     return String::from_utf8_lossy(&output.stdout).to_string();
 }
 
+
 pub fn dmidecode() -> DmiInformation {
+    /*
+    * Return a new instance of DmiInfomration joining all collected information.
+    *
+    * */
     let dmi_information: DmiInformation = DmiInformation {
         system_information: dmidecode_system(),
         chassis_information: dmidecode_chassis(),
@@ -58,6 +75,14 @@ pub fn dmidecode() -> DmiInformation {
 }
 
 fn dmidecode_system() -> SystemInformation {
+    /*
+     * Collect general system information.
+     *
+     * This function calls the execute_dmidecode function and reads the output the command
+     * provides.
+     * The output is processed and the required information is extracted from the string and saved into a
+     * system_information instance.
+     * */
     let output: String = execute_dmidecode(1);
     let output_split: Split<'_, &str> = output.split("\n");
     let mut split: Vec<&str> = Vec::new();
@@ -68,7 +93,6 @@ fn dmidecode_system() -> SystemInformation {
         uuid: String::new(),
         serial: String::new(),
     };
-    println!("{:?}", output_split);
 
     let mut table_found: bool = false;
 
@@ -76,8 +100,6 @@ fn dmidecode_system() -> SystemInformation {
         if !table_found {
             table_found = find_table("System Information", part);
         }
-
-        println!("Part: {:?}", part);
 
         let split_output: Result<Vec<&str>, &str> = split_output(part);
 
@@ -93,13 +115,13 @@ fn dmidecode_system() -> SystemInformation {
             Some(x) => {
                 key = x.to_string();
             }
-            None => println!("Buhhh")
+            None => println!("Info: Key not found at this location...")
         }
         match split.get(1) {
             Some(x) => {
                 value = x.to_string();
             }
-            None => println!("Buhhh")
+            None => println!("Info: Value not found at this location...")
         }
         match key.as_str() {
             "Manufacturer" => {
@@ -124,6 +146,11 @@ fn dmidecode_system() -> SystemInformation {
 
 
 fn dmidecode_chassis() -> ChassisInformation {
+    /*
+     * Collect Chassis information.
+     *
+     * Works like dmidecode_system with only one key to be checked.
+     * */
     let output: String = execute_dmidecode(3);
     let output_split: Split<'_, &str> = output.split("\n");
     let mut split: Vec<&str> = Vec::new();
@@ -157,7 +184,7 @@ fn dmidecode_chassis() -> ChassisInformation {
             Some(x) => {
                 value = x.to_string();
             }
-            None => println!("Info: Key not found at this location...")
+            None => println!("Info: Value not found at this location...")
         }
         match key.as_str() {
             "Asset Tag" => {
@@ -174,6 +201,11 @@ fn dmidecode_chassis() -> ChassisInformation {
 
 
 fn dmidecode_cpu() -> CpuInformation {
+    /*
+    * Collect CPU information.
+    *
+    * Works exactly like above by calling execute_dmidecode and processing its output.
+    * */
     let output: String = execute_dmidecode(4);
     let output_split: Split<'_, &str> = output.split("\n");
     let mut split: Vec<&str> = Vec::new();
@@ -188,7 +220,6 @@ fn dmidecode_cpu() -> CpuInformation {
         status: String::new(),
     };
 
-    println!("{:?}", output_split);
 
     let mut table_found: bool = false;
 
@@ -197,7 +228,6 @@ fn dmidecode_cpu() -> CpuInformation {
             table_found = find_table("System Information", part);
         }
 
-        println!("Part: {:?}", part);
 
         let split_output: Result<Vec<&str>, &str> = split_output(part);
 
@@ -213,13 +243,13 @@ fn dmidecode_cpu() -> CpuInformation {
             Some(x) => {
                 key = x.to_string();
             }
-            None => println!("Buhhh")
+            None => println!("Info: Key not found at this location...")
         }
         match split.get(1) {
             Some(x) => {
                 value = x.to_string();
             }
-            None => println!("Buhhh")
+            None => println!("Info: Value not found at this location...")
         }
         match key.as_str() {
             "Version" => {
