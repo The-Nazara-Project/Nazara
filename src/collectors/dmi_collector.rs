@@ -5,15 +5,18 @@
  * 3. REMOVE DEBUG PRINT STATEMENTS.
  * */
 
-use std::{str::Split, process::{Command, Output}};
 use super::util::{find_table, split_output};
+use std::{
+    process::{Command, Output},
+    str::Split,
+};
 
 // Fully collected DMI information
 #[derive(Debug)]
 pub struct DmiInformation {
-   system_information: SystemInformation,
-   chassis_information: ChassisInformation,
-   cpu_information: CpuInformation,
+    system_information: SystemInformation,
+    chassis_information: ChassisInformation,
+    cpu_information: CpuInformation,
 }
 
 // General system information
@@ -42,7 +45,6 @@ pub struct CpuInformation {
     status: String,
 }
 
-
 fn execute_dmidecode(dmidecode_table: i32) -> String {
     /*
      * Collect DMI information from System.
@@ -60,12 +62,11 @@ fn execute_dmidecode(dmidecode_table: i32) -> String {
     return String::from_utf8_lossy(&output.stdout).to_string();
 }
 
-
 pub fn dmidecode() -> DmiInformation {
     /*
-    * Return a new instance of DmiInfomration joining all collected information.
-    *
-    * */
+     * Return a new instance of DmiInfomration joining all collected information.
+     *
+     * */
     let dmi_information: DmiInformation = DmiInformation {
         system_information: dmidecode_system(),
         chassis_information: dmidecode_chassis(),
@@ -115,35 +116,34 @@ fn dmidecode_system() -> SystemInformation {
             Some(x) => {
                 key = x.to_string();
             }
-            None => println!("Info: Key not found at this location...")
+            None => println!("Info: Key not found at this location..."),
         }
         match split.get(1) {
             Some(x) => {
                 value = x.to_string();
             }
-            None => println!("Info: Value not found at this location...")
+            None => println!("Info: Value not found at this location..."),
         }
         match key.as_str() {
             "Manufacturer" => {
                 system_information.vendor = value.trim().to_string();
-            },
+            }
             "Product Name" => {
                 system_information.model = value.trim().to_string();
-            },
+            }
             "Serial Number" => {
                 system_information.serial = value.trim().to_string();
-            },
+            }
             "UUID" => {
                 system_information.uuid = value.trim().to_string();
-            },
-            _=> {
+            }
+            _ => {
                 continue;
-            },
+            }
         }
     }
-    return system_information
+    return system_information;
 }
-
 
 fn dmidecode_chassis() -> ChassisInformation {
     /*
@@ -155,7 +155,9 @@ fn dmidecode_chassis() -> ChassisInformation {
     let output_split: Split<'_, &str> = output.split("\n");
     let mut split: Vec<&str> = Vec::new();
 
-    let mut chassis_information: ChassisInformation = ChassisInformation {asset: String::new()};
+    let mut chassis_information: ChassisInformation = ChassisInformation {
+        asset: String::new(),
+    };
 
     let mut table_found: bool = false;
 
@@ -178,34 +180,33 @@ fn dmidecode_chassis() -> ChassisInformation {
             Some(x) => {
                 key = x.to_string();
             }
-            None => println!("Info: Key not found at this location...")
+            None => println!("Info: Key not found at this location..."),
         }
         match split.get(1) {
             Some(x) => {
                 value = x.to_string();
             }
-            None => println!("Info: Value not found at this location...")
+            None => println!("Info: Value not found at this location..."),
         }
         match key.as_str() {
             "Asset Tag" => {
                 chassis_information.asset = value.trim().to_string();
-            },
-            _=> {
+            }
+            _ => {
                 continue;
-            },
+            }
         }
     }
 
     return chassis_information;
 }
 
-
 fn dmidecode_cpu() -> CpuInformation {
     /*
-    * Collect CPU information.
-    *
-    * Works exactly like above by calling execute_dmidecode and processing its output.
-    * */
+     * Collect CPU information.
+     *
+     * Works exactly like above by calling execute_dmidecode and processing its output.
+     * */
     let output: String = execute_dmidecode(4);
     let output_split: Split<'_, &str> = output.split("\n");
     let mut split: Vec<&str> = Vec::new();
@@ -220,14 +221,12 @@ fn dmidecode_cpu() -> CpuInformation {
         status: String::new(),
     };
 
-
     let mut table_found: bool = false;
 
     for part in output_split {
         if !table_found {
             table_found = find_table("System Information", part);
         }
-
 
         let split_output: Result<Vec<&str>, &str> = split_output(part);
 
@@ -243,40 +242,40 @@ fn dmidecode_cpu() -> CpuInformation {
             Some(x) => {
                 key = x.to_string();
             }
-            None => println!("Info: Key not found at this location...")
+            None => println!("Info: Key not found at this location..."),
         }
         match split.get(1) {
             Some(x) => {
                 value = x.to_string();
             }
-            None => println!("Info: Value not found at this location...")
+            None => println!("Info: Value not found at this location..."),
         }
         match key.as_str() {
             "Version" => {
                 cpu_information.version = value.trim().to_string();
-            },
+            }
             "Core Count" => {
                 cpu_information.core_count = value.trim().to_string();
-            },
+            }
             "Core Enabled" => {
                 cpu_information.cores_enabled = value.trim().to_string();
-            },
+            }
             "Thread Count" => {
                 cpu_information.thread_count = value.trim().to_string();
-            },
+            }
             "Max Speed" => {
                 cpu_information.max_speed = value.trim().to_string();
-            },
+            }
             "Voltage" => {
                 cpu_information.voltage = value.trim().to_string();
-            },
+            }
             "Status" => {
                 cpu_information.status = value.trim().to_string();
-            },
-            _=> {
+            }
+            _ => {
                 continue;
-            },
+            }
         }
     }
-    return cpu_information
+    return cpu_information;
 }

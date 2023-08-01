@@ -2,14 +2,14 @@ pub fn split_output<'a>(part: &'a str) -> Result<Vec<&'a str>, &'a str> {
     let trimmed_output: &str = part.trim();
 
     if trimmed_output.len() == 0 {
-        return Err("Warning: Cannot split empty String!")
+        return Err("Warning: Cannot split empty String!");
     }
-    if !trimmed_output.contains(":"){
+    if !trimmed_output.contains(":") {
         return Err("Error: Could not split output!");
     }
     let split: Vec<&str> = trimmed_output.split(":").collect();
     if split.len() != 2 {
-        return Err("Error: Invalid number of parts in line!")
+        return Err("Error: Invalid number of parts in line!");
     }
     return Ok(split);
 }
