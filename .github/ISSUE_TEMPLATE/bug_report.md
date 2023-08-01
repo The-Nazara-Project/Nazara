@@ -16,7 +16,6 @@ assignees: ''
 <!-- Please note that bugs regarding the CLI and the core functionality of Nester receive priority. -->
 
 - [ ] Broken feature
-- [ ] CLI-Issue
 - [ ] Wrong documentation
 - [ ] Broken dependency
 
@@ -34,6 +33,7 @@ Use these snippets as reference:
 
 ### Additional context
 
-<!-- Use this section to provide us with additional context.<br>
+<!--
+Use this section to provide us with additional context.<br>
 Especially screenshots are a useful tool to let us reproduce and find issues more quickly.
 -->

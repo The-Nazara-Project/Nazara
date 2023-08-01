@@ -5,25 +5,12 @@
 Tick the applicable box:
 - [ ] Add new feature
 - [ ] Add language support
-- [ ] UI improvement
 - [ ] Security changes
 - [ ] Tests
 - [ ] Documentation changed
 <br/>
 
 - [ ] General Maintenance
-## UI changes
-
-<!-- provide description here or remove all unapplicable lines below -->
-
-- Internal / User invisilbe changes only
-- No changes
-
-before:
-
-after:
-
- - [ ] DONE
 
 ## Links
 
