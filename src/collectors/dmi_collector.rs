@@ -26,6 +26,7 @@ pub struct SystemInformation {
     model: String,
     uuid: String,
     serial: String,
+    is_virtual: bool,
 }
 
 #[derive(Debug)]
@@ -83,6 +84,10 @@ fn dmidecode_system() -> SystemInformation {
      * provides.
      * The output is processed and the required information is extracted from the string and saved into a
      * system_information instance.
+     *
+     * If the vendor found is QEMU it is assumed that the machine is a virtual machine.
+     * This is important as Virtual Machines and Physical Machines are treated differently by NetBox and registered at
+     * different URLs.
      * */
     let output: String = execute_dmidecode(1);
     let output_split: Split<'_, &str> = output.split("\n");
@@ -93,6 +98,7 @@ fn dmidecode_system() -> SystemInformation {
         model: String::new(),
         uuid: String::new(),
         serial: String::new(),
+        is_virtual: false,
     };
 
     let mut table_found: bool = false;
@@ -127,6 +133,10 @@ fn dmidecode_system() -> SystemInformation {
         match key.as_str() {
             "Manufacturer" => {
                 system_information.vendor = value.trim().to_string();
+
+                if system_information.vendor == "QEMU" {
+                    system_information.is_virtual = true;
+                }
             }
             "Product Name" => {
                 system_information.model = value.trim().to_string();
