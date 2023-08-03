@@ -5,14 +5,14 @@
 
 /*
 TODO:
-- Distinguish between actual and virtual PCI Network Interfaces
 - Implement Error Checking
 */
-
 use network_interface::Addr::{V4, V6};
 use network_interface::{NetworkInterface, NetworkInterfaceConfig};
 use std::fs;
 use std::net::IpAddr;
+
+use super::collector_exceptions;
 
 /// ## Network Information
 ///
@@ -51,15 +51,39 @@ pub struct NetworkInformation {
 /// ### Returns
 ///
 /// Vec<NetworkInterface> - A list of all NetworkInterfaces that the crate was able to collect.
-pub fn collect_network_information() -> Vec<NetworkInterface> {
+///
+/// ### Panics
+///
+/// This function will panic if NetworkInterface::show() returns an Error leading to no interfaces being collected.
+pub fn collect_network_information(
+) -> Result<Vec<NetworkInterface>, collector_exceptions::NoNetworkInterfacesException> {
     /*
      * Collect information about all available network interfaces.
      *
      * Will return a Vector containing a JSON-like data format.
      */
-    let network_interfaces: Vec<NetworkInterface> = NetworkInterface::show().unwrap();
+    let network_interfaces_result: Result<Vec<NetworkInterface>, network_interface::Error> =
+        NetworkInterface::show();
 
-    return network_interfaces;
+    match network_interfaces_result {
+        Ok(network_interfaces) => {
+            if network_interfaces.is_empty() {
+                return Err(collector_exceptions::NoNetworkInterfacesException {
+                    message: "FATAL: No network interfaces found!".to_string(),
+                });
+            } else {
+                return Ok(network_interfaces);
+            }
+        }
+        Err(_) => {
+            let exc: collector_exceptions::UnableToCollectDataError =
+                collector_exceptions::UnableToCollectDataError {
+                    message: "FATAL: Unable to collect information about network interfaces!"
+                        .to_string(),
+                };
+            exc.panic();
+        }
+    }
 }
 
 /// Constructs instances of the NetworkInformation struct.
@@ -67,12 +91,24 @@ pub fn collect_network_information() -> Vec<NetworkInterface> {
 /// ### Returns
 ///
 /// A list of NetworkInformation objects including information about whether a network is virtual or physical.
-pub fn construct_network_information() -> Vec<NetworkInformation> {
+///
+/// ### Panics
+///
+/// This function will panic if a network interface, for some reason, lacks an address block.
+pub fn construct_network_information(
+) -> Result<Vec<NetworkInformation>, collector_exceptions::NoNetworkInterfacesException> {
     /*
      * Deconstruct NetworkInterface vector and construct NetworkInformation objects from it.
      */
+    let raw_information: Vec<NetworkInterface> = match collect_network_information() {
+        Ok(information) => information,
+        Err(_) => {
+            return Err(collector_exceptions::NoNetworkInterfacesException {
+                message: "Error: No network interfaces to process".to_string(),
+            });
+        }
+    };
 
-    let raw_information: Vec<NetworkInterface> = collect_network_information();
     let mut interfaces: Vec<NetworkInformation> = Vec::new();
     let mut network_information: NetworkInformation;
 
@@ -80,7 +116,7 @@ pub fn construct_network_information() -> Vec<NetworkInformation> {
         match Some(&network_interface.addr) {
             Some(_v) => {
                 // Cases where only one set of addresses exist.
-                if network_interface.addr.len() == 0 {
+                if network_interface.addr.is_empty() {
                     network_information = NetworkInformation {
                         name: network_interface.name,
                         v4ip: None,
@@ -145,20 +181,13 @@ pub fn construct_network_information() -> Vec<NetworkInformation> {
                 }
             }
             None => {
-                // Raise exception here
-                network_information = NetworkInformation {
-                    name: network_interface.name,
-                    v4ip: None,
-                    v4broadcast: None,
-                    v4netmask: None,
-                    v6ip: None,
-                    v6broadcast: None,
-                    v6netmask: None,
-                    mac_addr: network_interface.mac_addr,
-                    index: network_interface.index,
-                    is_physical: true,
-                    is_connected: true,
+                // If a Network interface is completely missing an address block, it is assumed that it is invalid.
+                // This will raise a custom exception and cause the program to panic.
+                let exc = collector_exceptions::InvalidNetworkInterfaceError {
+                    message: "FATAL: A Network interface cannot be recognized!".to_string(),
                 };
+
+                exc.panic();
             }
         }
         if !check_for_physical_nw(&network_information.name) {
@@ -166,7 +195,7 @@ pub fn construct_network_information() -> Vec<NetworkInformation> {
         }
         interfaces.push(network_information)
     }
-    return interfaces;
+    return Ok(interfaces);
 }
 
 /// NetBox needs to differentiate between a physical and virtual network device.
