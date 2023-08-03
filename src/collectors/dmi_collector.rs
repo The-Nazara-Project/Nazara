@@ -1,3 +1,8 @@
+//! ## Dmi Collector Module
+//!
+//! This module provides logic to collect and process system information by using dmidecode.
+//!
+
 /*
  * TODO:
  * 1. Implement Error checking.
@@ -11,7 +16,13 @@ use std::{
     str::Split,
 };
 
-// Fully collected DMI information
+/// ## DmiInformation
+///
+/// ### Members
+///
+/// * system_information: [`SystemInformation`](struct.SystemInformation) - Basic system information.
+/// * chassis_information: [`ChassisInformation`](struct.ChassisInformation) - The type of asset.
+/// * cpu_information: [`CpuInformation`](struct.CpuInformation) - Information about the processor(s).
 #[derive(Debug)]
 pub struct DmiInformation {
     system_information: SystemInformation,
@@ -19,7 +30,17 @@ pub struct DmiInformation {
     cpu_information: CpuInformation,
 }
 
-// General system information
+/// ## SystemInformation
+///
+/// Basic information of the machine extracted from dmidecode table 1.
+///
+/// ### Members
+///
+/// * vendor: `String` - The name of the machine's manufacturer (e.g. LENOVO).
+/// * model: `String` - The model number of the machine.
+/// * uuid: `String` - The UUID of the device.
+/// * serial: `String` - The serial number of the machine.
+/// * is_virtual: `bool` - Whether the machine is a virtual machine or not.
 #[derive(Debug)]
 pub struct SystemInformation {
     vendor: String,
@@ -29,12 +50,31 @@ pub struct SystemInformation {
     is_virtual: bool,
 }
 
+/// ## Chassis Information
+///
+/// The type of asset provided by dmidecode table 3.
+///
+/// ### Members
+///
+/// * asset: `String`- Type of asset.
 #[derive(Debug)]
 pub struct ChassisInformation {
     asset: String,
 }
 
-// CPU Information
+/// ## CpuInformation
+///
+/// Information about the CPU(s) of the system.
+///
+/// ### Members
+///
+/// * versions: `String` - The type of CPU(s) used.
+/// * core_count: `String` - The number of cores.
+/// * cores_enabled: `String` - The number of enabled cores.
+/// * thread_count: `String` - The number of threads.
+/// * max_speed: `String`- The maximum speed of the CPU.
+/// * voltage: `String` - The voltage the CPU runs at.
+/// * status: `String` - Shows if the socket is enabled/disabled and populated/empty.
 #[derive(Debug)]
 pub struct CpuInformation {
     version: String,
@@ -46,6 +86,15 @@ pub struct CpuInformation {
     status: String,
 }
 
+/// Executes `dmidecode` with a given table number.
+///
+/// ## Arguments
+///
+/// * dmidecor_table: i32 - The index of the table to return.
+///
+/// ## Returns
+///
+/// * String - The content of the dmi table as a string.
 fn execute_dmidecode(dmidecode_table: i32) -> String {
     /*
      * Collect DMI information from System.
@@ -63,6 +112,11 @@ fn execute_dmidecode(dmidecode_table: i32) -> String {
     return String::from_utf8_lossy(&output.stdout).to_string();
 }
 
+/// Construct [DmiInformation](struct.DmiInformation) out of the collected information.
+///
+/// # Returns
+///
+/// An instance of the DmiInformation struct containing the collected system, chassis and cpu information.
 pub fn dmidecode() -> DmiInformation {
     /*
      * Return a new instance of DmiInfomration joining all collected information.
@@ -76,6 +130,11 @@ pub fn dmidecode() -> DmiInformation {
     return dmi_information;
 }
 
+/// Construct a SystemInformation object by parsing the content of dmi system table.
+///
+/// # Returns
+///
+/// A SystemInformation object.
 fn dmidecode_system() -> SystemInformation {
     /*
      * Collect general system information.
@@ -155,6 +214,11 @@ fn dmidecode_system() -> SystemInformation {
     return system_information;
 }
 
+/// Construct a ChassisInformation object by parsing the content of dmi chassis table.
+///
+/// # Returns
+///
+/// A ChassisInformation object.
 fn dmidecode_chassis() -> ChassisInformation {
     /*
      * Collect Chassis information.
@@ -211,6 +275,11 @@ fn dmidecode_chassis() -> ChassisInformation {
     return chassis_information;
 }
 
+/// Construct a CpuInformation object by parsing the content of dmi cpu table.
+///
+/// # Returns
+///
+/// A CpuInformation object.
 fn dmidecode_cpu() -> CpuInformation {
     /*
      * Collect CPU information.
