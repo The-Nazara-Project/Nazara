@@ -1,4 +1,4 @@
-name: Style checking
+name: Execute Tests
 
 on:
   push:
@@ -9,15 +9,12 @@ on:
       - main
 
 jobs:
-  rustfmt:
+  cargo-test:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Run cargo fmt
-        run: cargo fmt -- --check
-
-      - name: Run cargo clippy
-        run: cargo clippy
+      - name: Run Cargo test
+        run: cargo test --verbose
