@@ -19,7 +19,7 @@ jobs:
               with:
                 toolchain: stable
                 override: true
-            - uses: actions/cargo@v1
+            - uses: actions-rs/cargo@v1
               with:
                 use-cross: true
                 command: audit
