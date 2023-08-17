@@ -5,8 +5,8 @@
 use network_interface::Addr::{V4, V6};
 use network_interface::{NetworkInterface, NetworkInterfaceConfig};
 use std::fs;
+use std::io::Read;
 use std::net::IpAddr;
-use std::process::{Command, Output};
 
 use super::collector_exceptions;
 
@@ -127,13 +127,7 @@ pub fn construct_network_information(
                         index: Some(network_interface.index),
                         is_physical: true,
                         is_connected: false,
-                        interface_speed: match collect_interface_speed(&network_interface.name) {
-                            Ok(speed) => Some(speed),
-                            Err(err) => {
-                                println!("{}", err);
-                                None
-                            }
-                        },
+                        interface_speed: validate_network_speed(&network_interface.name),
                     };
                 } else if network_interface.addr.len() == 1 {
                     // Match if the only set of ip addresses is ipv4 or ipv6
@@ -151,15 +145,7 @@ pub fn construct_network_information(
                                 index: Some(network_interface.index),
                                 is_physical: true,
                                 is_connected: true,
-                                interface_speed: match collect_interface_speed(
-                                    &network_interface.name,
-                                ) {
-                                    Ok(speed) => Some(speed),
-                                    Err(err) => {
-                                        println!("{}", err);
-                                        None
-                                    }
-                                },
+                                interface_speed: validate_network_speed(&network_interface.name),
                             }
                         }
                         V6(_ip) => {
@@ -175,15 +161,7 @@ pub fn construct_network_information(
                                 index: Some(network_interface.index),
                                 is_physical: true,
                                 is_connected: true,
-                                interface_speed: match collect_interface_speed(
-                                    &network_interface.name,
-                                ) {
-                                    Ok(speed) => Some(speed),
-                                    Err(err) => {
-                                        println!("{}", err);
-                                        None
-                                    }
-                                },
+                                interface_speed: validate_network_speed(&network_interface.name),
                             }
                         }
                     }
@@ -200,13 +178,7 @@ pub fn construct_network_information(
                         index: Some(network_interface.index),
                         is_physical: true,
                         is_connected: true,
-                        interface_speed: match collect_interface_speed(&network_interface.name) {
-                            Ok(speed) => Some(speed),
-                            Err(err) => {
-                                println!("{}", err);
-                                None
-                            }
-                        },
+                        interface_speed: validate_network_speed(&network_interface.name),
                     };
                 }
             }
@@ -258,6 +230,58 @@ fn check_for_physical_nw(interface_name: &str) -> bool {
     return fs::metadata(&path).is_ok();
 }
 
+/// Validates if the speed of a network can be actually read and will print the error messages if it cannot.
+///
+/// ## Arguments
+///
+/// * `interface_name: &str` - The name of the interface to check.
+///
+/// ## Returns
+///
+/// - `u32` - Returns `u32` if the speed finding process succeeds.
+/// - `None` - Returns `None` when the collection process fails.
+fn validate_network_speed(interface_name: &str) -> Option<u32> {
+    match build_interface_file_from_name(interface_name) {
+        Ok(file) => match collect_interface_speed(interface_name, file) {
+            Ok(speed) => Some(speed),
+            Err(err) => {
+                println!("{}", err);
+                None
+            }
+        },
+        Err(err) => {
+            println!("{}", err);
+            None
+        }
+    }
+}
+
+/// Builds the path to the interface's `speed` file using its name and reads the file if possible.
+///
+/// ## Arguments
+///
+/// * `interface_name: &str` - The name of the interface to be investigated.
+///
+/// ## Returns
+///
+/// * `Ok(std::fs::File)` - Returns the file object if it can be opened.
+/// * `Err(String)` - If the file cannot be opened. This mostly happens with the loopback device or wireless devices and is a sysfs problem.
+fn build_interface_file_from_name(interface_name: &str) -> Result<std::fs::File, String> {
+    let interface_path: String = format!("/sys/class/net/{}/speed", interface_name);
+
+    match std::fs::File::open(interface_path) {
+        Ok(file) => {
+            return Ok(file);
+        }
+        Err(_) => {
+            return Err(format!(
+                "WARNING: Speed file for interface '{}' does not exist.",
+                interface_name
+            ))
+        }
+    }
+}
+
 /// Will collect the speed of a given interface by reading the entry of `/sys/class/net/<interface_name>/speed`.
 ///
 /// If the content of the file is `-1`, the device is disabled and the interface speed is later set to None.
@@ -265,38 +289,24 @@ fn check_for_physical_nw(interface_name: &str) -> bool {
 /// ## Arguments
 ///
 /// * `interface_name: &str` - The name of the interface to investigate.
+/// * `mut input: impl Read` - Any Argument which implements the `Read` trait. In this case it is a `fs::File` object.
 ///
 /// ## Returns
 ///
-/// * `Ok(u32)` - If the entry for interface speed, in *`Mbps`*, returned by ethtool is not "Unknown".
-/// * `Err` - If the file cannot be read, does not exist or the content is `-1` an Err is returned.
-fn collect_interface_speed(interface_name: &str) -> Result<u32, String> {
-    let interface_path: String = format!("/sys/class/net/{}/speed", interface_name);
+/// * `Ok(u32)` - If the entry for interface speed, in *`Mbps`*, can be read.
+/// * `Err(String)` - If the file cannot be read, indicating loopback or wireless devices, or the content is `-1`, if the interface is disabled, an Err is returned.
+fn collect_interface_speed(interface_name: &str, mut input: impl Read) -> Result<u32, String> {
+    let mut network_speed: String = String::new();
 
-    let output: Output =
-        Command::new("cat")
-            .arg(interface_path)
-            .output()
-            .map_err(|e: std::io::Error| {
-                format!(
-                    "ERROR: Failed to open /sys/class/net/{}/speed: {}.",
-                    interface_name, e
-                )
-            })?;
+    match input.read_to_string(&mut network_speed) {
+        Ok(_) => {}
+        Err(err) => {
+            return Err(format!("WARNING: Unable to open speed file for interface '{}'. This may happen for the loopback or wireless devices. ({}))", interface_name, err));
+        }
+    };
+    network_speed = network_speed.trim().replace("\n", "");
 
-    if !output.status.success() {
-        return Err(format!(
-            "WARNING: Collecting network speed for interface '{}' failed. This might happen with the loopback or wireless devices.",
-            interface_name,
-        ));
-    }
-
-    let output_str: String = String::from_utf8_lossy(&output.stdout)
-        .trim()
-        .to_string()
-        .replace("\n", "");
-
-    if output_str == "-1" {
+    if network_speed == "-1" {
         return Err(format!(
             "INFO: No interface speed known for '{}'. The interface might be disabled.",
             interface_name
@@ -304,11 +314,11 @@ fn collect_interface_speed(interface_name: &str) -> Result<u32, String> {
     }
 
     let interface_speed: u32 =
-        output_str
+        network_speed
             .parse::<u32>()
             .map_err(|e: std::num::ParseIntError| {
                 format!(
-                    "ERROR: Failed to parse speed as u32 for interface '{}': {}",
+                    "ERROR: Failed to parse speed as u32 for interface '{}': {}!",
                     interface_name, e
                 )
             })?;
@@ -319,7 +329,7 @@ fn collect_interface_speed(interface_name: &str) -> Result<u32, String> {
 #[cfg(test)]
 mod network_collector_tests {
     use super::*;
-    use mockall::{automock, predicate::*};
+    use mockall::predicate::*;
 
     /// Test for the `collect_network_interface`function.
     ///
@@ -406,31 +416,60 @@ mod network_collector_tests {
         }
     }
 
-    #[automock]
-    pub trait MockFs {
-        fn read_to_string(&self, path: &str) -> std::io::Result<String>;
-    }
+    #[test]
+    fn test_collect_network_speed() {
+        let mut mock_speed: String = String::from("1000");
+        let interface_name: &str = "eth0";
 
-    impl MockFs for std::fs::File {
-        fn read_to_string(&self, path: &str) -> std::io::Result<String> {
-            std::fs::read_to_string(path)
-        }
+        // Test 1: Interface speed is known
+        let result: Result<u32, String> =
+            collect_interface_speed(interface_name, mock_speed.as_bytes());
+        assert_eq!(
+            result,
+            Ok(1000),
+            "Test Scenario Failed (1): collect_interface_speed did not return Ok() despite supplying a correct speed value (1000)!");
+
+        // Test 2: Interface deactivated (Speed = -1)
+        mock_speed = String::from("-1");
+        let result: Result<u32, String> =
+            collect_interface_speed(interface_name, mock_speed.as_bytes());
+        assert_eq!(
+            result,
+            Err(format!(
+                "INFO: No interface speed known for '{}'. The interface might be disabled.",
+                interface_name
+            )),
+            "Test Scenario Failed (2): No error was raised by collect_interface_speed when passing speed = -1. The function did not identify the interface as disabled!"
+        );
+
+        // Test 3: Parsing error (invalid contents of speed file / empty speed file)
+        mock_speed = String::new();
+        let result: Result<u32, String> =
+            collect_interface_speed(interface_name, mock_speed.as_bytes());
+        assert_eq!(
+            result,
+            Err(format!(
+                    "ERROR: Failed to parse speed as u32 for interface '{}': cannot parse integer from empty string!",
+                    interface_name
+                )),
+            "Test Scenario Failed (3): No error was raised by collect_interface_speed when trying to parse an empty string into u32!"
+        );
     }
 
     #[test]
-    fn test_collect_network_speed() {
-        // Mock behaviour of the file system
-        let mut mock_fs = MockFs::new();
-        let interface_name = "eth0";
-        let speed_file_path = format!("/sys/class/net/{}/speed", interface_name);
+    fn test_build_interface_file_from_name() {
+        // Test Scenario 1: Return Error when speed file does not exist.
+        let result: Result<fs::File, String> = build_interface_file_from_name("noneexistent");
+        assert!(
+            result.is_err(),
+            "Test Scenario Failed (1): build_interface_file_from_name does not return an error on nonexisting interface!"
+        );
 
-        // Test 1: Interface speed is known
-        mock_fs
-            .expect_read_to_string()
-            .with(eq(speed_file_path.clone()))
-            .returning(|_| Ok(String::from("1000")));
-
-        let result = collect_interface_speed(interface_name);
-        assert_eq!(result, Ok(1000));
+        // Test Scenario 2: Return Ok for file found.
+        let result: Result<fs::File, String> = build_interface_file_from_name("lo");
+        assert!(
+            result.is_ok(),
+            "Test Scenario Failed (2): build_interface_file_from_name does not return Ok(file) despite the speed file existing!"
+        );
     }
 }
