@@ -1,0 +1,22 @@
+rust:
+- src/**/*.rs
+
+dependencies:
+- Cargo.toml
+- Cargo.lock
+
+documentation:
+- README.md
+- LICENSE
+- CODE_OF_CONDUCT.md
+- CONTRIBUTING
+
+tests:
+- tests/*
+
+code-quality:
+- .pre-commit-hooks/*
+- .pre-commit-config.yaml
+
+maintenance:
+- .github/*
