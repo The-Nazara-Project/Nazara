@@ -4,7 +4,6 @@
 
 Tick the applicable box:
 - [ ] Add new feature
-- [ ] Add language support
 - [ ] Security changes
 - [ ] Tests
 - [ ] Documentation changed
