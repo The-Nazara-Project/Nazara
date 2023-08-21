@@ -5,8 +5,8 @@
 use network_interface::Addr::{V4, V6};
 use network_interface::{NetworkInterface, NetworkInterfaceConfig};
 use std::fs;
+use std::io::Read;
 use std::net::IpAddr;
-use std::process::{Command, Output};
 
 use super::collector_exceptions;
 
@@ -67,7 +67,7 @@ pub fn collect_network_information(
         Ok(network_interfaces) => {
             if network_interfaces.is_empty() {
                 return Err(collector_exceptions::NoNetworkInterfacesException {
-                    message: "FATAL: No network interfaces found!".to_string(),
+                    message: "Error: No network interfaces found!".to_string(),
                 });
             } else {
                 return Ok(network_interfaces);
@@ -127,10 +127,7 @@ pub fn construct_network_information(
                         index: Some(network_interface.index),
                         is_physical: true,
                         is_connected: false,
-                        interface_speed: match collect_interface_speed(&network_interface.name) {
-                            Ok(speed) => Some(speed),
-                            Err(_) => None,
-                        },
+                        interface_speed: validate_network_speed(&network_interface.name),
                     };
                 } else if network_interface.addr.len() == 1 {
                     // Match if the only set of ip addresses is ipv4 or ipv6
@@ -148,12 +145,7 @@ pub fn construct_network_information(
                                 index: Some(network_interface.index),
                                 is_physical: true,
                                 is_connected: true,
-                                interface_speed: match collect_interface_speed(
-                                    &network_interface.name,
-                                ) {
-                                    Ok(speed) => Some(speed),
-                                    Err(_) => None,
-                                },
+                                interface_speed: validate_network_speed(&network_interface.name),
                             }
                         }
                         V6(_ip) => {
@@ -169,12 +161,7 @@ pub fn construct_network_information(
                                 index: Some(network_interface.index),
                                 is_physical: true,
                                 is_connected: true,
-                                interface_speed: match collect_interface_speed(
-                                    &network_interface.name,
-                                ) {
-                                    Ok(speed) => Some(speed),
-                                    Err(_) => None,
-                                },
+                                interface_speed: validate_network_speed(&network_interface.name),
                             }
                         }
                     }
@@ -191,10 +178,7 @@ pub fn construct_network_information(
                         index: Some(network_interface.index),
                         is_physical: true,
                         is_connected: true,
-                        interface_speed: match collect_interface_speed(&network_interface.name) {
-                            Ok(speed) => Some(speed),
-                            Err(_) => None,
-                        },
+                        interface_speed: validate_network_speed(&network_interface.name),
                     };
                 }
             }
@@ -246,51 +230,265 @@ fn check_for_physical_nw(interface_name: &str) -> bool {
     return fs::metadata(&path).is_ok();
 }
 
-/// Will attempt to collect the network interface's speed by running `ethtool <interface_name> | grep "Speed"` and
-/// catching the output.
+/// Validates if the speed of a network can be actually read and will print the error messages if it cannot.
 ///
-/// If "Speed" is to be reported as "Unknown!", None is returned.
+/// ## Arguments
+///
+/// * `interface_name: &str` - The name of the interface to check.
+///
+/// ## Returns
+///
+/// - `u32` - Returns `u32` if the speed finding process succeeds.
+/// - `None` - Returns `None` when the collection process fails.
+fn validate_network_speed(interface_name: &str) -> Option<u32> {
+    match build_interface_file_from_name(interface_name) {
+        Ok(file) => match collect_interface_speed(interface_name, file) {
+            Ok(speed) => Some(speed),
+            Err(err) => {
+                println!("{}", err);
+                None
+            }
+        },
+        Err(err) => {
+            println!("{}", err);
+            None
+        }
+    }
+}
+
+/// Builds the path to the interface's `speed` file using its name and reads the file if possible.
+///
+/// ## Arguments
+///
+/// * `interface_name: &str` - The name of the interface to be investigated.
+///
+/// ## Returns
+///
+/// * `Ok(std::fs::File)` - Returns the file object if it can be opened.
+/// * `Err(String)` - If the file cannot be opened. This mostly happens with the loopback device or wireless devices and is a sysfs problem.
+fn build_interface_file_from_name(interface_name: &str) -> Result<std::fs::File, String> {
+    let interface_path: String = format!("/sys/class/net/{}/speed", interface_name);
+
+    match std::fs::File::open(interface_path) {
+        Ok(file) => {
+            return Ok(file);
+        }
+        Err(_) => {
+            return Err(format!(
+                "WARNING: Speed file for interface '{}' does not exist.",
+                interface_name
+            ))
+        }
+    }
+}
+
+/// Will collect the speed of a given interface by reading the entry of `/sys/class/net/<interface_name>/speed`.
+///
+/// If the content of the file is `-1`, the device is disabled and the interface speed is later set to None.
 ///
 /// ## Arguments
 ///
 /// * `interface_name: &str` - The name of the interface to investigate.
+/// * `mut input: impl Read` - Any Argument which implements the `Read` trait. In this case it is a `fs::File` object.
 ///
 /// ## Returns
 ///
-/// * `Ok(u32)` - If the entry for interface speed returned by ethtool is not "Unknown".
-/// * `Err` - If the entry for interface speed returned by ethtool is "Unknown".
-fn collect_interface_speed(interface_name: &str) -> Result<u32, String> {
-    let output: Output = Command::new("ethtool")
-        .arg("-s")
-        .arg(interface_name)
-        .output()
-        .map_err(|e: std::io::Error| format!("Failed to execute ethtool command: {}", e))?;
+/// * `Ok(u32)` - If the entry for interface speed, in *`Mbps`*, can be read.
+/// * `Err(String)` - If the file cannot be read, indicating loopback or wireless devices, or the content is `-1`, if the interface is disabled, an Err is returned.
+fn collect_interface_speed(interface_name: &str, mut input: impl Read) -> Result<u32, String> {
+    let mut network_speed: String = String::new();
 
-    if !output.status.success() {
+    match input.read_to_string(&mut network_speed) {
+        Ok(_) => {}
+        Err(err) => {
+            return Err(format!("WARNING: Unable to open speed file for interface '{}'. This may happen for the loopback or wireless devices. ({}))", interface_name, err));
+        }
+    };
+    network_speed = network_speed.trim().replace("\n", "");
+
+    if network_speed == "-1" {
         return Err(format!(
-            "ethtool command failed with exit code: {}",
-            output.status
-        ));
-    }
-
-    let output_str: String = String::from_utf8_lossy(&output.stdout).to_string();
-
-    let speed_str: &str = output_str
-        .lines()
-        .find(|line: &&str| line.starts_with("Speed:"))
-        .and_then(|line: &str| line.split_whitespace().nth(1))
-        .ok_or_else(|| "Failed to parse speed from ethtool output".to_string())?;
-
-    if speed_str == "Unknown!" {
-        return Err(format!(
-            "INFO: No interface speed known for {}. The interface may be virtual or disabled.",
+            "INFO: No interface speed known for '{}'. The interface might be disabled.",
             interface_name
         ));
     }
 
-    let interface_speed: u32 = speed_str
-        .parse::<u32>()
-        .map_err(|e: std::num::ParseIntError| format!("Failed to parse speed as u32: {}", e))?;
+    let interface_speed: u32 =
+        network_speed
+            .parse::<u32>()
+            .map_err(|e: std::num::ParseIntError| {
+                format!(
+                    "ERROR: Failed to parse speed as u32 for interface '{}': {}!",
+                    interface_name, e
+                )
+            })?;
 
     Ok(interface_speed)
+}
+
+#[cfg(test)]
+mod network_collector_tests {
+    use super::*;
+    use mockall::predicate::*;
+
+    /// Test for the `collect_network_interface`function.
+    ///
+    /// This test checks if the function `collect_network_information`returns a non-empty vector or throws a
+    /// `NoNetworkInterfacesException` with the expected message.
+    #[test]
+    fn test_collect_network_information() {
+        match collect_network_information() {
+            Ok(network_interfaces) => {
+                assert!(
+                    !network_interfaces.is_empty(),
+                    "No network interfaces found"
+                );
+            }
+            Err(e) => match e {
+                collector_exceptions::NoNetworkInterfacesException { message } => {
+                    assert_eq!(message, "Error: No network interfaces found!".to_string());
+                }
+            },
+        }
+    }
+
+    /// # Test the `construct_network_information` method.
+    ///
+    /// Test if the NetworkInformation objects are constructed correctly or if an `NoNetworkInterfacesException` is raised.
+    #[test]
+    fn test_construct_network_information() {
+        match construct_network_information() {
+            Ok(network_information) => {
+                assert!(
+                    !network_information.is_empty(),
+                    "No network information found"
+                );
+
+                for network_info in network_information {
+                    // Validate the structure and content of the NetworkInformation object
+                    assert!(
+                        !network_info.name.is_empty(),
+                        "Network name cannot not be empty!"
+                    );
+                    assert!(
+                        network_info.mac_addr.is_some(),
+                        "MAC address must be present!\n\nFaulty Interface:'{}'\n",
+                        network_info.name
+                    );
+                    assert!(
+                        network_info.index.is_some(),
+                        "Interface index must be present!\n\nFaulty Interface:'{}'\n",
+                        network_info.name
+                    );
+
+                    // Validate the IP addresses
+                    if let Some(v4ip) = network_info.v4ip {
+                        assert!(
+                            v4ip.is_ipv4(),
+                            "IPv4 address must be valid!\n\nFaulty Interface:'{}'\n",
+                            network_info.name
+                        );
+                    }
+                    if let Some(v6ip) = network_info.v6ip {
+                        assert!(
+                            v6ip.is_ipv6(),
+                            "IPv6 address must be valid!\n\nFaulty Interface:'{}'\n",
+                            network_info.name
+                        );
+                    }
+
+                    // Validate the interface speed
+                    assert!(
+                        network_info.interface_speed.is_some()
+                            || network_info.interface_speed.is_none(),
+                        "Interface speed must be either Some(speed) or None!"
+                    );
+                }
+            }
+            Err(e) => match e {
+                collector_exceptions::NoNetworkInterfacesException { message } => {
+                    assert_eq!(
+                        message,
+                        "Error: No network interfaces to process".to_string()
+                    );
+                }
+            },
+        }
+    }
+
+    /// Test if the `collect_network_speed` function returns an Ok(speed) when the file contains a valid String.
+    #[test]
+    fn test_collect_network_speed_with_known_speed() {
+        let mock_speed: String = String::from("1000");
+        let interface_name: &str = "eth0";
+
+        // Test 1: Interface speed is known
+        let result: Result<u32, String> =
+            collect_interface_speed(interface_name, mock_speed.as_bytes());
+        assert_eq!(
+            result,
+            Ok(1000),
+            "Test Scenario Failed (1): collect_interface_speed did not return Ok() despite supplying a correct speed value (1000)!");
+    }
+
+    /// Test if the `collect_network_speed` function returns an Err(String) with an expected message, when the interface
+    /// is deactivated (speed = -1).
+    #[test]
+    fn test_collect_network_speed_with_deactivated_interface() {
+        // Test 2: Interface deactivated (Speed = -1)
+        let mock_speed = String::from("-1");
+        let interface_name: &str = "eth0";
+
+        let result: Result<u32, String> =
+            collect_interface_speed(interface_name, mock_speed.as_bytes());
+        assert_eq!(
+            result,
+            Err(format!(
+                "INFO: No interface speed known for '{}'. The interface might be disabled.",
+                interface_name
+            )),
+            "Test Scenario Failed (2): No error was raised by collect_interface_speed when passing speed = -1. The function did not identify the interface as disabled!"
+        );
+    }
+
+    /// Test if the `collect_network_speed` function returns an Err(String) with an expected message, if the contents
+    /// of the speed file cannot be parsed into a `u32`.
+    #[test]
+    fn test_collect_network_speed_parsing_error() {
+        // Test 3: Parsing error (invalid contents of speed file / empty speed file)
+        let mock_speed: String = String::new();
+        let interface_name: &str = "eth0";
+        let result: Result<u32, String> =
+            collect_interface_speed(interface_name, mock_speed.as_bytes());
+        assert_eq!(
+            result,
+            Err(format!(
+                    "ERROR: Failed to parse speed as u32 for interface '{}': cannot parse integer from empty string!",
+                    interface_name
+                )),
+            "Test Scenario Failed (3): No error was raised by collect_interface_speed when trying to parse an empty string into u32!"
+        );
+    }
+
+    /// Test whether the `build_interface_file_from_name` function returns an `Err` when given a nonexistent interface.
+    #[test]
+    fn test_build_interface_file_from_name_no_file() {
+        // Test Scenario 1: Return Error when speed file does not exist.
+        let result: Result<fs::File, String> = build_interface_file_from_name("noneexistent");
+        assert!(
+            result.is_err(),
+            "Test Scenario Failed (1): build_interface_file_from_name does not return an error on nonexisting interface!"
+        );
+    }
+
+    /// Test whether the `build_interface_file_from_name` function returns an `Ok` when given an existing interface.
+    #[test]
+    fn test_build_interface_file_from_name_ok() {
+        // Test Scenario 2: Return Ok for file found.
+        let result: Result<fs::File, String> = build_interface_file_from_name("lo");
+        assert!(
+            result.is_ok(),
+            "Test Scenario Failed (2): build_interface_file_from_name does not return Ok(file) despite the speed file existing!"
+        );
+    }
 }
