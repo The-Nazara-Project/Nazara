@@ -416,9 +416,10 @@ mod network_collector_tests {
         }
     }
 
+    /// Test if the `collect_network_speed` function returns an Ok(speed) when the file contains a valid String.
     #[test]
-    fn test_collect_network_speed() {
-        let mut mock_speed: String = String::from("1000");
+    fn test_collect_network_speed_with_known_speed() {
+        let mock_speed: String = String::from("1000");
         let interface_name: &str = "eth0";
 
         // Test 1: Interface speed is known
@@ -428,9 +429,16 @@ mod network_collector_tests {
             result,
             Ok(1000),
             "Test Scenario Failed (1): collect_interface_speed did not return Ok() despite supplying a correct speed value (1000)!");
+    }
 
+    /// Test if the `collect_network_speed` function returns an Err(String) with an expected message, when the interface
+    /// is deactivated (speed = -1).
+    #[test]
+    fn test_collect_network_speed_with_deactivated_interface() {
         // Test 2: Interface deactivated (Speed = -1)
-        mock_speed = String::from("-1");
+        let mock_speed = String::from("-1");
+        let interface_name: &str = "eth0";
+
         let result: Result<u32, String> =
             collect_interface_speed(interface_name, mock_speed.as_bytes());
         assert_eq!(
@@ -441,9 +449,15 @@ mod network_collector_tests {
             )),
             "Test Scenario Failed (2): No error was raised by collect_interface_speed when passing speed = -1. The function did not identify the interface as disabled!"
         );
+    }
 
+    /// Test if the `collect_network_speed` function returns an Err(String) with an expected message, if the contents
+    /// of the speed file cannot be parsed into a `u32`.
+    #[test]
+    fn test_collect_network_speed_parsing_error() {
         // Test 3: Parsing error (invalid contents of speed file / empty speed file)
-        mock_speed = String::new();
+        let mock_speed: String = String::new();
+        let interface_name: &str = "eth0";
         let result: Result<u32, String> =
             collect_interface_speed(interface_name, mock_speed.as_bytes());
         assert_eq!(
@@ -456,15 +470,20 @@ mod network_collector_tests {
         );
     }
 
+    /// Test whether the `build_interface_file_from_name` function returns an `Err` when given a nonexistent interface.
     #[test]
-    fn test_build_interface_file_from_name() {
+    fn test_build_interface_file_from_name_no_file() {
         // Test Scenario 1: Return Error when speed file does not exist.
         let result: Result<fs::File, String> = build_interface_file_from_name("noneexistent");
         assert!(
             result.is_err(),
             "Test Scenario Failed (1): build_interface_file_from_name does not return an error on nonexisting interface!"
         );
+    }
 
+    /// Test whether the `build_interface_file_from_name` function returns an `Ok` when given an existing interface.
+    #[test]
+    fn test_build_interface_file_from_name_ok() {
         // Test Scenario 2: Return Ok for file found.
         let result: Result<fs::File, String> = build_interface_file_from_name("lo");
         assert!(
