@@ -384,3 +384,49 @@ fn dmidecode_cpu() -> CpuInformation {
     println!("\x1b[32mSuccess:\x1b[0m CPU information collection completed.");
     return cpu_information;
 }
+
+#[cfg(test)]
+pub mod dmi_collector_tests {
+    use super::*;
+    use std::any::Any;
+
+    /// Check a given value's type for being String or not.
+    ///
+    /// ## Returns
+    ///
+    /// * `bool` - True/False depending on if the given value is a String type.
+    fn is_string(value: &dyn Any) -> bool {
+        value.is::<String>()
+    }
+
+    /// Tests whether the `get_dmidecode_information` function panics when it tries to execute `dmidecode -s` with an
+    /// invalid parameter.
+    #[test]
+    #[should_panic]
+    fn test_get_dmidecode_information_panics() {
+        let result: Result<String, Box<dyn Any + Send>> =
+            std::panic::catch_unwind(|| get_dmidecode_information("invalid"));
+
+        assert!(
+            result.is_err(),
+            "Test failure: get_dmidecode_information did not panic when supplied with an invalid
+        argument"
+        );
+    }
+
+    /// Test that `get_dmidecode_information` does not return an empty String. Validating that the given parameter is
+    /// valid.
+    #[test]
+    fn test_get_dmidecode_information_ok() {
+        let result: String = get_dmidecode_information("system-manufacturer");
+
+        assert!(
+            is_string(&result),
+            "Test failure: get_dmidecode_information did not return a String type!"
+        );
+        assert!(
+            !result.is_empty(),
+            "Test failure: get_dmidecode_information did return an empty string despite supplying a valid parameter!"
+        );
+    }
+}
