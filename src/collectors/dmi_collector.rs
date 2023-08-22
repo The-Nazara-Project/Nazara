@@ -127,8 +127,8 @@ pub fn construct_dmi_information() -> DmiInformation {
      *
      * */
     let dmi_information: DmiInformation = DmiInformation {
-        system_information: dmidecode_system(),
-        chassis_information: dmidecode_chassis(),
+        system_information: dmidecode_system(DefaultDmiDecodeInformation {}),
+        chassis_information: dmidecode_chassis(DefaultDmiDecodeInformation {}),
         cpu_information: dmidecode_cpu(),
     };
     return dmi_information;
@@ -175,41 +175,57 @@ fn get_dmidecode_table(dmidecode_table: i32) -> String {
     return String::from_utf8_lossy(&output.stdout).to_string();
 }
 
-/// Execute `dmidecode -s <PARAMETER>` where `<PARAMETER>` is the system property to look for.
+/// Implements a trait representing the `get_dmidecode_information` function.
 ///
-/// This method of obtaining system information is quicker than the other approach with crawling through the dmi tables.
-/// It is only suitable for basic system information such as BIOS, platform and chassis information.
+/// This is needed mainly for testing `dmidecode_system` and `dmidecode_chassis` so we can implement two versions of this
+/// function. One with the real implementation and one returning the expected test values.
+trait DmiDecodeInformation {
+    fn get_dmidecode_information(parameter: &str) -> String;
+}
+
+/// Empty struct which implements the `DmiDecodeInformation` trait.
+struct DefaultDmiDecodeInformation;
+
+/// Implement the `DmiDecodeInformation` trait for the `DefaultDmiDecodeInformation` struct.
 ///
-/// ## Arguments
-///
-/// * `parameter: &str` - The system property to look for.
-///
-/// ## Returns
-///
-/// * `String` - The system property
-///
-/// ## Panics
-///
-/// If the `dmidecode` execution fails, a `UnableToCollectDataError` is raised and the function panics.
-fn get_dmidecode_information(parameter: &str) -> String {
-    let output: Output = match Command::new("sudo")
-        .arg("dmidecode")
-        .arg("-s")
-        .arg(parameter)
-        .output()
-    {
-        Ok(output) => output,
-        Err(_) => {
-            let error: UnableToCollectDataError = UnableToCollectDataError {
-                message: format!(
-                    "\x1b[31mFATAL:\x1b[0m Unable to collect system information for '{}'!",
-                    parameter
-                ),
-            };
-            error.panic();
-        }
-    };
-    return String::from_utf8_lossy(&output.stdout).trim().to_string();
+/// This represents the default implementation of the `get_dmidecode_information function.
+impl DmiDecodeInformation for DefaultDmiDecodeInformation {
+    /// Execute `dmidecode -s <PARAMETER>` where `<PARAMETER>` is the system property to look for.
+    ///
+    /// This method of obtaining system information is quicker than the other approach with crawling through the dmi tables.
+    /// It is only suitable for basic system information such as BIOS, platform and chassis information.
+    ///
+    /// ## Arguments
+    ///
+    /// * `parameter: &str` - The system property to look for.
+    ///
+    /// ## Returns
+    ///
+    /// * `String` - The system property
+    ///
+    /// ## Panics
+    ///
+    /// If the `dmidecode` execution fails, a `UnableToCollectDataError` is raised and the function panics.
+    fn get_dmidecode_information(parameter: &str) -> String {
+        let output: Output = match Command::new("sudo")
+            .arg("dmidecode")
+            .arg("-s")
+            .arg(parameter)
+            .output()
+        {
+            Ok(output) => output,
+            Err(_) => {
+                let error: UnableToCollectDataError = UnableToCollectDataError {
+                    message: format!(
+                        "\x1b[31mFATAL:\x1b[0m Unable to collect system information for '{}'!",
+                        parameter
+                    ),
+                };
+                error.panic();
+            }
+        };
+        return String::from_utf8_lossy(&output.stdout).trim().to_string();
+    }
 }
 
 /// Collect general system information and construct a new [SystemInformation](struct.SystemInformation) object from it.
@@ -225,10 +241,15 @@ fn get_dmidecode_information(parameter: &str) -> String {
 /// Note: Fields *can* be empty strings if a parameter, that is being searched for, is not recognized in the match
 /// statement.
 ///
+/// # Arguments
+///
+/// * `_param: T` - Receives an Object which implements the `DmiDecodeInformation` trait. Can be either the default
+/// implementation or a test implementation which returns expected values.
+///
 /// # Returns
 ///
 /// * `system_information: SystemInformation`- A SystemInformation object.
-fn dmidecode_system() -> SystemInformation {
+fn dmidecode_system<T: DmiDecodeInformation>(_param: T) -> SystemInformation {
     println!("Collecting system information...");
     let mut system_information: SystemInformation = SystemInformation {
         vendor: String::new(),
@@ -241,18 +262,18 @@ fn dmidecode_system() -> SystemInformation {
     for parameter in POSSIBLE_SYSTEM_PARAMETERS.iter() {
         match *parameter {
             "system-manufacturer" => {
-                system_information.vendor = get_dmidecode_information(*parameter);
+                system_information.vendor = T::get_dmidecode_information(*parameter);
 
                 if system_information.vendor == "QEMU" {
                     system_information.is_virtual = true;
                 }
             }
             "system-product-name" => {
-                system_information.model = get_dmidecode_information(*parameter)
+                system_information.model = T::get_dmidecode_information(*parameter)
             }
-            "system-uuid" => system_information.uuid = get_dmidecode_information(*parameter),
+            "system-uuid" => system_information.uuid = T::get_dmidecode_information(*parameter),
             "system-serial-number" => {
-                system_information.serial = get_dmidecode_information(*parameter)
+                system_information.serial = T::get_dmidecode_information(*parameter)
             }
             _ => {
                 println!(
@@ -268,10 +289,15 @@ fn dmidecode_system() -> SystemInformation {
 
 /// Construct a ChassisInformation object by parsing the content of dmi chassis table.
 ///
+/// # Arguments
+///
+/// * `_param: T` - Receives an Object which implements the `DmiDecodeInformation` trait. Can be either the default
+/// implementation or a test implementation which returns expected values.
+///
 /// # Returns
 ///
 /// A ChassisInformation object.
-fn dmidecode_chassis() -> ChassisInformation {
+fn dmidecode_chassis<T: DmiDecodeInformation>(_param: T) -> ChassisInformation {
     println!("Collecting chassis information...");
     let mut chassis_information: ChassisInformation = ChassisInformation {
         chassis_type: String::new(),
@@ -282,13 +308,13 @@ fn dmidecode_chassis() -> ChassisInformation {
     for parameter in POSSIBLE_CHASSIS_PARAMETERS.iter() {
         match *parameter {
             "chassis-type" => {
-                chassis_information.chassis_type = get_dmidecode_information(*parameter)
+                chassis_information.chassis_type = T::get_dmidecode_information(*parameter)
             }
             "chassis-asset-tag" => {
-                chassis_information.asset = get_dmidecode_information(*parameter)
+                chassis_information.asset = T::get_dmidecode_information(*parameter)
             }
             "chassis-serial-number" => {
-                chassis_information.chassis_serial = get_dmidecode_information(*parameter)
+                chassis_information.chassis_serial = T::get_dmidecode_information(*parameter)
             }
             _ => {
                 println!(
@@ -399,13 +425,18 @@ pub mod dmi_collector_tests {
         value.is::<String>()
     }
 
+    fn is_system_information(value: &dyn Any) -> bool {
+        value.is::<SystemInformation>()
+    }
+
     /// Tests whether the `get_dmidecode_information` function panics when it tries to execute `dmidecode -s` with an
     /// invalid parameter.
     #[test]
     #[should_panic]
     fn test_get_dmidecode_information_panics() {
-        let result: Result<String, Box<dyn Any + Send>> =
-            std::panic::catch_unwind(|| get_dmidecode_information("invalid"));
+        let result: Result<String, Box<dyn Any + Send>> = std::panic::catch_unwind(|| {
+            DefaultDmiDecodeInformation::get_dmidecode_information("invalid")
+        });
 
         assert!(
             result.is_err(),
@@ -418,7 +449,8 @@ pub mod dmi_collector_tests {
     /// valid.
     #[test]
     fn test_get_dmidecode_information_ok() {
-        let result: String = get_dmidecode_information("system-manufacturer");
+        let result: String =
+            DefaultDmiDecodeInformation::get_dmidecode_information("system-manufacturer");
 
         assert!(
             is_string(&result),
@@ -428,5 +460,40 @@ pub mod dmi_collector_tests {
             !result.is_empty(),
             "Test failure: get_dmidecode_information did return an empty string despite supplying a valid parameter!"
         );
+    }
+
+    struct MockDmiDecodeInformation;
+
+    impl DmiDecodeInformation for MockDmiDecodeInformation {
+        fn get_dmidecode_information(parameter: &str) -> String {
+            match parameter {
+                "system-manufacturer" => "TEST".to_string(),
+                "system-product-name" => "TestMachine".to_string(),
+                "system-uuid" => "123456-123-1222".to_string(),
+                "system-serial-number" => "123456789".to_string(),
+                _ => String::new(),
+            }
+        }
+    }
+
+    #[test]
+    fn test_dmidecode_system() {
+        let expected_vendor: &str = "TEST";
+        let expected_model: &str = "TestMachine";
+        let expected_uuid: &str = "123456-123-1222";
+        let expected_serial: &str = "123456789";
+
+        // Mock existing get_dmidecode_information function return the expected parameters
+
+        let system_information: SystemInformation = dmidecode_system(MockDmiDecodeInformation {});
+
+        assert!(
+            is_system_information(&system_information),
+            "Test Failure: `dmidecode_system` did not return instance of `SystemInformation`!"
+        );
+        assert_eq!(system_information.vendor, expected_vendor);
+        assert_eq!(system_information.model, expected_model);
+        assert_eq!(system_information.uuid, expected_uuid);
+        assert_eq!(system_information.serial, expected_serial);
     }
 }
