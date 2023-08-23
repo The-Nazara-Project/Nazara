@@ -10,6 +10,7 @@
  * 3. REMOVE DEBUG PRINT STATEMENTS.
  * */
 
+use super::collector_exceptions::UnableToCollectDataError;
 use super::util::{find_table, split_output};
 use std::{
     process::{Command, Output},
@@ -32,7 +33,7 @@ pub struct DmiInformation {
 
 /// ## SystemInformation
 ///
-/// Basic information of the machine extracted from dmidecode table 1.
+/// Basic information of the machine extracted from dmidecode.
 ///
 /// ### Members
 ///
@@ -56,10 +57,14 @@ pub struct SystemInformation {
 ///
 /// ### Members
 ///
+/// * chassis_type: `String` - Type of the chassis.
 /// * asset: `String`- Type of asset.
+/// * chassis_serial: `Serial` - Serial number of the chassis.
 #[derive(Debug)]
 pub struct ChassisInformation {
+    chassis_type: String,
     asset: String,
+    chassis_serial: String,
 }
 
 /// ## CpuInformation
@@ -86,72 +91,177 @@ pub struct CpuInformation {
     status: String,
 }
 
-/// Executes `dmidecode` with a given table number.
+/// List of possible system parameters to collect dmi information from.
 ///
-/// ## Arguments
+/// ## Members
 ///
-/// * dmidecor_table: i32 - The index of the table to return.
-///
-/// ## Returns
-///
-/// * String - The content of the dmi table as a string.
-fn execute_dmidecode(dmidecode_table: i32) -> String {
-    /*
-     * Collect DMI information from System.
-     *
-     * This function executes the dmidecode command for the table type provided.
-     */
-    let output: Output = Command::new("sudo")
-        .arg("dmidecode")
-        .arg("-t")
-        .arg(dmidecode_table.to_string())
-        .output()
-        .expect("Failed to execute command");
+/// * `system-manufacturer`
+/// * `system-product-name`
+/// * `system-uuid`
+/// * `system-serial-number`
+const POSSIBLE_SYSTEM_PARAMETERS: [&str; 4] = [
+    "system-manufacturer",
+    "system-product-name",
+    "system-uuid",
+    "system-serial-number",
+];
 
-    // Read the output of the command
-    return String::from_utf8_lossy(&output.stdout).to_string();
-}
+/// List of possible chassis parameters to collect dmi information from.
+///
+/// ## Members
+///
+/// * `chassis-type`
+/// * `chassis-asset-tag`
+/// * `chassis-serial-number`
+const POSSIBLE_CHASSIS_PARAMETERS: [&str; 3] =
+    ["chassis-type", "chassis-asset-tag", "chassis-serial-number"];
 
 /// Construct [DmiInformation](struct.DmiInformation) out of the collected information.
 ///
 /// # Returns
 ///
 /// An instance of the DmiInformation struct containing the collected system, chassis and cpu information.
-pub fn dmidecode() -> DmiInformation {
+pub fn construct_dmi_information() -> DmiInformation {
     /*
-     * Return a new instance of DmiInfomration joining all collected information.
+     * Return a new instance of DmiInformation joining all collected information.
      *
      * */
     let dmi_information: DmiInformation = DmiInformation {
-        system_information: dmidecode_system(),
-        chassis_information: dmidecode_chassis(),
-        cpu_information: dmidecode_cpu(),
+        system_information: dmidecode_system(DefaultDmiDecodeInformation {}),
+        chassis_information: dmidecode_chassis(DefaultDmiDecodeInformation {}),
+        cpu_information: dmidecode_cpu(DefaultDmiDecodeTable {}),
     };
     return dmi_information;
 }
 
-/// Construct a SystemInformation object by parsing the content of dmi system table.
+/// Represents the `get_dmidecode_table` function which, when called, returns the contents of the requested dmi table.
+trait DmiDecodeTable {
+    fn get_dmidecode_table(dmidecode_table: i32) -> String;
+}
+
+/// Default implementation of the `get_dmidecode_table` functionality.
+struct DefaultDmiDecodeTable;
+
+/// Default implementation of the `get_dmidecode_table` function.
+impl DmiDecodeTable for DefaultDmiDecodeTable {
+    /// Executes `dmidecode` with a given table number.
+    ///
+    /// ## Arguments
+    ///
+    /// * dmidecode_table: i32 - The index of the table to return.
+    ///
+    /// ## Returns
+    ///
+    /// * String - The content of the dmi table as a string.
+    ///
+    /// ## Panics
+    ///
+    /// If `dmidecode -t <dmidecode_table>` fails, the function panics.
+    fn get_dmidecode_table(dmidecode_table: i32) -> String {
+        /*
+         * Collect DMI information from System.
+         *
+         * This function executes the dmidecode command for the table type provided.
+         */
+        let output: Output = match Command::new("sudo")
+            .arg("dmidecode")
+            .arg("-t")
+            .arg(dmidecode_table.to_string())
+            .output()
+        {
+            Ok(output) => output,
+            Err(_) => {
+                let error: UnableToCollectDataError = UnableToCollectDataError {
+                    message: format!(
+                        "\x1b[31mFATAL:\x1b[0m Unable to get dmidecode table '{}'!",
+                        dmidecode_table
+                    ),
+                };
+                error.panic();
+            }
+        };
+
+        // Read the output of the command
+        return String::from_utf8_lossy(&output.stdout).to_string();
+    }
+}
+
+/// Implements a trait representing the `get_dmidecode_information` function.
+///
+/// This is needed mainly for testing `dmidecode_system` and `dmidecode_chassis` so we can implement two versions of this
+/// function. One with the real implementation and one returning the expected test values.
+trait DmiDecodeInformation {
+    fn get_dmidecode_information(parameter: &str) -> String;
+}
+
+/// Empty struct which implements the `DmiDecodeInformation` trait.
+struct DefaultDmiDecodeInformation;
+
+/// Implement the `DmiDecodeInformation` trait for the `DefaultDmiDecodeInformation` struct.
+///
+/// This represents the default implementation of the `get_dmidecode_information function.
+impl DmiDecodeInformation for DefaultDmiDecodeInformation {
+    /// Execute `dmidecode -s <PARAMETER>` where `<PARAMETER>` is the system property to look for.
+    ///
+    /// This method of obtaining system information is quicker than the other approach with crawling through the dmi tables.
+    /// It is only suitable for basic system information such as BIOS, platform and chassis information.
+    ///
+    /// ## Arguments
+    ///
+    /// * `parameter: &str` - The system property to look for.
+    ///
+    /// ## Returns
+    ///
+    /// * `String` - The system property
+    ///
+    /// ## Panics
+    ///
+    /// If the `dmidecode` execution fails, a `UnableToCollectDataError` is raised and the function panics.
+    fn get_dmidecode_information(parameter: &str) -> String {
+        let output: Output = match Command::new("sudo")
+            .arg("dmidecode")
+            .arg("-s")
+            .arg(parameter)
+            .output()
+        {
+            Ok(output) => output,
+            Err(_) => {
+                let error: UnableToCollectDataError = UnableToCollectDataError {
+                    message: format!(
+                        "\x1b[31mFATAL:\x1b[0m Unable to collect system information for '{}'!",
+                        parameter
+                    ),
+                };
+                error.panic();
+            }
+        };
+        return String::from_utf8_lossy(&output.stdout).trim().to_string();
+    }
+}
+
+/// Collect general system information and construct a new [SystemInformation](struct.SystemInformation) object from it.
+///
+/// This function call the `get_dmidecode_information` function for each parameter required for system information.
+///
+/// If the system-manufacturer returns `QEMU` it is assumed that the machine is a virtual machine and the `is_virtual`
+/// field of [SystemInformation](struct.SystemInformation) is updated accordingly.
+///
+/// This is important as Virtual Machines and Physical Machines are treated differently by NetBox and are registered at
+/// different URLs.
+///
+/// Note: Fields *can* be empty strings if a parameter, that is being searched for, is not recognized in the match
+/// statement.
+///
+/// # Arguments
+///
+/// * `_param: T` - Receives an Object which implements the `DmiDecodeInformation` trait. Can be either the default
+/// implementation or a test implementation which returns expected values.
 ///
 /// # Returns
 ///
-/// A SystemInformation object.
-fn dmidecode_system() -> SystemInformation {
-    /*
-     * Collect general system information.
-     *
-     * This function calls the execute_dmidecode function and reads the output the command
-     * provides.
-     * The output is processed and the required information is extracted from the string and saved into a
-     * system_information instance.
-     *
-     * If the vendor found is QEMU it is assumed that the machine is a virtual machine.
-     * This is important as Virtual Machines and Physical Machines are treated differently by NetBox and registered at
-     * different URLs.
-     * */
-    let output: String = execute_dmidecode(1);
-    let output_split: Split<'_, &str> = output.split("\n");
-    let mut split: Vec<&str> = Vec::new();
-
+/// * `system_information: SystemInformation`- A SystemInformation object.
+fn dmidecode_system<T: DmiDecodeInformation>(_param: T) -> SystemInformation {
+    println!("Collecting system information...");
     let mut system_information: SystemInformation = SystemInformation {
         vendor: String::new(),
         model: String::new(),
@@ -160,133 +270,85 @@ fn dmidecode_system() -> SystemInformation {
         is_virtual: false,
     };
 
-    let mut table_found: bool = false;
-
-    for part in output_split {
-        if !table_found {
-            table_found = find_table("System Information", part);
-        }
-
-        let split_output: Result<Vec<&str>, &str> = split_output(part);
-
-        match split_output {
-            Ok(_) => split = split_output.unwrap(),
-            Err(_) => continue,
-        }
-
-        let mut key: String = String::new();
-        let mut value: String = String::new();
-
-        match split.get(0) {
-            Some(x) => {
-                key = x.to_string();
-            }
-            None => println!("Info: Key not found at this location..."),
-        }
-        match split.get(1) {
-            Some(x) => {
-                value = x.to_string();
-            }
-            None => println!("Info: Value not found at this location..."),
-        }
-        match key.as_str() {
-            "Manufacturer" => {
-                system_information.vendor = value.trim().to_string();
+    for parameter in POSSIBLE_SYSTEM_PARAMETERS.iter() {
+        match *parameter {
+            "system-manufacturer" => {
+                system_information.vendor = T::get_dmidecode_information(*parameter);
 
                 if system_information.vendor == "QEMU" {
                     system_information.is_virtual = true;
                 }
             }
-            "Product Name" => {
-                system_information.model = value.trim().to_string();
+            "system-product-name" => {
+                system_information.model = T::get_dmidecode_information(*parameter)
             }
-            "Serial Number" => {
-                system_information.serial = value.trim().to_string();
-            }
-            "UUID" => {
-                system_information.uuid = value.trim().to_string();
+            "system-uuid" => system_information.uuid = T::get_dmidecode_information(*parameter),
+            "system-serial-number" => {
+                system_information.serial = T::get_dmidecode_information(*parameter)
             }
             _ => {
-                continue;
+                println!(
+                    "INFO: Parameter {} not supported therefore not collected.",
+                    parameter
+                );
             }
         }
     }
+    println!("\x1b[32mSuccess:\x1b[0m System information collection completed.");
     return system_information;
 }
 
 /// Construct a ChassisInformation object by parsing the content of dmi chassis table.
 ///
+/// # Arguments
+///
+/// * `_param: T` - Receives an Object which implements the `DmiDecodeInformation` trait. Can be either the default
+/// implementation or a test implementation which returns expected values.
+///
 /// # Returns
 ///
 /// A ChassisInformation object.
-fn dmidecode_chassis() -> ChassisInformation {
-    /*
-     * Collect Chassis information.
-     *
-     * Works like dmidecode_system with only one key to be checked.
-     * */
-    let output: String = execute_dmidecode(3);
-    let output_split: Split<'_, &str> = output.split("\n");
-    let mut split: Vec<&str> = Vec::new();
-
+fn dmidecode_chassis<T: DmiDecodeInformation>(_param: T) -> ChassisInformation {
+    println!("Collecting chassis information...");
     let mut chassis_information: ChassisInformation = ChassisInformation {
+        chassis_type: String::new(),
         asset: String::new(),
+        chassis_serial: String::new(),
     };
 
-    let mut table_found: bool = false;
-
-    for part in output_split {
-        if !table_found {
-            table_found = find_table("System Information", part);
-        }
-
-        let split_output: Result<Vec<&str>, &str> = split_output(part);
-
-        match split_output {
-            Ok(_) => split = split_output.unwrap(),
-            Err(_) => continue,
-        }
-
-        let mut key: String = String::new();
-        let mut value: String = String::new();
-
-        match split.get(0) {
-            Some(x) => {
-                key = x.to_string();
+    for parameter in POSSIBLE_CHASSIS_PARAMETERS.iter() {
+        match *parameter {
+            "chassis-type" => {
+                chassis_information.chassis_type = T::get_dmidecode_information(*parameter)
             }
-            None => println!("Info: Key not found at this location..."),
-        }
-        match split.get(1) {
-            Some(x) => {
-                value = x.to_string();
+            "chassis-asset-tag" => {
+                chassis_information.asset = T::get_dmidecode_information(*parameter)
             }
-            None => println!("Info: Value not found at this location..."),
-        }
-        match key.as_str() {
-            "Asset Tag" => {
-                chassis_information.asset = value.trim().to_string();
+            "chassis-serial-number" => {
+                chassis_information.chassis_serial = T::get_dmidecode_information(*parameter)
             }
             _ => {
-                continue;
+                println!(
+                    "INFO: Parameter {} not supported. Therefore will not be collected.",
+                    parameter
+                );
             }
         }
     }
-
+    println!("\x1b[32mSuccess:\x1b[0m Chassis information collection completed.");
     return chassis_information;
 }
 
 /// Construct a CpuInformation object by parsing the content of dmi cpu table.
 ///
+/// Captures the output of `dmidecode -t 4` and processes the table to find the required values.
+///
 /// # Returns
 ///
 /// A CpuInformation object.
-fn dmidecode_cpu() -> CpuInformation {
-    /*
-     * Collect CPU information.
-     *
-     * Works exactly like above by calling execute_dmidecode and processing its output.
-     * */
-    let output: String = execute_dmidecode(4);
+fn dmidecode_cpu<T: DmiDecodeTable>(_param: T) -> CpuInformation {
+    println!("Collecting CPU information...");
+    let output: String = T::get_dmidecode_table(4);
     let output_split: Split<'_, &str> = output.split("\n");
     let mut split: Vec<&str> = Vec::new();
 
@@ -304,7 +366,7 @@ fn dmidecode_cpu() -> CpuInformation {
 
     for part in output_split {
         if !table_found {
-            table_found = find_table("System Information", part);
+            table_found = find_table("Processor Information", part);
         }
 
         let split_output: Result<Vec<&str>, &str> = split_output(part);
@@ -356,5 +418,130 @@ fn dmidecode_cpu() -> CpuInformation {
             }
         }
     }
+    println!("\x1b[32mSuccess:\x1b[0m CPU information collection completed.");
     return cpu_information;
+}
+
+#[cfg(test)]
+pub mod dmi_collector_tests {
+    use super::*;
+    use std::any::Any;
+
+    /// Check a given value's type for being String or not.
+    ///
+    /// ## Returns
+    ///
+    /// * `bool` - True/False depending on if the given value is a String type.
+    fn is_string(value: &dyn Any) -> bool {
+        value.is::<String>()
+    }
+
+    /// Check a given value's type for being SystemInformation or not.
+    ///
+    /// ## Returns
+    ///
+    /// * `bool` - True/False depending on if the given value is a String type.
+    fn is_system_information(value: &dyn Any) -> bool {
+        value.is::<SystemInformation>()
+    }
+
+    /// Tests whether the `get_dmidecode_information` function panics when it tries to execute `dmidecode -s` with an
+    /// invalid parameter.
+    #[test]
+    #[should_panic]
+    fn test_get_dmidecode_information_panics() {
+        let result: Result<String, Box<dyn Any + Send>> = std::panic::catch_unwind(|| {
+            DefaultDmiDecodeInformation::get_dmidecode_information("invalid")
+        });
+
+        assert!(
+            result.is_err(),
+            "Test failure: get_dmidecode_information did not panic when supplied with an invalid
+        argument"
+        );
+    }
+
+    /// Test that `get_dmidecode_information` does not return an empty String. Validating that the given parameter is
+    /// valid.
+    #[test]
+    fn test_get_dmidecode_information_ok() {
+        let result: String =
+            DefaultDmiDecodeInformation::get_dmidecode_information("system-manufacturer");
+
+        assert!(
+            is_string(&result),
+            "Test failure: get_dmidecode_information did not return a String type!"
+        );
+        assert!(
+            !result.is_empty(),
+            "Test failure: get_dmidecode_information did return an empty string despite supplying a valid parameter!"
+        );
+    }
+
+    struct MockDmiDecodeInformation;
+
+    impl DmiDecodeInformation for MockDmiDecodeInformation {
+        fn get_dmidecode_information(parameter: &str) -> String {
+            match parameter {
+                "system-manufacturer" => "TEST".to_string(),
+                "system-product-name" => "TestMachine".to_string(),
+                "system-uuid" => "123456-123-1222".to_string(),
+                "system-serial-number" => "123456789".to_string(),
+                _ => String::new(),
+            }
+        }
+    }
+
+    #[test]
+    fn test_dmidecode_system() {
+        let expected_vendor: &str = "TEST";
+        let expected_model: &str = "TestMachine";
+        let expected_uuid: &str = "123456-123-1222";
+        let expected_serial: &str = "123456789";
+
+        // Mock existing get_dmidecode_information function return the expected parameters
+
+        let system_information: SystemInformation = dmidecode_system(MockDmiDecodeInformation {});
+
+        assert!(
+            is_system_information(&system_information),
+            "Test Failure: `dmidecode_system` did not return instance of `SystemInformation`!"
+        );
+        assert_eq!(system_information.vendor, expected_vendor);
+        assert_eq!(system_information.model, expected_model);
+        assert_eq!(system_information.uuid, expected_uuid);
+        assert_eq!(system_information.serial, expected_serial);
+    }
+
+    struct MockDmiDecodeTable;
+
+    impl DmiDecodeTable for MockDmiDecodeTable {
+        fn get_dmidecode_table(_dmidecode_table: i32) -> String {
+            let return_value: String = String::from("Processor Information\n\tSocket Designation: FP5\n\tType: Central Processor\n\tFamily: Zen\n\tManufacturer: Advanced Micro Devices, Inc\n\tVersion: AMD Ryzen 7 PRO 3700 w/ Radeon Vega Mobile Gfx\n\tVoltage: 1.2 V\n\tMax Speed: 4000 MHz\n\tCurrent Speed: 2300 MHz\n\tStatus: Populated, Enabled\n\tCore Count: 4\n\tCore Enabled: 4\n\tThread Count: 8");
+            return return_value;
+        }
+    }
+
+    #[test]
+    fn test_dmidecode_cpu() {
+        let expected: CpuInformation = CpuInformation {
+            version: "AMD Ryzen 7 PRO 3700 w/ Radeon Vega Mobile Gfx".to_string(),
+            core_count: "4".to_string(),
+            cores_enabled: "4".to_string(),
+            thread_count: "8".to_string(),
+            max_speed: "4000 MHz".to_string(),
+            voltage: "1.2 V".to_string(),
+            status: "Populated, Enabled".to_string(),
+        };
+
+        let result = dmidecode_cpu(MockDmiDecodeTable {});
+
+        assert_eq!(expected.version, result.version);
+        assert_eq!(expected.core_count, result.core_count);
+        assert_eq!(expected.cores_enabled, result.cores_enabled);
+        assert_eq!(expected.thread_count, result.thread_count);
+        assert_eq!(expected.max_speed, result.max_speed);
+        assert_eq!(expected.voltage, result.voltage);
+        assert_eq!(expected.status, result.status);
+    }
 }
