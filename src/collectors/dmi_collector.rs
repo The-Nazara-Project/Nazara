@@ -129,50 +129,61 @@ pub fn construct_dmi_information() -> DmiInformation {
     let dmi_information: DmiInformation = DmiInformation {
         system_information: dmidecode_system(DefaultDmiDecodeInformation {}),
         chassis_information: dmidecode_chassis(DefaultDmiDecodeInformation {}),
-        cpu_information: dmidecode_cpu(),
+        cpu_information: dmidecode_cpu(DefaultDmiDecodeTable {}),
     };
     return dmi_information;
 }
 
-/// Executes `dmidecode` with a given table number.
-///
-/// ## Arguments
-///
-/// * dmidecode_table: i32 - The index of the table to return.
-///
-/// ## Returns
-///
-/// * String - The content of the dmi table as a string.
-///
-/// ## Panics
-///
-/// If `dmidecode -t <dmidecode_table>` fails, the function panics.
-fn get_dmidecode_table(dmidecode_table: i32) -> String {
-    /*
-     * Collect DMI information from System.
-     *
-     * This function executes the dmidecode command for the table type provided.
-     */
-    let output: Output = match Command::new("sudo")
-        .arg("dmidecode")
-        .arg("-t")
-        .arg(dmidecode_table.to_string())
-        .output()
-    {
-        Ok(output) => output,
-        Err(_) => {
-            let error: UnableToCollectDataError = UnableToCollectDataError {
-                message: format!(
-                    "\x1b[31mFATAL:\x1b[0m Unable to get dmidecode table '{}'!",
-                    dmidecode_table
-                ),
-            };
-            error.panic();
-        }
-    };
+/// Represents the `get_dmidecode_table` function which, when called, returns the contents of the requested dmi table.
+trait DmiDecodeTable {
+    fn get_dmidecode_table(dmidecode_table: i32) -> String;
+}
 
-    // Read the output of the command
-    return String::from_utf8_lossy(&output.stdout).to_string();
+/// Default implementation of the `get_dmidecode_table` functionality.
+struct DefaultDmiDecodeTable;
+
+/// Default implementation of the `get_dmidecode_table` function.
+impl DmiDecodeTable for DefaultDmiDecodeTable {
+    /// Executes `dmidecode` with a given table number.
+    ///
+    /// ## Arguments
+    ///
+    /// * dmidecode_table: i32 - The index of the table to return.
+    ///
+    /// ## Returns
+    ///
+    /// * String - The content of the dmi table as a string.
+    ///
+    /// ## Panics
+    ///
+    /// If `dmidecode -t <dmidecode_table>` fails, the function panics.
+    fn get_dmidecode_table(dmidecode_table: i32) -> String {
+        /*
+         * Collect DMI information from System.
+         *
+         * This function executes the dmidecode command for the table type provided.
+         */
+        let output: Output = match Command::new("sudo")
+            .arg("dmidecode")
+            .arg("-t")
+            .arg(dmidecode_table.to_string())
+            .output()
+        {
+            Ok(output) => output,
+            Err(_) => {
+                let error: UnableToCollectDataError = UnableToCollectDataError {
+                    message: format!(
+                        "\x1b[31mFATAL:\x1b[0m Unable to get dmidecode table '{}'!",
+                        dmidecode_table
+                    ),
+                };
+                error.panic();
+            }
+        };
+
+        // Read the output of the command
+        return String::from_utf8_lossy(&output.stdout).to_string();
+    }
 }
 
 /// Implements a trait representing the `get_dmidecode_information` function.
@@ -335,9 +346,9 @@ fn dmidecode_chassis<T: DmiDecodeInformation>(_param: T) -> ChassisInformation {
 /// # Returns
 ///
 /// A CpuInformation object.
-fn dmidecode_cpu() -> CpuInformation {
+fn dmidecode_cpu<T: DmiDecodeTable>(_param: T) -> CpuInformation {
     println!("Collecting CPU information...");
-    let output: String = get_dmidecode_table(4);
+    let output: String = T::get_dmidecode_table(4);
     let output_split: Split<'_, &str> = output.split("\n");
     let mut split: Vec<&str> = Vec::new();
 
@@ -355,7 +366,7 @@ fn dmidecode_cpu() -> CpuInformation {
 
     for part in output_split {
         if !table_found {
-            table_found = find_table("System Information", part);
+            table_found = find_table("Processor Information", part);
         }
 
         let split_output: Result<Vec<&str>, &str> = split_output(part);
@@ -425,6 +436,11 @@ pub mod dmi_collector_tests {
         value.is::<String>()
     }
 
+    /// Check a given value's type for being SystemInformation or not.
+    ///
+    /// ## Returns
+    ///
+    /// * `bool` - True/False depending on if the given value is a String type.
     fn is_system_information(value: &dyn Any) -> bool {
         value.is::<SystemInformation>()
     }
@@ -495,5 +511,37 @@ pub mod dmi_collector_tests {
         assert_eq!(system_information.model, expected_model);
         assert_eq!(system_information.uuid, expected_uuid);
         assert_eq!(system_information.serial, expected_serial);
+    }
+
+    struct MockDmiDecodeTable;
+
+    impl DmiDecodeTable for MockDmiDecodeTable {
+        fn get_dmidecode_table(_dmidecode_table: i32) -> String {
+            let return_value: String = String::from("Processor Information\n\tSocket Designation: FP5\n\tType: Central Processor\n\tFamily: Zen\n\tManufacturer: Advanced Micro Devices, Inc\n\tVersion: AMD Ryzen 7 PRO 3700 w/ Radeon Vega Mobile Gfx\n\tVoltage: 1.2 V\n\tMax Speed: 4000 MHz\n\tCurrent Speed: 2300 MHz\n\tStatus: Populated, Enabled\n\tCore Count: 4\n\tCore Enabled: 4\n\tThread Count: 8");
+            return return_value;
+        }
+    }
+
+    #[test]
+    fn test_dmidecode_cpu() {
+        let expected: CpuInformation = CpuInformation {
+            version: "AMD Ryzen 7 PRO 3700 w/ Radeon Vega Mobile Gfx".to_string(),
+            core_count: "4".to_string(),
+            cores_enabled: "4".to_string(),
+            thread_count: "8".to_string(),
+            max_speed: "4000 MHz".to_string(),
+            voltage: "1.2 V".to_string(),
+            status: "Populated, Enabled".to_string(),
+        };
+
+        let result = dmidecode_cpu(MockDmiDecodeTable {});
+
+        assert_eq!(expected.version, result.version);
+        assert_eq!(expected.core_count, result.core_count);
+        assert_eq!(expected.cores_enabled, result.cores_enabled);
+        assert_eq!(expected.thread_count, result.thread_count);
+        assert_eq!(expected.max_speed, result.max_speed);
+        assert_eq!(expected.voltage, result.voltage);
+        assert_eq!(expected.status, result.status);
     }
 }
