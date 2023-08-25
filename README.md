@@ -30,18 +30,17 @@ Netbox Sync supports two ways of providing configuration parameters: CLI argumen
 The form of these parameters is influenced by the [rust-netbox](https://github.com/peltzi/rust-netbox) project which we
 use to create an API client for the NetBox API.
 
-Netbox Sync requires three parameters from you:
+Netbox Sync requires two parameters from you:
 
 - `API_URL`: The URL of your NetBox API
 - `API_TOKEN`: The authentication token for the NetBox API
-- `INTERVAL`: The interval (in seconds) in which NetBox sync should fetch and upload information (optional)
 
 #### Configuring via CLI
 
 Here is an example for passing these parameters on using the CLI:
 
 ```bash
-./target/release/netbox-sync --api-url <API_URL> --api-token <API_TOKEN> --interval <INTERVAL>
+./target/release/netbox-sync --api-url <API_URL> --api-token <API_TOKEN>
 ```
 
 #### Configuring via `nbs-config.toml`file.
