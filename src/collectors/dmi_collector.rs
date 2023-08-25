@@ -43,7 +43,7 @@ pub struct DmiInformation {
 /// * serial: `String` - The serial number of the machine.
 /// * is_virtual: `bool` - Whether the machine is a virtual machine or not.
 #[derive(Debug)]
-pub struct SystemInformation {
+struct SystemInformation {
     vendor: String,
     model: String,
     uuid: String,
@@ -61,7 +61,7 @@ pub struct SystemInformation {
 /// * asset: `String`- Type of asset.
 /// * chassis_serial: `Serial` - Serial number of the chassis.
 #[derive(Debug)]
-pub struct ChassisInformation {
+struct ChassisInformation {
     chassis_type: String,
     asset: String,
     chassis_serial: String,
@@ -81,7 +81,7 @@ pub struct ChassisInformation {
 /// * voltage: `String` - The voltage the CPU runs at.
 /// * status: `String` - Shows if the socket is enabled/disabled and populated/empty.
 #[derive(Debug)]
-pub struct CpuInformation {
+struct CpuInformation {
     version: String,
     core_count: String,
     cores_enabled: String,
