@@ -52,7 +52,6 @@ directory as the executable file. Here is an example how the config file should 
 [netbox]
 api_url = "<API_URL>"
 api_token = "<API_TOKEN>"
-interval = <INTERVAL>
 ```
 
 *Please note that this section is still a work in progress and all information is subject to change.*
