@@ -28,28 +28,33 @@ pub struct ConfigData {
 
 /// Set up configuration
 pub fn set_up_configuration() -> Result<ConfigData, String> {
-    let mut conf_data: ConfigData = ConfigData {
-        netbox_uri: String::new(),
-        netbox_auth_token: String::new(),
-    };
+    let conf_data: ConfigData;
 
+    println!("Checking for existing configuration file...");
     if file_exists(&get_config_dir()) {
         println!("Configuration file already exists. Validating...");
         // TODO Rewrite validation logic to properly condition here
         match ConfigData::validate_config_file() {
             Ok(_) => {
+                println!("Configuration file valid. Loading defaults...");
                 conf_data = ConfigData::read_config_file();
-                Ok(conf_data)
+                return Ok(conf_data);
             }
-            Err(err) => {
-                println!("{}", err)
-            }
+            Err(err) => return Err(err),
         }
+    } else {
+        println!("No config file found. Creating default...")
     }
 
-    ConfigData::initialize_config_file();
+    match ConfigData::initialize_config_file() {
+        Ok(_) => {}
+        Err(_) => {
+            panic!("FATAL: An error occurred while initializing the config!")
+        }
+    }
     conf_data = ConfigData::read_config_file();
 
+    println!("\x1b[32mConfiguration loaded.\x1b[0m");
     Ok(conf_data)
 }
 
@@ -82,7 +87,7 @@ fn file_exists(path: &Path) -> bool {
 ///
 /// * `config_file_path: PathBuf` - The directory the config file is located (~/.nbs-config.toml)
 fn get_config_dir() -> PathBuf {
-    let home_dir = match std::env::var("HOME") {
+    let home_dir: String = match std::env::var("HOME") {
         Ok(val) => val,
         Err(err) => {
             panic!("FATAL: No $XDG_CONFIG_HOME variable found! ({})", err)
@@ -105,7 +110,7 @@ impl ConfigData {
     ///
     /// If it is not able to create a new config file at `etc/opt/.nbs-config.toml` or if it cannot write the defaults
     /// to the file, the function panics as this is the main method of configuring the program.
-    pub fn initialize_config_file() -> std::io::Result<()> {
+    fn initialize_config_file() -> std::io::Result<()> {
         // Create new toml table
         let mut config: toml::map::Map<String, Value> = toml::value::Table::new();
 
@@ -174,7 +179,7 @@ impl ConfigData {
     /// * not able to read the config file.
     /// * the config file does not have valid TOML syntax.
     fn validate_config_file() -> Result<(), String> {
-        let mut file = match File::open("/etc/opt/.nbs-config.toml") {
+        let mut file: File = match File::open(get_config_dir()) {
             Ok(file) => file,
             Err(_) => {
                 let exc: NoConfigFileError = config_exceptions::NoConfigFileError {
@@ -196,17 +201,18 @@ impl ConfigData {
             exc.panic()
         }
 
-        let config_content = match toml::from_str(&contents) {
+        // TODO: This raises an error!
+        let config_content: ConfigData = match toml::from_str(&contents) {
             Ok(config) => config,
-            Err(_) => {
+            Err(err) => {
                 let exc: InvalidConfigFileError = config_exceptions::InvalidConfigFileError {
-                    message: format!("\x1b[31mFATAL:\x1b[0m Invalid config file syntax! Make sure the configuration file has valid TOML syntax."),
+                    message: format!("\x1b[31mFATAL:\x1b[0m Invalid config file syntax! Make sure the configuration file has valid TOML syntax.{}", err),
                 };
                 exc.panic()
             }
         };
 
-        if config_content.netbox.netbox_uri.is_empty() {
+        if config_content.netbox_uri.is_empty() {
             println!("Warning: Parameter netbox_uri is empty!");
             return Err(
                 "Error: Config parameter 'netbox_uri' is empty! This parameter is mandatory."
@@ -214,7 +220,7 @@ impl ConfigData {
             );
         }
 
-        if config_content.netbox.netbox_api_token.is_empty() {
+        if config_content.netbox_auth_token.is_empty() {
             println!("Warning: Parameter netbox_api_token is empty!");
             return Err(
                 "Error: Config parameter 'netbox_api_token' is empty! This parameter is mandatory."
@@ -232,6 +238,41 @@ impl ConfigData {
     ///
     /// * `config: ConfigData` - A `ConfigData` object.
     fn read_config_file() -> ConfigData {
-        todo!()
+        let mut file_content: File = match File::open(get_config_dir()) {
+            Ok(file) => file,
+            Err(err) => {
+                let exc = config_exceptions::NoConfigFileError {
+                    message: format!(
+                        "FATAL: An error occured while reading the config file! ({})",
+                        err
+                    ),
+                };
+                exc.panic()
+            }
+        };
+
+        let mut contents: String = String::new();
+
+        if let Err(err) = file_content.read_to_string(&mut contents) {
+            let exc: UnableToReadConfigError = config_exceptions::UnableToReadConfigError {
+                message: format!(
+                    "\x1b[31mFATAL:\x1b[0m Unable to read config file! ({})",
+                    err
+                ),
+            };
+            exc.panic()
+        }
+
+        let config_content: ConfigData = match toml::from_str(&contents) {
+            Ok(config) => config,
+            Err(err) => {
+                let exc: InvalidConfigFileError = config_exceptions::InvalidConfigFileError {
+                    message: format!("\x1b[31mFATAL:\x1b[0m Invalid config file syntax! Make sure the configuration file has valid TOML syntax. {}", err),
+                };
+                exc.panic()
+            }
+        };
+
+        return config_content;
     }
 }
