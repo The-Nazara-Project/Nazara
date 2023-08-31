@@ -19,5 +19,5 @@ fn main() {
         }
     };
 
-    println!("{:#?}", config);
+    println!("Configuration: \n{:#?}", config);
 }
