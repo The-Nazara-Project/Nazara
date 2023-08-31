@@ -9,7 +9,7 @@
 //! netbox_api_token = ""
 //! ```
 //!
-//! It will be created at `/etc/opt/.nbs-config.toml`.
+//! It will be created at ` ~/.nbs-config.toml`.
 
 use serde::Deserialize;
 use std::fs::File;
@@ -111,7 +111,7 @@ impl ConfigData {
     ///
     /// # Panics
     ///
-    /// If it is not able to create a new config file at `etc/opt/.nbs-config.toml` or if it cannot write the defaults
+    /// If it is not able to create a new config file at `~/.nbs-config.toml` or if it cannot write the defaults
     /// to the file, the function panics as this is the main method of configuring the program.
     fn initialize_config_file() -> std::io::Result<()> {
         // Create new toml table
