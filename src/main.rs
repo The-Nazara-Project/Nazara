@@ -24,17 +24,17 @@ use configuration::config_parser::set_up_configuration;
 struct Args {
     /// URI to your Netbox instance
     #[arg(short, long)]
-    uri: String,
+    uri: Option<String>,
 
     /// Your API authentication token
     #[arg(short, long)]
-    token: String,
+    token: Option<String>,
 }
 
 fn main() {
     let args: Args = Args::parse();
 
-    println!("Uri: {}\nToken: {}", args.uri, args.token);
+    // println!("Uri: {}\nToken: {}", args.uri.clone().unwrap(), args.token.clone().unwrap());
 
     let output: dmi_collector::DmiInformation = dmi_collector::construct_dmi_information();
     println!("{:#?}", output);
