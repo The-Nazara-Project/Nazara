@@ -27,7 +27,24 @@ pub struct ConfigData {
 }
 
 /// Set up configuration
-pub fn set_up_configuration() -> Result<ConfigData, String> {
+///
+/// This function reads the configuration file located at `~/.nbs-config.toml`. If no file can be found, a warning is
+/// displayed to the user and a default config file is written.
+/// If command line arguments are given, the parameters read from the file will be overwritten.
+///
+/// # Returns
+///
+/// * `Ok(ConfigData)` - A `ConfigData` object containing the netbox URI and API token.
+/// * `Err` - Prints an Error if the file cannot be validated.
+///
+/// # Panics
+///
+/// The function panics under these condition:
+///
+/// * If the initialization of the config file raises an error.
+/// * When using a default (empty) configuration file and not providing all required CLI arguments.
+/// * If the configuration file cannot be read.
+pub fn set_up_configuration(uri: String, token: String) -> Result<ConfigData, String> {
     let conf_data: ConfigData;
 
     println!("Checking for existing configuration file...");
@@ -52,6 +69,13 @@ pub fn set_up_configuration() -> Result<ConfigData, String> {
             Err(_) => {
                 panic!("FATAL: An error occurred while initializing the config!")
             }
+        }
+
+        if uri.is_empty() || token.is_empty() {
+            panic!(
+                "FATAL: No configuration parameters found in CLI while using an empty config file!\n
+                Please enter valid configuration parameters in the configuration file or provide them via the CLI."
+            )
         }
     }
 

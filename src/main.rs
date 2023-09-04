@@ -5,7 +5,6 @@ use clap::Parser;
 use collectors::{dmi_collector, network_collector};
 use configuration::config_parser::set_up_configuration;
 
-
 /// The arguments that netbox-sync expects to get via the cli.
 ///
 /// Arguments can be passed like this:
@@ -37,7 +36,6 @@ fn main() {
 
     println!("Uri: {}\nToken: {}", args.uri, args.token);
 
-
     let output: dmi_collector::DmiInformation = dmi_collector::construct_dmi_information();
     println!("{:#?}", output);
 
@@ -45,7 +43,7 @@ fn main() {
 
     println!("{:#?}", output2);
 
-    let config = match set_up_configuration() {
+    let config = match set_up_configuration(args.uri, args.token) {
         Ok(conf) => conf,
         Err(err) => {
             panic!("{}", err)
