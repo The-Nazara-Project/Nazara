@@ -27,10 +27,31 @@ pub struct ConfigData {
 }
 
 /// Set up configuration
-pub fn set_up_configuration() -> Result<ConfigData, String> {
-    let conf_data: ConfigData;
+///
+/// This function reads the configuration file located at `~/.nbs-config.toml`. If no file can be found, a warning is
+/// displayed to the user and a default config file is written.
+/// If command line arguments are given, the parameters read from the file will be overwritten.
+///
+/// # Returns
+///
+/// * `Ok(ConfigData)` - A `ConfigData` object containing the netbox URI and API token.
+/// * `Err` - Prints an Error if the file cannot be validated.
+///
+/// # Panics
+///
+/// The function panics under these condition:
+///
+/// * If the initialization of the config file raises an error.
+/// * When using a default (empty) configuration file and not providing all required CLI arguments.
+/// * If the configuration file cannot be read.
+pub fn set_up_configuration(
+    uri: Option<String>,
+    token: Option<String>,
+) -> Result<ConfigData, String> {
+    let mut conf_data: ConfigData;
 
     println!("Checking for existing configuration file...");
+
     if file_exists(&get_config_dir()) {
         println!("Configuration file already exists. Validating...");
         // TODO Rewrite validation logic to properly condition here
@@ -38,24 +59,45 @@ pub fn set_up_configuration() -> Result<ConfigData, String> {
             Ok(_) => {
                 println!("Configuration file valid. Loading defaults...");
                 conf_data = ConfigData::read_config_file();
+
+                if uri.is_some() {
+                    conf_data.netbox_uri = uri.unwrap();
+                }
+
+                if token.is_some() {
+                    conf_data.netbox_api_token = token.unwrap();
+                }
+
                 return Ok(conf_data);
             }
             Err(err) => return Err(err),
         }
-    } else {
-        println!("No config file found. Creating default...");
+    }
 
-        match ConfigData::initialize_config_file() {
-            Ok(_) => {
-                println!("\x1b[32mDefault configuration file created successfully.\x1b[0m")
-            }
-            Err(_) => {
-                panic!("FATAL: An error occurred while initializing the config!")
-            }
+    println!("No config file found. Creating default...");
+
+    match ConfigData::initialize_config_file() {
+        Ok(_) => {
+            println!("\x1b[32mDefault configuration file created successfully.\x1b[0m")
+        }
+        Err(_) => {
+            panic!("FATAL: An error occurred while initializing the config!")
         }
     }
 
+    if uri.is_none() || token.is_none() {
+        panic!(
+            "FATAL: No configuration parameters found in CLI while using an empty config file!\n
+            Please enter valid configuration parameters in the configuration file or provide them via the CLI."
+        )
+    }
+
     conf_data = ConfigData::read_config_file();
+
+    if uri.is_some() && token.is_some() {
+        conf_data.netbox_uri = uri.unwrap();
+        conf_data.netbox_api_token = token.unwrap();
+    }
 
     println!("\x1b[32mConfiguration loaded.\x1b[0m");
     Ok(conf_data)
