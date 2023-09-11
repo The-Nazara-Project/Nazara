@@ -1,5 +1,6 @@
 mod collectors;
-pub mod configuration;
+mod configuration;
+mod translator;
 
 use clap::Parser;
 use collectors::{dmi_collector, network_collector};
