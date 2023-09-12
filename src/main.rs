@@ -5,6 +5,7 @@ mod translator;
 use clap::Parser;
 use collectors::{dmi_collector, network_collector};
 use configuration::config_parser::set_up_configuration;
+use translator::translator::serialize_to_json;
 
 /// The arguments that netbox-sync expects to get via the cli.
 ///
@@ -52,4 +53,8 @@ fn main() {
     };
 
     println!("Configuration: \n{:#?}", config);
+
+    let json = serialize_to_json(output, output2);
+
+    println!("JSON ----- \n{}", json);
 }

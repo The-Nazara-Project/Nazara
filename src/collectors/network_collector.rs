@@ -45,6 +45,21 @@ pub struct NetworkInformation {
     is_connected: bool,
 }
 
+impl NetworkInformation {
+    fn serialize_to_json(&self) -> String {
+        match serde_json::to_string(&self) {
+            Ok(json) => json,
+            Err(err) => {
+                println!(
+                    "Warning: Could not serialize interface '{}'. ({})",
+                    &self.name, err
+                );
+                String::new()
+            }
+        }
+    }
+}
+
 /// Collect information about all network interfaces.
 ///
 /// ### Returns
