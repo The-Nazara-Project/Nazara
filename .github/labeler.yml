@@ -1,6 +1,24 @@
 rust:
 - src/**/*.rs
 
+collector:
+- src/collectors/**/*
+
+network-collector:
+- src/collectors/network_collector.rs
+
+system-collector:
+- src/collectors/dmi_collector.rs
+
+configuration:
+- src/configuration/**/*.rs
+
+publisher:
+- src/publisher/*
+
+api-client:
+- src/publisher/api_client/*
+
 dependencies:
 - Cargo.toml
 - Cargo.lock
