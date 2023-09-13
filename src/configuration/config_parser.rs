@@ -24,6 +24,7 @@ use super::config_exceptions::{self, *};
 pub struct ConfigData {
     netbox_api_token: String,
     netbox_uri: String,
+    system_location: String,
 }
 
 /// Set up configuration
@@ -47,6 +48,7 @@ pub struct ConfigData {
 pub fn set_up_configuration(
     uri: Option<String>,
     token: Option<String>,
+    location: Option<String>,
 ) -> Result<ConfigData, String> {
     let mut conf_data: ConfigData;
 
@@ -66,6 +68,10 @@ pub fn set_up_configuration(
 
                 if token.is_some() {
                     conf_data.netbox_api_token = token.unwrap();
+                }
+
+                if location.is_some() {
+                    conf_data.system_location = location.unwrap();
                 }
 
                 return Ok(conf_data);
@@ -94,9 +100,10 @@ pub fn set_up_configuration(
 
     conf_data = ConfigData::read_config_file();
 
-    if uri.is_some() && token.is_some() {
+    if uri.is_some() && token.is_some() && location.is_some() {
         conf_data.netbox_uri = uri.unwrap();
         conf_data.netbox_api_token = token.unwrap();
+        conf_data.system_location = location.unwrap();
     }
 
     println!("\x1b[32mConfiguration loaded.\x1b[0m");
@@ -170,8 +177,17 @@ impl ConfigData {
             netbox_config_table
         };
 
+        let system_section: toml::map::Map<String, Value> = {
+            let mut system_config_table: toml::map::Map<String, Value> = toml::value::Table::new();
+            system_config_table
+                .insert("system_location".to_string(), Value::String("".to_string()));
+            system_config_table
+        };
+
         // Insert the netbox section as value under the header "netbox"
         config.insert("netbox".to_string(), Value::Table(netbox_section));
+
+        config.insert("system".to_string(), Value::Table(system_section));
 
         let toml_string: String = match toml::to_string(&Value::Table(config)) {
             Ok(result) => result,
@@ -251,6 +267,11 @@ impl ConfigData {
                 .unwrap()
                 .trim()
                 .to_string(),
+            system_location: config_contents["system"]["system_location"]
+                .as_str()
+                .unwrap()
+                .trim()
+                .to_string(),
         };
 
         if config_parameters.netbox_uri.is_empty() {
@@ -263,6 +284,13 @@ impl ConfigData {
         if config_parameters.netbox_api_token.is_empty() {
             return Err(
                 "Error: Config parameter 'netbox_api_token' is empty! This parameter is mandatory."
+                    .to_string(),
+            );
+        }
+
+        if config_parameters.system_location.is_empty() {
+            return Err(
+                "Error: Config parameter 'system_location' is empty! This parameter is mandatory."
                     .to_string(),
             );
         }
@@ -304,6 +332,11 @@ impl ConfigData {
                 .trim()
                 .to_string(),
             netbox_uri: config_content["netbox"]["netbox_api_token"]
+                .as_str()
+                .unwrap()
+                .trim()
+                .to_string(),
+            system_location: config_content["system"]["system_location"]
                 .as_str()
                 .unwrap()
                 .trim()
