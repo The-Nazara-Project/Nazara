@@ -29,6 +29,10 @@ struct Args {
     /// Your API authentication token
     #[arg(short, long)]
     token: Option<String>,
+
+    /// The location of the machine (must be one of the locations you have set as available in your Netbox instance)
+    #[arg(short, long)]
+    location: Option<String>,
 }
 
 fn main() {
@@ -43,7 +47,7 @@ fn main() {
 
     println!("{:#?}", output2);
 
-    let config = match set_up_configuration(args.uri, args.token) {
+    let config = match set_up_configuration(args.uri, args.token, args.location) {
         Ok(conf) => conf,
         Err(err) => {
             panic!("{}", err)
