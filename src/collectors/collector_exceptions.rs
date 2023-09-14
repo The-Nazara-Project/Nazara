@@ -19,9 +19,9 @@ impl fmt::Display for UnableToCollectDataError {
 }
 
 impl UnableToCollectDataError {
-    pub fn abort(&self) -> ! {
-        println!("{}", self);
-        process::exit(1)
+    pub fn abort(&self, exit_code: i32) -> ! {
+        println!("{} (Error code: {})", self, exit_code);
+        process::exit(exit_code)
     }
 }
 
@@ -41,9 +41,9 @@ impl fmt::Display for InvalidNetworkInterfaceError {
 }
 
 impl InvalidNetworkInterfaceError {
-    pub fn abort(&self) -> ! {
-        println!("{}", self);
-        process::exit(1)
+    pub fn abort(&self, exit_code: i32) -> ! {
+        println!("{} (Error code: {})", self, exit_code);
+        process::exit(exit_code)
     }
 }
 

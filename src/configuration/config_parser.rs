@@ -94,7 +94,7 @@ pub fn set_up_configuration(
                 message: "\x1b[31mFATAL:\x1b[0m An error occurred while initializing the config!"
                     .to_string(),
             };
-            err.abort()
+            err.abort(1)
         }
     }
 
@@ -102,7 +102,7 @@ pub fn set_up_configuration(
         let err = config_exceptions::NoConfigError {
             message: "\x1b[31mFATAL:\x1b[0m No configuration parameters found in CLI while using an empty config file!\nPlease enter valid configuration parameters in the configuration file or provide them via the CLI.".to_string()
         };
-        err.abort()
+        err.abort(5)
     }
 
     conf_data = ConfigData::read_config_file();
@@ -214,7 +214,7 @@ impl ConfigData {
                         err
                     ),
                 };
-                exc.abort();
+                exc.abort(5);
             }
         };
 
@@ -228,7 +228,7 @@ impl ConfigData {
                         err
                     ),
                 };
-                exc.abort();
+                exc.abort(5);
             }
         }
         Ok(())
@@ -255,7 +255,7 @@ impl ConfigData {
                 let exc: UnableToReadConfigError = config_exceptions::UnableToReadConfigError {
                     message: format!("x1b[31mFATAL:x1b[0m Unable to open config file! {}", err),
                 };
-                exc.abort()
+                exc.abort(5)
             }
         };
 
@@ -265,7 +265,7 @@ impl ConfigData {
                 let exc: InvalidConfigFileError = config_exceptions::InvalidConfigFileError {
                     message: format!("\x1b[31mFATAL:\x1b[0m Invalid config file syntax! Make sure the configuration file has valid TOML syntax. ({})", err),
                 };
-                exc.abort()
+                exc.abort(5)
             }
         };
 
@@ -324,7 +324,7 @@ impl ConfigData {
                 let exc: UnableToReadConfigError = config_exceptions::UnableToReadConfigError {
                     message: format!("x1b[31mFATAL:x1b[0m Unable to open config file! {}", err),
                 };
-                exc.abort()
+                exc.abort(5)
             }
         };
 
@@ -334,7 +334,7 @@ impl ConfigData {
                 let exc: InvalidConfigFileError = config_exceptions::InvalidConfigFileError {
                     message: format!("\x1b[31mFATAL:\x1b[0m Invalid config file syntax! Make sure the configuration file has valid TOML syntax. ({})", err),
                 };
-                exc.abort()
+                exc.abort(5)
             }
         };
 

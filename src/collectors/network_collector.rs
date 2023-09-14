@@ -79,7 +79,7 @@ pub fn collect_network_information(
                     message: "FATAL: Unable to collect information about network interfaces!"
                         .to_string(),
                 };
-            exc.abort();
+            exc.abort(1);
         }
     }
 }
@@ -188,7 +188,7 @@ pub fn construct_network_information(
                 let exc = collector_exceptions::InvalidNetworkInterfaceError {
                     message: "FATAL: A Network interface cannot be recognized!".to_string(),
                 };
-                exc.abort();
+                exc.abort(2);
             }
         }
         if !check_for_physical_nw(&network_information.name) {

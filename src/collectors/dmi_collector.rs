@@ -177,7 +177,7 @@ impl DmiDecodeTable for DefaultDmiDecodeTable {
                         dmidecode_table
                     ),
                 };
-                error.abort();
+                error.abort(2);
             }
         };
 
@@ -232,7 +232,7 @@ impl DmiDecodeInformation for DefaultDmiDecodeInformation {
                         parameter
                     ),
                 };
-                error.abort();
+                error.abort(2);
             }
         };
         return String::from_utf8_lossy(&output.stdout).trim().to_string();

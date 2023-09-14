@@ -17,9 +17,9 @@ impl fmt::Display for UnableToCreateConfigError {
 }
 
 impl UnableToCreateConfigError {
-    pub fn abort(&self) -> ! {
-        println!("{}", self);
-        process::exit(1)
+    pub fn abort(&self, exit_code: i32) -> ! {
+        println!("{} (Error code: {})", self, exit_code);
+        process::exit(exit_code)
     }
 }
 
@@ -37,11 +37,6 @@ impl fmt::Display for ConfigWriteException {
 }
 
 /// This error is raised when the config fil cannot be read for an unknown reason.
-///
-/// # Panics
-///
-/// When the config file cannot be read, the config parameters cannot be loaded therefore
-/// the program panics.
 pub struct UnableToReadConfigError {
     pub message: String,
 }
@@ -53,19 +48,15 @@ impl fmt::Display for UnableToReadConfigError {
 }
 
 impl UnableToReadConfigError {
-    pub fn abort(&self) -> ! {
-        println!("{}", self);
-        process::exit(1)
+    pub fn abort(&self, exit_code: i32) -> ! {
+        println!("{} (Error code: {})", self, exit_code);
+        process::exit(exit_code)
     }
 }
 
 /// This error is raised when the configuration file is not found.
 ///
 /// This error is unrecoverable.
-///
-/// # Panics
-///
-/// If no configuration file is present when validating config, the program panics.
 pub struct NoConfigFileError {
     pub message: String,
 }
@@ -77,18 +68,14 @@ impl fmt::Display for NoConfigFileError {
 }
 
 impl NoConfigFileError {
-    pub fn abort(&self) -> ! {
-        println!("{}", self);
-        process::exit(1)
+    pub fn abort(&self, exit_code: i32) -> ! {
+        println!("{} (Error code: {})", self, exit_code);
+        process::exit(exit_code)
     }
 }
 
 /// If the config file does not have valid syntax, the program mus abort and prompt
 /// the user to fix it.
-///
-/// # Panics
-///
-/// Causes the program to panic when the config file does not have valid toml syntax.
 pub struct InvalidConfigFileError {
     pub message: String,
 }
@@ -100,12 +87,13 @@ impl fmt::Display for InvalidConfigFileError {
 }
 
 impl InvalidConfigFileError {
-    pub fn abort(&self) -> ! {
-        println!("{}", self);
-        process::exit(1)
+    pub fn abort(&self, exit_code: i32) -> ! {
+        println!("{} (Error code: {})", self, exit_code);
+        process::exit(exit_code)
     }
 }
 
+/// If the config file is empty or contains empty fields, and no CLI parameters are given, this error shall be raised.
 pub struct NoConfigError {
     pub message: String,
 }
@@ -117,8 +105,8 @@ impl fmt::Display for NoConfigError {
 }
 
 impl NoConfigError {
-    pub fn abort(&self) -> ! {
-        println!("{}", self);
-        process::exit(1);
+    pub fn abort(&self, exit_code: i32) -> ! {
+        println!("{} (Error code: {})", self, exit_code);
+        process::exit(exit_code)
     }
 }
