@@ -79,7 +79,7 @@ pub fn collect_network_information(
                     message: "FATAL: Unable to collect information about network interfaces!"
                         .to_string(),
                 };
-            exc.panic();
+            exc.abort();
         }
     }
 }
@@ -188,7 +188,7 @@ pub fn construct_network_information(
                 let exc = collector_exceptions::InvalidNetworkInterfaceError {
                     message: "FATAL: A Network interface cannot be recognized!".to_string(),
                 };
-                exc.panic();
+                exc.abort();
             }
         }
         if !check_for_physical_nw(&network_information.name) {
@@ -275,7 +275,7 @@ fn build_interface_file_from_name(interface_name: &str) -> Result<std::fs::File,
         }
         Err(_) => {
             return Err(format!(
-                "WARNING: Speed file for interface '{}' does not exist.",
+                "\x1b[33mWARNING:\x1b[0m Speed file for interface '{}' does not exist.",
                 interface_name
             ))
         }
@@ -301,14 +301,14 @@ fn collect_interface_speed(interface_name: &str, mut input: impl Read) -> Result
     match input.read_to_string(&mut network_speed) {
         Ok(_) => {}
         Err(err) => {
-            return Err(format!("WARNING: Unable to open speed file for interface '{}'. This may happen for the loopback or wireless devices. ({}))", interface_name, err));
+            return Err(format!("\x1b[33mWARNING:\x1b[0m Unable to open speed file for interface '{}'. This may happen for the loopback or wireless devices. ({}))", interface_name, err));
         }
     };
     network_speed = network_speed.trim().replace("\n", "");
 
     if network_speed == "-1" {
         return Err(format!(
-            "INFO: No interface speed known for '{}'. The interface might be disabled.",
+            "\x1b[36mInfo:\x1b[0m No interface speed known for '{}'. The interface might be disabled.",
             interface_name
         ));
     }
@@ -444,7 +444,7 @@ mod network_collector_tests {
         assert_eq!(
             result,
             Err(format!(
-                "INFO: No interface speed known for '{}'. The interface might be disabled.",
+                "\x1b[36mInfo:\x1b[0m No interface speed known for '{}'. The interface might be disabled.",
                 interface_name
             )),
             "Test Scenario Failed (2): No error was raised by collect_interface_speed when passing speed = -1. The function did not identify the interface as disabled!"

@@ -1,7 +1,7 @@
 //! ## Collector Exception Module
 //!
 //! This module provides exceptions to the information collectors.
-use std::fmt;
+use std::{fmt, process};
 
 /// This error handles general errors with collecting information.
 ///
@@ -19,8 +19,9 @@ impl fmt::Display for UnableToCollectDataError {
 }
 
 impl UnableToCollectDataError {
-    pub fn panic(&self) -> ! {
-        panic!("{}", self)
+    pub fn abort(&self) -> ! {
+        println!("{}", self);
+        process::exit(1)
     }
 }
 
@@ -40,8 +41,9 @@ impl fmt::Display for InvalidNetworkInterfaceError {
 }
 
 impl InvalidNetworkInterfaceError {
-    pub fn panic(&self) -> ! {
-        panic!("{}", self)
+    pub fn abort(&self) -> ! {
+        println!("{}", self);
+        process::exit(1)
     }
 }
 

@@ -1,7 +1,7 @@
 //! ## Config Exception Module
 //!
 //! This module provides custom exception to the config parser.
-use std::fmt;
+use std::{fmt, process};
 
 /// This error is raised when the program cannot create a config file.
 ///
@@ -17,8 +17,9 @@ impl fmt::Display for UnableToCreateConfigError {
 }
 
 impl UnableToCreateConfigError {
-    pub fn panic(&self) -> ! {
-        panic!("{}", self)
+    pub fn abort(&self) -> ! {
+        println!("{}", self);
+        process::exit(1)
     }
 }
 
@@ -52,8 +53,9 @@ impl fmt::Display for UnableToReadConfigError {
 }
 
 impl UnableToReadConfigError {
-    pub fn panic(&self) -> ! {
-        panic!("{}", self)
+    pub fn abort(&self) -> ! {
+        println!("{}", self);
+        process::exit(1)
     }
 }
 
@@ -75,8 +77,9 @@ impl fmt::Display for NoConfigFileError {
 }
 
 impl NoConfigFileError {
-    pub fn panic(&self) -> ! {
-        panic!("{}", self)
+    pub fn abort(&self) -> ! {
+        println!("{}", self);
+        process::exit(1)
     }
 }
 
@@ -97,7 +100,25 @@ impl fmt::Display for InvalidConfigFileError {
 }
 
 impl InvalidConfigFileError {
-    pub fn panic(&self) -> ! {
-        panic!("{}", self)
+    pub fn abort(&self) -> ! {
+        println!("{}", self);
+        process::exit(1)
+    }
+}
+
+pub struct NoConfigError {
+    pub message: String,
+}
+
+impl fmt::Display for NoConfigError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.message)
+    }
+}
+
+impl NoConfigError {
+    pub fn abort(&self) -> ! {
+        println!("{}", self);
+        process::exit(1);
     }
 }
