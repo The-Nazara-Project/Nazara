@@ -7,6 +7,9 @@
 //! [netbox]
 //! netbox_uri = ""
 //! netbox_api_token = ""
+//!
+//! [system]
+//! location = ""
 //! ```
 //!
 //! It will be created at ` ~/.nbs-config.toml`.
