@@ -5,6 +5,10 @@ mod publisher;
 use clap::Parser;
 use collectors::{dmi_collector, network_collector};
 use configuration::config_parser::set_up_configuration;
+use netbox_api::apis::configuration::{ApiKey, Configuration};
+use netbox_api::apis::dcim_api;
+use netbox_api::models::writable_device_with_config_context::Face;
+use netbox_api::models::WritableDeviceWithConfigContext;
 use std::process;
 
 /// The arguments that netbox-sync expects to get via the cli.
@@ -37,7 +41,31 @@ struct Args {
     location: Option<String>,
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
+    let mut config = Configuration::new();
+    config.base_path = "https://demo.netbox.dev".to_string();
+    config.user_agent = Some("asdf".to_string());
+    let key = ApiKey {
+        prefix: None,
+        key: "9bc449c89a195b9b9cebfa65b61de23d0912c0a0".to_string(),
+    };
+    config.api_key = Some(key);
+    let device = WritableDeviceWithConfigContext::new(
+        Some(String::from("Horst")),
+        1,
+        1,
+        None,
+        0,
+        None,
+        Face::Front,
+        None,
+    );
+
+    dcim_api::dcim_devices_create(&config, device)
+        .await
+        .unwrap();
+
     let args: Args = Args::parse();
 
     // println!("Uri: {}\nToken: {}", args.uri.clone().unwrap(), args.token.clone().unwrap());
