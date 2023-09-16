@@ -10,6 +10,8 @@ clap = { version = "4.4.2", features = ["derive"] }
 network-interface = "1.0.1"
 serde = { version = "1.0.188", features = ["derive"] }
 toml = "0.7.6"
+netbox-api = {path="api_client"}
 
 [dev-dependencies]
 mockall = "0.11.4"
+
