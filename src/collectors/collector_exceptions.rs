@@ -1,9 +1,29 @@
-//! ## Collector Exception Module
+//! # Collector Exception Module
 //!
 //! This module provides exceptions to the information collectors.
+//!
+//! ## Error Codes
+//!
+//! We use custom error codes to help with the identification of problems.
+//!
+//! The config module uses error codes in the range of 20 - 29.
+//!
+//! |Code  |Name       |Explanation|
+//! |------|-----------|-----------|
+//! |`20`  |||
+//! |`21`  |||
+//! |`22`  |||
+//! |`23`  |||
+//! |`24`  |||
+//! |`25`  |||
+//! |`26`  |||
+//! |`27`  |||
+//! |`28`  |||
+//! |`29`  |||
+//!
 use std::{fmt, process};
 
-/// This error handles general errors with collecting information.
+/// Handles general errors with collecting information.
 ///
 /// Either because the command is unavailable, requires sudo privileges or other failures.
 ///

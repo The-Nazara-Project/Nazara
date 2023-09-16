@@ -1,2 +1,2 @@
-pub mod config_exceptions;
+mod config_exceptions;
 pub mod config_parser;

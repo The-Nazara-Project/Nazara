@@ -1,6 +1,26 @@
-//! ## Config Exception Module
+//! # Config Exception Module
 //!
 //! This module provides custom exception to the config parser.
+//!
+//! ## Custom Error Codes
+//!
+//! We use custom error codes in our code to help identifying possible problems.
+//!
+//! The config module uses error codes in the range of 10 - 19.
+//!
+//! |Code  |Name       |Explanation|
+//! |------|-----------|-----------|
+//! |`10`  |||
+//! |`11`  |||
+//! |`12`  |||
+//! |`13`  |||
+//! |`14`  |||
+//! |`15`  |||
+//! |`16`  |||
+//! |`17`  |||
+//! |`18`  |||
+//! |`19`  |||
+//!
 use std::{fmt, process};
 
 /// This error is raised when the program cannot create a config file.
