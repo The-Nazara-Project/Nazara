@@ -8,10 +8,10 @@
 //!
 //! The config module uses error codes in the range of 10 - 19.
 //!
-//! |Code  |Name       |Explanation|
-//! |------|-----------|-----------|
-//! |`10`  |||
-//! |`11`  |||
+//! |Code  |Name             |Explanation                                            |
+//! |------|-----------------|-------------------------------------------------------|
+//! |`10`  |Permission Denied|Unable to create config file on system.                |
+//! |`11`  |Emtpy Config File|Default config file was created but not parameters set.|
 //! |`12`  |||
 //! |`13`  |||
 //! |`14`  |||
