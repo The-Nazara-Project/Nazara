@@ -8,18 +8,18 @@
 //!
 //! The config module uses error codes in the range of 10 - 19.
 //!
-//! |Code  |Name             |Explanation                                            |
-//! |------|-----------------|-------------------------------------------------------|
-//! |`10`  |Permission Denied|Unable to create config file on system.                |
-//! |`11`  |Emtpy Config File|Default config file was created but not parameters set.|
-//! |`12`  |||
-//! |`13`  |||
-//! |`14`  |||
-//! |`15`  |||
-//! |`16`  |||
-//! |`17`  |||
-//! |`18`  |||
-//! |`19`  |||
+//! |Code  |Name              |Explanation                                                |
+//! |------|------------------|-----------------------------------------------------------|
+//! |`10`  |PermissionDenied  |Unable to create config file on system.                    |
+//! |`11`  |EmptyConfigFile   |Default config file was created but not parameters set.    |
+//! |`12`  |UnableToInitConfig|An error occurred while trying to initialize config file.  |
+//! |`13`  |ConfigWriteError  |An error occurred while trying to write to the config file.|
+//! |`14`  |ConfigReadError   |Unable to read configuration file.                         |
+//! |`15`  |TomlSyntaxError   |Your TOML is not valid. Please check for syntax errors.    |
+//! |`16`  |--Undefined--     |--Undefined--|
+//! |`17`  |--Undefined--     |--Undefined--|
+//! |`18`  |--Undefined--     |--Undefined--|
+//! |`19`  |--Undefined--     |--Undefined--|
 //!
 use std::{fmt, process};
 
