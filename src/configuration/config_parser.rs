@@ -329,12 +329,12 @@ impl ConfigData {
         };
 
         let config_parameters: ConfigData = ConfigData {
-            netbox_api_token: config_content["netbox"]["netbox_uri"]
+            netbox_api_token: config_content["netbox"]["netbox_api_token"]
                 .as_str()
                 .unwrap()
                 .trim()
                 .to_string(),
-            netbox_uri: config_content["netbox"]["netbox_api_token"]
+            netbox_uri: config_content["netbox"]["netbox_uri"]
                 .as_str()
                 .unwrap()
                 .trim()
