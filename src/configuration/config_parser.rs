@@ -62,7 +62,7 @@ pub fn set_up_configuration(
         // TODO Rewrite validation logic to properly condition here
         match ConfigData::validate_config_file() {
             Ok(_) => {
-                println!("Configuration file valid. Loading defaults...");
+                println!("Configuration file \x1b[32mvalid\x1b[0m. Loading defaults...");
                 conf_data = ConfigData::read_config_file();
 
                 if uri.is_some() {
@@ -90,15 +90,19 @@ pub fn set_up_configuration(
             println!("\x1b[32mDefault configuration file created successfully.\x1b[0m")
         }
         Err(_) => {
-            panic!("FATAL: An error occurred while initializing the config!")
+            let err = config_exceptions::UnableToCreateConfigError {
+                message: "\x1b[31mFATAL:\x1b[0m An error occurred while initializing the config!"
+                    .to_string(),
+            };
+            err.abort(12)
         }
     }
 
     if uri.is_none() || token.is_none() {
-        panic!(
-            "FATAL: No configuration parameters found in CLI while using an empty config file!\n
-            Please enter valid configuration parameters in the configuration file or provide them via the CLI."
-        )
+        let err = config_exceptions::NoConfigError {
+            message: "\x1b[31mFATAL:\x1b[0m No configuration parameters found in CLI while using an empty config file!\nPlease enter valid configuration parameters in the configuration file or provide them via the CLI.".to_string()
+        };
+        err.abort(11)
     }
 
     conf_data = ConfigData::read_config_file();
@@ -141,6 +145,10 @@ fn file_exists(path: &Path) -> bool {
 /// # Returns
 ///
 /// * `config_file_path: PathBuf` - The directory the config file is located (~/.nbs-config.toml)
+///
+/// # Panics
+///
+/// This function panics if no `$XDF_CONFIG_HOME` variable can be found.
 fn get_config_dir() -> PathBuf {
     let home_dir: String = match std::env::var("HOME") {
         Ok(val) => val,
@@ -205,9 +213,12 @@ impl ConfigData {
             Ok(file) => file,
             Err(err) => {
                 let exc: UnableToCreateConfigError = config_exceptions::UnableToCreateConfigError {
-                    message: format!("FATAL: Unable to create config file! ({})", err),
+                    message: format!(
+                        "\x1b[31mFATAL:\x1b[0m Unable to create config file! ({})",
+                        err
+                    ),
                 };
-                exc.panic();
+                exc.abort(10);
             }
         };
 
@@ -216,9 +227,12 @@ impl ConfigData {
             Ok(_) => {}
             Err(err) => {
                 let exc: UnableToCreateConfigError = config_exceptions::UnableToCreateConfigError {
-                    message: format!("FATAL: Unable to write defaults to config file! ({})", err),
+                    message: format!(
+                        "\x1b[31mFATAL:\x1b[0m Unable to write defaults to config file! ({})",
+                        err
+                    ),
                 };
-                exc.panic();
+                exc.abort(13);
             }
         }
         Ok(())
@@ -245,7 +259,7 @@ impl ConfigData {
                 let exc: UnableToReadConfigError = config_exceptions::UnableToReadConfigError {
                     message: format!("x1b[31mFATAL:x1b[0m Unable to open config file! {}", err),
                 };
-                exc.panic()
+                exc.abort(14)
             }
         };
 
@@ -255,7 +269,7 @@ impl ConfigData {
                 let exc: InvalidConfigFileError = config_exceptions::InvalidConfigFileError {
                     message: format!("\x1b[31mFATAL:\x1b[0m Invalid config file syntax! Make sure the configuration file has valid TOML syntax. ({})", err),
                 };
-                exc.panic()
+                exc.abort(15)
             }
         };
 
@@ -279,21 +293,21 @@ impl ConfigData {
 
         if config_parameters.netbox_uri.is_empty() {
             return Err(
-                "Error: Config parameter 'netbox_uri' is empty! This parameter is mandatory."
+                "\x1b[31mValidation Error:\x1b[0m Config parameter 'netbox_uri' is empty! This parameter is mandatory."
                     .to_string(),
             );
         }
 
         if config_parameters.netbox_api_token.is_empty() {
             return Err(
-                "Error: Config parameter 'netbox_api_token' is empty! This parameter is mandatory."
+                "\x1b[34mValidation Error:\x1b[0m Config parameter 'netbox_api_token' is empty! This parameter is mandatory."
                     .to_string(),
             );
         }
 
         if config_parameters.system_location.is_empty() {
             return Err(
-                "Error: Config parameter 'system_location' is empty! This parameter is mandatory."
+                "\x1b[34mValidation Error:\x1b[0m Config parameter 'system_location' is empty! This parameter is mandatory."
                     .to_string(),
             );
         }
@@ -314,7 +328,7 @@ impl ConfigData {
                 let exc: UnableToReadConfigError = config_exceptions::UnableToReadConfigError {
                     message: format!("x1b[31mFATAL:x1b[0m Unable to open config file! {}", err),
                 };
-                exc.panic()
+                exc.abort(14)
             }
         };
 
@@ -324,7 +338,7 @@ impl ConfigData {
                 let exc: InvalidConfigFileError = config_exceptions::InvalidConfigFileError {
                     message: format!("\x1b[31mFATAL:\x1b[0m Invalid config file syntax! Make sure the configuration file has valid TOML syntax. ({})", err),
                 };
-                exc.panic()
+                exc.abort(15)
             }
         };
 

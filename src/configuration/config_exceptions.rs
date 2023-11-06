@@ -1,7 +1,27 @@
-//! ## Config Exception Module
+//! # Config Exception Module
 //!
 //! This module provides custom exception to the config parser.
-use std::fmt;
+//!
+//! ## Custom Error Codes
+//!
+//! We use custom error codes in our code to help identifying possible problems.
+//!
+//! The config module uses error codes in the range of 10 - 19.
+//!
+//! |Code  |Name              |Explanation                                                |
+//! |------|------------------|-----------------------------------------------------------|
+//! |`10`  |PermissionDenied  |Unable to create config file on system.                    |
+//! |`11`  |EmptyConfigFile   |Default config file was created but not parameters set.    |
+//! |`12`  |UnableToInitConfig|An error occurred while trying to initialize config file.  |
+//! |`13`  |ConfigWriteError  |An error occurred while trying to write to the config file.|
+//! |`14`  |ConfigReadError   |Unable to read configuration file.                         |
+//! |`15`  |TomlSyntaxError   |Your TOML is not valid. Please check for syntax errors.    |
+//! |`16`  |--Undefined--     |--Undefined--|
+//! |`17`  |--Undefined--     |--Undefined--|
+//! |`18`  |--Undefined--     |--Undefined--|
+//! |`19`  |--Undefined--     |--Undefined--|
+//!
+use std::{fmt, process};
 
 /// This error is raised when the program cannot create a config file.
 ///
@@ -17,8 +37,9 @@ impl fmt::Display for UnableToCreateConfigError {
 }
 
 impl UnableToCreateConfigError {
-    pub fn panic(&self) -> ! {
-        panic!("{}", self)
+    pub fn abort(&self, exit_code: i32) -> ! {
+        println!("{} (Error code: {})", self, exit_code);
+        process::exit(exit_code)
     }
 }
 
@@ -36,11 +57,6 @@ impl fmt::Display for ConfigWriteException {
 }
 
 /// This error is raised when the config fil cannot be read for an unknown reason.
-///
-/// # Panics
-///
-/// When the config file cannot be read, the config parameters cannot be loaded therefore
-/// the program panics.
 pub struct UnableToReadConfigError {
     pub message: String,
 }
@@ -52,18 +68,15 @@ impl fmt::Display for UnableToReadConfigError {
 }
 
 impl UnableToReadConfigError {
-    pub fn panic(&self) -> ! {
-        panic!("{}", self)
+    pub fn abort(&self, exit_code: i32) -> ! {
+        println!("{} (Error code: {})", self, exit_code);
+        process::exit(exit_code)
     }
 }
 
 /// This error is raised when the configuration file is not found.
 ///
 /// This error is unrecoverable.
-///
-/// # Panics
-///
-/// If no configuration file is present when validating config, the program panics.
 pub struct NoConfigFileError {
     pub message: String,
 }
@@ -75,17 +88,14 @@ impl fmt::Display for NoConfigFileError {
 }
 
 impl NoConfigFileError {
-    pub fn panic(&self) -> ! {
-        panic!("{}", self)
+    pub fn abort(&self, exit_code: i32) -> ! {
+        println!("{} (Error code: {})", self, exit_code);
+        process::exit(exit_code)
     }
 }
 
 /// If the config file does not have valid syntax, the program mus abort and prompt
 /// the user to fix it.
-///
-/// # Panics
-///
-/// Causes the program to panic when the config file does not have valid toml syntax.
 pub struct InvalidConfigFileError {
     pub message: String,
 }
@@ -97,7 +107,26 @@ impl fmt::Display for InvalidConfigFileError {
 }
 
 impl InvalidConfigFileError {
-    pub fn panic(&self) -> ! {
-        panic!("{}", self)
+    pub fn abort(&self, exit_code: i32) -> ! {
+        println!("{} (Error code: {})", self, exit_code);
+        process::exit(exit_code)
+    }
+}
+
+/// If the config file is empty or contains empty fields, and no CLI parameters are given, this error shall be raised.
+pub struct NoConfigError {
+    pub message: String,
+}
+
+impl fmt::Display for NoConfigError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.message)
+    }
+}
+
+impl NoConfigError {
+    pub fn abort(&self, exit_code: i32) -> ! {
+        println!("{} (Error code: {})", self, exit_code);
+        process::exit(exit_code)
     }
 }

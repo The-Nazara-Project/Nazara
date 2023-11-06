@@ -1,9 +1,29 @@
-//! ## Collector Exception Module
+//! # Collector Exception Module
 //!
 //! This module provides exceptions to the information collectors.
-use std::fmt;
+//!
+//! ## Error Codes
+//!
+//! We use custom error codes to help with the identification of problems.
+//!
+//! The config module uses error codes in the range of 20 - 29.
+//!
+//! |Code  |Name       |Explanation                  |
+//! |------|-----------|-----------------------------|
+//! |`20`  |DmiError   |Unable to execute `dmidecode`|
+//! |`21`  |UnableToCollectDataError|Unspecified Error with data collection. Usually appears when subprocess fails or an output is malformed.|
+//! |`22`  |--Undefined--|--Undefined--|
+//! |`23`  |--Undefined--|--Undefined--|
+//! |`24`  |--Undefined--|--Undefined--|
+//! |`25`  |InvalidNetworkInterfaceError|Unable to identify a Network Interface as such.|
+//! |`26`  |NoNetworkInterfacesException|Unable to find any Network Interfaces.|
+//! |`27`  |--Undefined--|--Undefined--|
+//! |`28`  |--Undefined--|--Undefined--|
+//! |`29`  |--Undefined--|--Undefined--|
+//!
+use std::{fmt, process};
 
-/// This error handles general errors with collecting information.
+/// Handles general errors with collecting information.
 ///
 /// Either because the command is unavailable, requires sudo privileges or other failures.
 ///
@@ -19,8 +39,9 @@ impl fmt::Display for UnableToCollectDataError {
 }
 
 impl UnableToCollectDataError {
-    pub fn panic(&self) -> ! {
-        panic!("{}", self)
+    pub fn abort(&self, exit_code: i32) -> ! {
+        println!("{} (Error code: {})", self, exit_code);
+        process::exit(exit_code)
     }
 }
 
@@ -40,8 +61,9 @@ impl fmt::Display for InvalidNetworkInterfaceError {
 }
 
 impl InvalidNetworkInterfaceError {
-    pub fn panic(&self) -> ! {
-        panic!("{}", self)
+    pub fn abort(&self, exit_code: i32) -> ! {
+        println!("{} (Error code: {})", self, exit_code);
+        process::exit(exit_code)
     }
 }
 

@@ -4,6 +4,7 @@ pub mod configuration;
 use clap::Parser;
 use collectors::{dmi_collector, network_collector};
 use configuration::config_parser::set_up_configuration;
+use std::process;
 
 /// The arguments that netbox-sync expects to get via the cli.
 ///
@@ -50,7 +51,8 @@ fn main() {
     let config = match set_up_configuration(args.uri, args.token, args.location) {
         Ok(conf) => conf,
         Err(err) => {
-            panic!("{}", err)
+            println!("{}", err);
+            process::exit(1)
         }
     };
 
