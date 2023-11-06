@@ -29,8 +29,6 @@ To use Netbox Sync, you will need to configure the URL of your NetBox API and pr
 ### Configuration (WIP)
 
 Netbox Sync supports two ways of providing configuration parameters: CLI arguments and a configuration file.
-The form of these parameters is influenced by the [rust-netbox](https://github.com/peltzi/rust-netbox) project which we
-use to create an API client for the NetBox API.
 
 Netbox Sync requires two parameters from you:
 
@@ -52,8 +50,32 @@ directory as the executable file. Here is an example how the config file should 
 
 ```toml
 [netbox]
-api_url = "<API_URL>"
-api_token = "<API_TOKEN>"
+netbox_api_token = "$API_TOKEN"
+netbox_uri = "$API_URI"
+```
+
+Aside from the NetBox system parameters, configuration via the `.nbs-config.toml` also allows you to add certain
+custom fields to your system information that cannot be automatically selected. A great example would be the
+`System Location` entry. To specify that, simply add the parameter under the `[system]` block in your configuration file.
+
+```toml
+[netbox]
+netbox_api_token = "$API_TOKEN"
+netbox_uri = "$NETBOX_URI"
+
+[system]
+system_location = "$SYSTEM_LOCATION"
+```
+
+An example file would look like this:
+
+```toml
+[netbox]
+netbox_api_token = "fj453534898235jg8tg24g43hgh9438489453h4kgi3gksd483uggmn"
+netbox_uri = "http://netbox.organization.com/api/"
+
+[system]
+system_location = "Nuremberg"
 ```
 
 *Please note that this section is still a work in progress and all information is subject to change.*
