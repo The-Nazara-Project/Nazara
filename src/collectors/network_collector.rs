@@ -4,6 +4,7 @@
 //!
 use network_interface::Addr::{V4, V6};
 use network_interface::{NetworkInterface, NetworkInterfaceConfig};
+use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io::Read;
 use std::net::IpAddr;
@@ -28,7 +29,7 @@ use super::collector_exceptions;
 /// * is_physical - `bool` whether this device is a physical or virtual interface.
 /// * is_connected - `bool` whether the interface is connected. Determined by if it has an address or not.
 /// * interface_speed - `u32` the speed of the interface.
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub struct NetworkInformation {
     name: String,
     interface_speed: Option<u32>,

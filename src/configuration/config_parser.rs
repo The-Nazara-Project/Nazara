@@ -412,4 +412,31 @@ impl ConfigData {
 
         return config_parameters;
     }
+
+    /// Return NetBox URL. Necessary for payload generation.
+    ///
+    /// # Returns
+    ///
+    /// * `system_location: &str` - The location of the system to be created/updated as read from the config file.
+    pub fn get_netbox_uri(&self) -> &str {
+        &self.netbox_uri
+    }
+
+    /// Return API auth token. Necessary for payload generation.
+    ///
+    /// # Returns
+    ///
+    /// * `system_location: String` - The location of the system to be created/updated as read from the config file.
+    pub fn get_api_token(&self) -> &str {
+        &self.netbox_api_token
+    }
+
+    /// Return system location. Necessary for payload generation.
+    ///
+    /// # Returns
+    ///
+    /// * `system_location: String` - The location of the system to be created/updated as read from the config file.
+    pub fn get_system_location(&self) -> &str {
+        &self.system_location
+    }
 }

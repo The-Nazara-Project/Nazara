@@ -12,6 +12,7 @@
 
 use super::collector_exceptions::UnableToCollectDataError;
 use super::util::{find_table, split_output};
+use serde::{Deserialize, Serialize};
 use std::{
     process::{Command, Output},
     str::Split,
@@ -24,7 +25,7 @@ use std::{
 /// * system_information: [`SystemInformation`](struct.SystemInformation) - Basic system information.
 /// * chassis_information: [`ChassisInformation`](struct.ChassisInformation) - The type of asset.
 /// * cpu_information: [`CpuInformation`](struct.CpuInformation) - Information about the processor(s).
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub struct DmiInformation {
     system_information: SystemInformation,
     chassis_information: ChassisInformation,
@@ -42,7 +43,7 @@ pub struct DmiInformation {
 /// * uuid: `String` - The UUID of the device.
 /// * serial: `String` - The serial number of the machine.
 /// * is_virtual: `bool` - Whether the machine is a virtual machine or not.
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 struct SystemInformation {
     vendor: String,
     model: String,
@@ -60,7 +61,7 @@ struct SystemInformation {
 /// * chassis_type: `String` - Type of the chassis.
 /// * asset: `String`- Type of asset.
 /// * chassis_serial: `Serial` - Serial number of the chassis.
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 struct ChassisInformation {
     chassis_type: String,
     asset: String,
@@ -80,7 +81,7 @@ struct ChassisInformation {
 /// * max_speed: `String`- The maximum speed of the CPU.
 /// * voltage: `String` - The voltage the CPU runs at.
 /// * status: `String` - Shows if the socket is enabled/disabled and populated/empty.
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 struct CpuInformation {
     version: String,
     core_count: String,

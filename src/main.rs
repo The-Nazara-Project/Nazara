@@ -1,10 +1,14 @@
 mod collectors;
 pub mod configuration;
+mod publisher;
 
 use clap::Parser;
 use collectors::{dmi_collector, network_collector};
 use configuration::config_parser::set_up_configuration;
+use publisher::publisher::{CreateMachinePayload, SystemData};
 use std::process;
+
+use crate::publisher::{publisher::NetBoxClient, publisher_exceptions::NetBoxApiError};
 
 /// The arguments that netbox-sync expects to get via the cli.
 ///
@@ -52,12 +56,12 @@ fn main() {
 
     // println!("Uri: {}\nToken: {}", args.uri.clone().unwrap(), args.token.clone().unwrap());
 
-    let output: dmi_collector::DmiInformation = dmi_collector::construct_dmi_information();
-    println!("{:#?}", output);
+    let dmi_information: dmi_collector::DmiInformation = dmi_collector::construct_dmi_information();
+    println!("{:#?}", dmi_information);
 
-    let output2 = network_collector::construct_network_information().unwrap();
+    let network_information = network_collector::construct_network_information().unwrap();
 
-    println!("{:#?}", output2);
+    println!("{:#?}", network_information);
 
     let config = match set_up_configuration(
         args.uri,
@@ -74,4 +78,19 @@ fn main() {
     };
 
     println!("Configuration: \n{:#?}", config);
+
+    let netbox_client = NetBoxClient::new(config.get_netbox_uri(), config.get_api_token());
+
+    let system_information: SystemData = SystemData {
+        dmi_information,
+        network_information,
+        system_location: config.get_system_location().to_string(),
+    };
+
+    let payload: CreateMachinePayload = CreateMachinePayload { system_information };
+
+    match netbox_client.create_machine(&payload) {
+        Ok(()) => println!("Machine created!"),
+        Err(err) => eprintln!("Error: {:?}", err),
+    }
 }
