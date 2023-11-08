@@ -1,6 +1,6 @@
 mod collectors;
 pub mod configuration;
-mod publisher;
+pub mod publisher;
 
 use clap::Parser;
 use collectors::{dmi_collector, network_collector};
@@ -54,14 +54,18 @@ struct Args {
 fn main() {
     let args: Args = Args::parse();
 
-    // println!("Uri: {}\nToken: {}", args.uri.clone().unwrap(), args.token.clone().unwrap());
+    let ascii_art = r#"
+░█▀█░█▀▀░▀█▀░█▀▄░█▀█░█░█░░░░░█▀▀░█░█░█▀█░█▀▀
+░█░█░█▀▀░░█░░█▀▄░█░█░▄▀▄░▄▄▄░▀▀█░░█░░█░█░█░░
+░▀░▀░▀▀▀░░▀░░▀▀░░▀▀▀░▀░▀░░░░░▀▀▀░░▀░░▀░▀░▀▀▀"#;
 
-    let dmi_information: dmi_collector::DmiInformation = dmi_collector::construct_dmi_information();
-    println!("{:#?}", dmi_information);
-
-    let network_information = network_collector::construct_network_information().unwrap();
-
-    println!("{:#?}", network_information);
+    // Welcome Message.
+    println!(
+        "{} \n(c) Christopher Hock aka ByteOtter. (github.com/ByteOtter)\n\
+         Licensed under the terms of the MIT License.\n\
+         Check github.com/ByteOtter/netbox-sync/LICENSE for more info.\n",
+        ascii_art
+    );
 
     let config = match set_up_configuration(
         args.uri,
@@ -77,20 +81,34 @@ fn main() {
         }
     };
 
-    println!("Configuration: \n{:#?}", config);
+    // println!("Configuration: \n{:#?}", config);
+
+    // println!("Uri: {}\nToken: {}", args.uri.clone().unwrap(), args.token.clone().unwrap());
+
+    let dmi_information: dmi_collector::DmiInformation = dmi_collector::construct_dmi_information();
+    // println!("{:#?}", dmi_information);
+
+    let network_information = network_collector::construct_network_information().unwrap();
+
+    // println!("{:#?}", network_information);
 
     let netbox_client = NetBoxClient::new(config.get_netbox_uri(), config.get_api_token());
 
-    let system_information: SystemData = SystemData {
-        dmi_information,
-        network_information,
-        system_location: config.get_system_location().to_string(),
-    };
-
-    let payload: CreateMachinePayload = CreateMachinePayload { system_information };
-
-    match netbox_client.create_machine(&payload) {
-        Ok(()) => println!("Machine created!"),
-        Err(err) => eprintln!("Error: {:?}", err),
+    match netbox_client.test_connection() {
+        Ok(()) => println!("Connection established!"),
+        Err(err) => println!("{:?}", err),
     }
+
+    // let system_information: SystemData = SystemData {
+    //     dmi_information,
+    //     network_information,
+    //     system_location: config.get_system_location().to_string(),
+    // };
+
+    // let payload: CreateMachinePayload = CreateMachinePayload { system_information };
+
+    // match netbox_client.create_machine(&payload) {
+    //     Ok(()) => println!("Machine created!"),
+    //     Err(err) => eprintln!("Error: {:?}", err),
+    // }
 }

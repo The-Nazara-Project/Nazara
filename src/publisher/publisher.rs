@@ -5,3 +5,4 @@
 //! machine or update an existing one.
 //!
 //! The `api_client` module will provide the actual client and request logic.
+use super::api_client;

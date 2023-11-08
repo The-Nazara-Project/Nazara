@@ -1,3 +1,5 @@
+//! # Client Module
+//!
 //! This module contains logic for the HTTP NetBox API client.
 //!
 //! This client allows us to get a list of all machines and create or update machines or VMs.
@@ -76,6 +78,37 @@ impl NetBoxClient {
         }
     }
 
+    /// Tests connection to the NetBox API.
+    ///
+    /// This method attempts to retrieve the API root from the NetBox API to affirm that it is reachable.
+    ///
+    /// # Returns
+    ///
+    /// Returns `Ok(())` if the connection to the API is successful.
+    /// Returns an `Err` with `publisher_exceptions::NetBoxApiError` if the connection fails.
+    pub fn test_connection(&self) -> Result<(), publisher_exceptions::NetBoxApiError> {
+        let url: String = format!("{}/api/", self.base_url);
+
+        let response = self
+            .client
+            .get(&url)
+            .header("Authorization", format!("Token {}", self.api_token))
+            .send();
+
+        match response {
+            Ok(resp) => {
+                if resp.status().is_success() {
+                    Ok(())
+                } else {
+                    Err(publisher_exceptions::NetBoxApiError::Reqwest(
+                        resp.error_for_status().unwrap_err(),
+                    ))
+                }
+            }
+            Err(e) => Err(publisher_exceptions::NetBoxApiError::Reqwest(e)),
+        }
+    }
+
     /// Sends a request to the NetBox API to create a new machine.
     ///
     /// This method posts the provided payload to the machine creation endpoint of the API.
@@ -84,7 +117,7 @@ impl NetBoxClient {
     ///
     /// # Arguments
     ///
-    /// * `payload: &CreateMachinePayload` - A reference to a `CreateMachinePayload` instance containing all decessary payload information.
+    /// * `payload: &CreateMachinePayload` - A reference to a `CreateMachinePayload` instance containing all necessary payload information.
     ///
     /// # Returns
     ///
