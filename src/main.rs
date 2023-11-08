@@ -5,10 +5,10 @@ mod publisher;
 use clap::Parser;
 use collectors::{dmi_collector, network_collector};
 use configuration::config_parser::set_up_configuration;
-use publisher::publisher::{CreateMachinePayload, SystemData};
+use publisher::api_client::{CreateMachinePayload, SystemData};
 use std::process;
 
-use crate::publisher::{publisher::NetBoxClient, publisher_exceptions::NetBoxApiError};
+use crate::publisher::{api_client::NetBoxClient, publisher_exceptions::NetBoxApiError};
 
 /// The arguments that netbox-sync expects to get via the cli.
 ///
