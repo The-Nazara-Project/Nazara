@@ -1,4 +1,8 @@
-# Netbox Sync
+```
+░█▀█░█▀▀░▀█▀░█▀▄░█▀█░█░█░░░░░█▀▀░█░█░█▀█░█▀▀
+░█░█░█▀▀░░█░░█▀▄░█░█░▄▀▄░▄▄▄░▀▀█░░█░░█░█░█░░
+░▀░▀░▀▀▀░░▀░░▀▀░░▀▀▀░▀░▀░░░░░▀▀▀░░▀░░▀░▀░▀▀▀
+```
 
 Netbox Sync is an experimental Rust program that automates the collection of system information for NetBox, using NetBox's
 API. It enables the automatic creation of new machines in NetBox or population of information fields for existing ones.
