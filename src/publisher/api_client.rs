@@ -89,7 +89,7 @@ impl NetBoxClient {
     pub fn test_connection(&self) -> Result<(), publisher_exceptions::NetBoxApiError> {
         let url: String = format!("{}/api/", self.base_url);
 
-        let response = self
+        let response: Result<reqwest::blocking::Response, ReqwestError> = self
             .client
             .get(&url)
             .header("Authorization", format!("Token {}", self.api_token))

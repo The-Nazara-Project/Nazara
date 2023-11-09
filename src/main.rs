@@ -5,7 +5,7 @@ pub mod publisher;
 use clap::Parser;
 use collectors::{dmi_collector, network_collector};
 use configuration::config_parser::set_up_configuration;
-use publisher::api_client::{CreateMachinePayload, SystemData};
+use publisher::publisher::*;
 use std::process;
 
 use crate::publisher::{api_client::NetBoxClient, publisher_exceptions::NetBoxApiError};
@@ -81,6 +81,8 @@ fn main() {
         }
     };
 
+    Publisher::probe(&config.get_netbox_uri(), &config.get_api_token());
+
     // println!("Configuration: \n{:#?}", config);
 
     // println!("Uri: {}\nToken: {}", args.uri.clone().unwrap(), args.token.clone().unwrap());
@@ -91,13 +93,6 @@ fn main() {
     let network_information = network_collector::construct_network_information().unwrap();
 
     // println!("{:#?}", network_information);
-
-    let netbox_client = NetBoxClient::new(config.get_netbox_uri(), config.get_api_token());
-
-    match netbox_client.test_connection() {
-        Ok(()) => println!("Connection established!"),
-        Err(err) => println!("{:?}", err),
-    }
 
     // let system_information: SystemData = SystemData {
     //     dmi_information,
