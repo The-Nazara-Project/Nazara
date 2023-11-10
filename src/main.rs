@@ -20,6 +20,9 @@ use std::process;
 ///
 /// * `uri: String` - The URI to your Netbox instance.
 /// * `token: String` - The authentication token for the netbox URI.
+/// * `name: String` - The name of the device
+/// * `location: String` - The location of the device
+/// * `device_role: String` - The type of device (server, router, etc.)
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about=None)]
 struct Args {
@@ -31,9 +34,17 @@ struct Args {
     #[arg(short, long)]
     token: Option<String>,
 
+    /// The name of the device
+    #[arg(short, long)]
+    name: Option<String>,
+
     /// The location of the machine (must be one of the locations you have set as available in your Netbox instance)
     #[arg(short, long)]
     location: Option<String>,
+
+    /// The role of the machine (switch, server, router, etc.)
+    #[arg(short, long)]
+    device_role: Option<String>,
 }
 
 fn main() {
@@ -48,7 +59,13 @@ fn main() {
 
     println!("{:#?}", output2);
 
-    let config = match set_up_configuration(args.uri, args.token, args.location) {
+    let config = match set_up_configuration(
+        args.uri,
+        args.token,
+        args.name,
+        args.location,
+        args.device_role,
+    ) {
         Ok(conf) => conf,
         Err(err) => {
             println!("{}", err);

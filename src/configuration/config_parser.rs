@@ -27,7 +27,9 @@ use super::config_exceptions::{self, *};
 pub struct ConfigData {
     netbox_api_token: String,
     netbox_uri: String,
+    name: String,
     system_location: String,
+    device_role: String,
 }
 
 /// Set up configuration
@@ -51,7 +53,9 @@ pub struct ConfigData {
 pub fn set_up_configuration(
     uri: Option<String>,
     token: Option<String>,
+    name: Option<String>,
     location: Option<String>,
+    device_role: Option<String>,
 ) -> Result<ConfigData, String> {
     let mut conf_data: ConfigData;
 
@@ -73,8 +77,16 @@ pub fn set_up_configuration(
                     conf_data.netbox_api_token = token.unwrap();
                 }
 
+                if name.is_some() {
+                    conf_data.name = name.unwrap();
+                }
+
                 if location.is_some() {
                     conf_data.system_location = location.unwrap();
+                }
+
+                if device_role.is_some() {
+                    conf_data.device_role = device_role.unwrap();
                 }
 
                 return Ok(conf_data);
@@ -110,7 +122,9 @@ pub fn set_up_configuration(
     if uri.is_some() && token.is_some() && location.is_some() {
         conf_data.netbox_uri = uri.unwrap();
         conf_data.netbox_api_token = token.unwrap();
+        conf_data.name = name.unwrap();
         conf_data.system_location = location.unwrap();
+        conf_data.device_role = device_role.unwrap();
     }
 
     println!("\x1b[32mConfiguration loaded.\x1b[0m");
@@ -190,8 +204,10 @@ impl ConfigData {
 
         let system_section: toml::map::Map<String, Value> = {
             let mut system_config_table: toml::map::Map<String, Value> = toml::value::Table::new();
+            system_config_table.insert("name".to_string(), Value::String("".to_string()));
             system_config_table
                 .insert("system_location".to_string(), Value::String("".to_string()));
+            system_config_table.insert("device_role".to_string(), Value::String("".to_string()));
             system_config_table
         };
 
@@ -284,7 +300,17 @@ impl ConfigData {
                 .unwrap()
                 .trim()
                 .to_string(),
+            name: config_contents["system"]["name"]
+                .as_str()
+                .unwrap()
+                .trim()
+                .to_string(),
             system_location: config_contents["system"]["system_location"]
+                .as_str()
+                .unwrap()
+                .trim()
+                .to_string(),
+            device_role: config_contents["system"]["device_role"]
                 .as_str()
                 .unwrap()
                 .trim()
@@ -305,9 +331,23 @@ impl ConfigData {
             );
         }
 
+        if config_parameters.name.is_empty() {
+            return Err(
+                "\x1b[34mValidation Error:\x1b[0m Config parameter 'name' is empty! This parameter is mandatory."
+                    .to_string(),
+            );
+        }
+
         if config_parameters.system_location.is_empty() {
             return Err(
                 "\x1b[34mValidation Error:\x1b[0m Config parameter 'system_location' is empty! This parameter is mandatory."
+                    .to_string(),
+            );
+        }
+
+        if config_parameters.device_role.is_empty() {
+            return Err(
+                "\x1b[34mValidation Error:\x1b[0m Config parameter 'device_role' is empty! This parameter is mandatory."
                     .to_string(),
             );
         }
@@ -353,7 +393,17 @@ impl ConfigData {
                 .unwrap()
                 .trim()
                 .to_string(),
+            name: config_content["system"]["name"]
+                .as_str()
+                .unwrap()
+                .trim()
+                .to_string(),
             system_location: config_content["system"]["system_location"]
+                .as_str()
+                .unwrap()
+                .trim()
+                .to_string(),
+            device_role: config_content["system"]["device_role"]
                 .as_str()
                 .unwrap()
                 .trim()
