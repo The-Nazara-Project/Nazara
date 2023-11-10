@@ -149,7 +149,14 @@ impl NetBoxClient {
             }
             Err(e) => Err(publisher_exceptions::NetBoxApiError::Reqwest(e)),
         }
+    }
 
-        // TODO: Implement other methods to interact with NetBox.
+    // TODO: Implement function to get and update machines and VMs.
+    pub fn get_machines(&self) {
+        todo!()
+    }
+
+    pub fn update_machine(&self) -> Result<(), publisher_exceptions::NetBoxApiError> {
+        todo!()
     }
 }
