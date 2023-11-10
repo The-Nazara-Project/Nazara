@@ -3,7 +3,7 @@
 //! This module contains logic for the HTTP NetBox API client.
 //!
 //! This client allows us to get a list of all machines and create or update machines or VMs.
-//! We use the `reqwest` crate for blocking HTTP calles and `serde` together with `serde_json` to serialize and
+//! We use the `reqwest` crate for blocking HTTP requests and `serde` together with `serde_json` to serialize and
 //! deserialize our data.
 use reqwest::{blocking::Client, Error as ReqwestError};
 use serde::{Deserialize, Serialize};
@@ -20,7 +20,7 @@ use super::publisher_exceptions;
 ///
 /// # Members
 ///
-/// * base_url: `String` - The base url of your netbox instance. Read from the config file or command line. E.g: `https://netbox.company.de`
+/// * base_url: `String` - The base url of your NetBox instance. Read from the config file or command line. E.g: `https://netbox.company.de`
 /// * api_token: `String` - The authentication token for the NetBox API.
 /// * client: `reqwest::Client` - The Client object from the `reqwest` crate.
 pub struct NetBoxClient {
@@ -40,7 +40,9 @@ pub struct NetBoxClient {
 pub struct SystemData {
     pub dmi_information: DmiInformation,
     pub network_information: Vec<NetworkInformation>,
+    pub system_name: String,
     pub system_location: String,
+    pub device_role: String,
 }
 
 /// Encapsulates the payload required to create a new machine in NetBox.
@@ -157,19 +159,19 @@ impl NetBoxClient {
     }
 
     // TODO
-    pub fn get_machines(&self) -> Result<Vec<Device>, publisher_exceptions::NetBoxApiError> {
-        let url: String = format!("{}/api/dcim/devices/", self.base_url);
+    // pub fn get_machines(&self) -> Result<Vec<Device>, publisher_exceptions::NetBoxApiError> {
+    //     let url: String = format!("{}/api/dcim/devices/", self.base_url);
 
-        let response = self.client
-        .get(&url)
-        .header("Authorization", format!("Token {}", self.api_token))
-        .send()?;
+    //     let response = self.client
+    //     .get(&url)
+    //     .header("Authorization", format!("Token {}", self.api_token))
+    //     .send()?;
 
-        if response.status().is_success() {
-            let device_list: Vec<Device> = response.json()?;
-            Ok(device_list)
-        } else {
-            Err(response.error_for_status().unwrap_err().into())
-        }
-    }
+    //     if response.status().is_success() {
+    //         let device_list: Vec<Device> = response.json()?;
+    //         Ok(device_list)
+    //     } else {
+    //         Err(response.error_for_status().unwrap_err().into())
+    //     }
+    // }
 }

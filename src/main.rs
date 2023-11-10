@@ -88,6 +88,7 @@ fn main() {
     // println!("Uri: {}\nToken: {}", args.uri.clone().unwrap(), args.token.clone().unwrap());
 
     let dmi_information: dmi_collector::DmiInformation = dmi_collector::construct_dmi_information();
+
     // println!("{:#?}", dmi_information);
 
     let network_information = network_collector::construct_network_information().unwrap();
@@ -97,7 +98,9 @@ fn main() {
     // let system_information: SystemData = SystemData {
     //     dmi_information,
     //     network_information,
+    //     name: config.name,
     //     system_location: config.get_system_location().to_string(),
+    //     device_role: config.device_role,
     // };
 
     // let payload: CreateMachinePayload = CreateMachinePayload { system_information };

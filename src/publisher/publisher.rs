@@ -14,7 +14,7 @@ static mut _PUBLISHER: Publisher = Publisher::create();
 
 impl Publisher {
     pub const fn create() -> Publisher {
-        Publisher{}
+        Publisher {}
     }
 
     pub fn probe(base_url: &str, auth_token: &str) -> () {
