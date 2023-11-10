@@ -152,11 +152,24 @@ impl NetBoxClient {
     }
 
     // TODO: Implement function to get and update machines and VMs.
-    pub fn get_machines(&self) {
+    pub fn update_machine(&self) {
         todo!()
     }
 
-    pub fn update_machine(&self) -> Result<(), publisher_exceptions::NetBoxApiError> {
-        todo!()
+    // TODO
+    pub fn get_machines(&self) -> Result<Vec<Device>, publisher_exceptions::NetBoxApiError> {
+        let url: String = format!("{}/api/dcim/devices/", self.base_url);
+
+        let response = self.client
+        .get(&url)
+        .header("Authorization", format!("Token {}", self.api_token))
+        .send()?;
+
+        if response.status().is_success() {
+            let device_list: Vec<Device> = response.json()?;
+            Ok(device_list)
+        } else {
+            Err(response.error_for_status().unwrap_err().into())
+        }
     }
 }
