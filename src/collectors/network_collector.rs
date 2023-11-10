@@ -98,6 +98,8 @@ pub fn construct_network_information(
     /*
      * Deconstruct NetworkInterface vector and construct NetworkInformation objects from it.
      */
+    println!("Collecting Network Information...");
+
     let raw_information: Vec<NetworkInterface> = match collect_network_information() {
         Ok(information) => information,
         Err(_) => {
@@ -196,6 +198,7 @@ pub fn construct_network_information(
         }
         interfaces.push(network_information)
     }
+    println!("\x1b[32mSuccess:\x1b[0m Network Interface collection completed.");
     return Ok(interfaces);
 }
 
