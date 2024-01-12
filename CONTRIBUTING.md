@@ -1,6 +1,6 @@
-# Contributing to Netbox Sync
+# Contributing to Nazara
 
-Thank you for considering contributing to Netbox Sync.
+Thank you for considering contributing to Nazara.
 
 To ensure a smooth collaboration, we suggest you follow the steps below:
 
