@@ -1,10 +1,14 @@
 mod collectors;
 pub mod configuration;
+pub mod publisher;
 
 use clap::Parser;
 use collectors::{dmi_collector, network_collector};
 use configuration::config_parser::set_up_configuration;
+use publisher::publisher::*;
 use std::process;
+
+use crate::publisher::{api_client::NetBoxClient, publisher_exceptions::NetBoxApiError};
 
 /// The arguments that netbox-sync expects to get via the cli.
 ///
@@ -50,14 +54,18 @@ struct Args {
 fn main() {
     let args: Args = Args::parse();
 
-    // println!("Uri: {}\nToken: {}", args.uri.clone().unwrap(), args.token.clone().unwrap());
+    let ascii_art = r#"
+    ░█▀█░█▀█░▀▀█░█▀█░█▀▄░█▀█
+    ░█░█░█▀█░▄▀░░█▀█░█▀▄░█▀█
+    ░▀░▀░▀░▀░▀▀▀░▀░▀░▀░▀░▀░▀"#;
 
-    let output: dmi_collector::DmiInformation = dmi_collector::construct_dmi_information();
-    println!("{:#?}", output);
-
-    let output2 = network_collector::construct_network_information().unwrap();
-
-    println!("{:#?}", output2);
+    // Welcome Message.
+    println!(
+        "{} \n(c) Christopher Hock aka ByteOtter. (github.com/ByteOtter)\n\
+         Licensed under the terms of the MIT License.\n\
+         Check github.com/ByteOtter/netbox-sync/LICENSE for more info.\n",
+        ascii_art
+    );
 
     let config = match set_up_configuration(
         args.uri,
@@ -73,5 +81,32 @@ fn main() {
         }
     };
 
-    println!("Configuration: \n{:#?}", config);
+    Publisher::probe(&config.get_netbox_uri(), &config.get_api_token());
+
+    // println!("Configuration: \n{:#?}", config);
+
+    // println!("Uri: {}\nToken: {}", args.uri.clone().unwrap(), args.token.clone().unwrap());
+
+    let dmi_information: dmi_collector::DmiInformation = dmi_collector::construct_dmi_information();
+
+    // println!("{:#?}", dmi_information);
+
+    let network_information = network_collector::construct_network_information().unwrap();
+
+    // println!("{:#?}", network_information);
+
+    // let system_information: SystemData = SystemData {
+    //     dmi_information,
+    //     network_information,
+    //     name: config.name,
+    //     system_location: config.get_system_location().to_string(),
+    //     device_role: config.device_role,
+    // };
+
+    // let payload: CreateMachinePayload = CreateMachinePayload { system_information };
+
+    // match netbox_client.create_machine(&payload) {
+    //     Ok(()) => println!("Machine created!"),
+    //     Err(err) => eprintln!("Error: {:?}", err),
+    // }
 }
