@@ -6,7 +6,7 @@
 //! We use the `reqwest` crate for blocking HTTP requests and `serde` together with `serde_json` to serialize and
 //! deserialize our data.
 use reqwest::{blocking::Client, Error as ReqwestError};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use serde_json;
 
 use crate::collectors::{dmi_collector::DmiInformation, network_collector::NetworkInformation};
@@ -110,6 +110,26 @@ impl NetBoxClient {
             Err(e) => Err(publisher_exceptions::NetBoxApiError::Reqwest(e)),
         }
     }
+
+    // TODO: Implement Device struct somewhere where it makes sense.
+    pub fn get_machines<T>(&self) -> Result<T, publisher_exceptions::NetBoxApiError>
+    where T : DeserializeOwned {
+        let url: String = format!("{}/api/dcim/devices/", self.base_url);
+
+        let response = self.client
+        .get(&url)
+        .header("Authorization", format!("Token {}", self.api_token))
+        .send()?;
+
+        if response.status().is_success() {
+            let result = response.json::<T>()?;
+            Ok(result)
+        } else {
+            // println!("Error: {}", response.text().unwrap()); // Print the raw response body
+            Err(response.error_for_status().unwrap_err().into())
+        }
+     }
+
 
     /// Sends a request to the NetBox API to create a new machine.
     ///

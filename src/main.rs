@@ -83,6 +83,8 @@ fn main() {
 
     Publisher::probe(&config.get_netbox_uri(), &config.get_api_token());
 
+    Publisher::get_machines(&config.get_netbox_uri(), &config.get_api_token());
+
     // println!("Configuration: \n{:#?}", config);
 
     // println!("Uri: {}\nToken: {}", args.uri.clone().unwrap(), args.token.clone().unwrap());
