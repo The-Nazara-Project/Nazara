@@ -6,7 +6,7 @@
 //! We use the `reqwest` crate for blocking HTTP requests and `serde` together with `serde_json` to serialize and
 //! deserialize our data.
 use reqwest::{blocking::Client, Error as ReqwestError};
-use serde::{Deserialize, Serialize, de::DeserializeOwned};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json;
 
 use crate::collectors::{dmi_collector::DmiInformation, network_collector::NetworkInformation};
@@ -110,88 +110,4 @@ impl NetBoxClient {
             Err(e) => Err(publisher_exceptions::NetBoxApiError::Reqwest(e)),
         }
     }
-
-    // TODO: Implement Device struct somewhere where it makes sense.
-    pub fn get_machines<T>(&self) -> Result<T, publisher_exceptions::NetBoxApiError>
-    where T : DeserializeOwned {
-        let url: String = format!("{}/api/dcim/devices/", self.base_url);
-
-        let response = self.client
-        .get(&url)
-        .header("Authorization", format!("Token {}", self.api_token))
-        .send()?;
-
-        if response.status().is_success() {
-            let result = response.json::<T>()?;
-            Ok(result)
-        } else {
-            // println!("Error: {}", response.text().unwrap()); // Print the raw response body
-            Err(response.error_for_status().unwrap_err().into())
-        }
-     }
-
-
-    /// Sends a request to the NetBox API to create a new machine.
-    ///
-    /// This method posts the provided payload to the machine creation endpoint of the API.
-    /// It handles the serialization of the payload to JSON format, sets the necessary HTTP headers for authentication,
-    /// and checks the API response to determine if the request was successful.
-    ///
-    /// # Arguments
-    ///
-    /// * `payload: &CreateMachinePayload` - A reference to a `CreateMachinePayload` instance containing all necessary payload information.
-    ///
-    /// # Returns
-    ///
-    /// Returns `Ok(())` if the machine was created successfully.
-    /// Returns an `Err` with `publisher_exceptions::NetBoxApiError` if the request failed.
-    pub fn create_machine(
-        &self,
-        payload: &CreateMachinePayload,
-    ) -> Result<(), publisher_exceptions::NetBoxApiError> {
-        // Construct the URL for creating a machine
-        let url: String = format!("{}/api/dcim/devices/", self.base_url);
-
-        let response = self
-            .client
-            .post(&url)
-            .header("Authorization", format!("Token {}", self.api_token))
-            .json(payload)
-            .send();
-
-        match response {
-            Ok(resp) => {
-                if resp.status().is_success() {
-                    Ok(())
-                } else {
-                    Err(publisher_exceptions::NetBoxApiError::Reqwest(
-                        resp.error_for_status().unwrap_err(),
-                    ))
-                }
-            }
-            Err(e) => Err(publisher_exceptions::NetBoxApiError::Reqwest(e)),
-        }
-    }
-
-    // TODO: Implement function to get and update machines and VMs.
-    pub fn update_machine(&self) {
-        todo!()
-    }
-
-    // TODO
-    // pub fn get_machines(&self) -> Result<Vec<Device>, publisher_exceptions::NetBoxApiError> {
-    //     let url: String = format!("{}/api/dcim/devices/", self.base_url);
-
-    //     let response = self.client
-    //     .get(&url)
-    //     .header("Authorization", format!("Token {}", self.api_token))
-    //     .send()?;
-
-    //     if response.status().is_success() {
-    //         let device_list: Vec<Device> = response.json()?;
-    //         Ok(device_list)
-    //     } else {
-    //         Err(response.error_for_status().unwrap_err().into())
-    //     }
-    // }
 }

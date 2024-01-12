@@ -25,18 +25,6 @@ impl Publisher {
             Err(err) => println!("{:?}", err),
         }
     }
-
-    pub fn get_machines(base_url: &str, auth_token: &str) -> () {
-        println!("Getting list of machines from NetBox ...");
-
-        match create_client(base_url, auth_token).get_machines() {
-            Ok(body) => {
-                println!("List of machines received!");
-                dbg!(body)
-            },
-            Err(err) => println!("{:?}", err),
-        }
-    }
 }
 
 fn create_client(base_url: &str, auth_token: &str) -> NetBoxClient {
