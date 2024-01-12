@@ -23,7 +23,7 @@ dependencies which you may be planning to introduce to the project beforehand to
 This security policy is subject to change. It is the responsibility of all project contributors and users to stay
 updated on any modifications. By participating in this project, you agree to abide by this security policy.
 
-Netbox Sync is designed to run only within your local network. The user is responsible for their network setup
+Nazara is designed to run only within your local network. The user is responsible for their network setup
 themselves.
 
 We are not liable for any damages that are caused by insufficient network security.

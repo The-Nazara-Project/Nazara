@@ -10,12 +10,12 @@ use std::process;
 
 use crate::publisher::{api_client::NetBoxClient, publisher_exceptions::NetBoxApiError};
 
-/// The arguments that netbox-sync expects to get via the cli.
+/// The arguments that Nazara expects to get via the cli.
 ///
 /// Arguments can be passed like this:
 ///
 /// ```
-/// netbox-sync --uri <NETBOX_URI> --token <NETBOX_TOKEN>
+/// nazara --uri <NETBOX_URI> --token <NETBOX_TOKEN>
 /// ```
 ///
 /// These arguments override the ones defined in the `.nbs-config.toml`.
@@ -55,15 +55,15 @@ fn main() {
     let args: Args = Args::parse();
 
     let ascii_art = r#"
-    ░█▀█░█▀█░▀▀█░█▀█░█▀▄░█▀█
-    ░█░█░█▀█░▄▀░░█▀█░█▀▄░█▀█
-    ░▀░▀░▀░▀░▀▀▀░▀░▀░▀░▀░▀░▀"#;
+░█▀█░█▀█░▀▀█░█▀█░█▀▄░█▀█
+░█░█░█▀█░▄▀░░█▀█░█▀▄░█▀█
+░▀░▀░▀░▀░▀▀▀░▀░▀░▀░▀░▀░▀"#;
 
     // Welcome Message.
     println!(
         "{} \n(c) Christopher Hock aka ByteOtter. (github.com/ByteOtter)\n\
          Licensed under the terms of the MIT License.\n\
-         Check github.com/ByteOtter/netbox-sync/LICENSE for more info.\n",
+         Check github.com/The-Nazara-Project/Nazara/LICENSE for more info.\n",
         ascii_art
     );
 

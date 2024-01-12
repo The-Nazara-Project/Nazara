@@ -1,17 +1,17 @@
 ```
-░█▀█░█▀▀░▀█▀░█▀▄░█▀█░█░█░░░░░█▀▀░█░█░█▀█░█▀▀
-░█░█░█▀▀░░█░░█▀▄░█░█░▄▀▄░▄▄▄░▀▀█░░█░░█░█░█░░
-░▀░▀░▀▀▀░░▀░░▀▀░░▀▀▀░▀░▀░░░░░▀▀▀░░▀░░▀░▀░▀▀▀
+░█▀█░█▀█░▀▀█░█▀█░█▀▄░█▀█
+░█░█░█▀█░▄▀░░█▀█░█▀▄░█▀█
+░▀░▀░▀░▀░▀▀▀░▀░▀░▀░▀░▀░▀
 ```
 
-Netbox Sync is an experimental Rust program that automates the collection of system information for NetBox, using NetBox's
+Nazara is an experimental Rust program that automates the collection of system information for NetBox, using NetBox's
 API. It enables the automatic creation of new machines in NetBox or population of information fields for existing ones.
 
-**Netbox Sync is in the early stages of its development. Please note that the information listed below is subject to change.**
+**Nazara is in the early stages of its development. Please note that the information listed below is subject to change.**
 
 ## Installation
 
-To use Netbox Sync, you will need to have the Rust programming language and `cargo` installed. If you do not have them
+To use Nazara, you will need to have the Rust programming language and `cargo` installed. If you do not have them
 installed already, you can follow the instructions provided in the [official Rust documentation](https://www.rust-lang.org/tools/install).
 
 *Please note that this program only works on Linux systems.*
@@ -19,8 +19,8 @@ installed already, you can follow the instructions provided in the [official Rus
 Once you have everything installed, you can clone this repository and build the program by running the following commands:
 
 ```bash
-git clone https://github.com/ByteOtter/netbox-sync.git
-cd netbox-sync
+git clone https://github.com/The-Nazara-Project/Nazara.git
+cd Nazara
 cargo build --release
 ```
 
@@ -28,13 +28,13 @@ This will create an executable file in the `target/release` directory.
 
 ## Usage (WIP)
 
-To use Netbox Sync, you will need to configure the URL of your NetBox API and provide an API token to the program.
+To use Nazara, you will need to configure the URL of your NetBox API and provide an API token to the program.
 
 ### Configuration (WIP)
 
-Netbox Sync supports two ways of providing configuration parameters: CLI arguments and a configuration file.
+Nazara supports two ways of providing configuration parameters: CLI arguments and a configuration file.
 
-Netbox Sync requires two parameters from you:
+Nazara requires two parameters from you:
 
 - `API_URL`: The URL of your NetBox API
 - `API_TOKEN`: The authentication token for the NetBox API
@@ -44,7 +44,7 @@ Netbox Sync requires two parameters from you:
 Here is an example for passing these parameters on using the CLI:
 
 ```bash
-./target/release/netbox-sync --api-url <API_URL> --api-token <API_TOKEN>
+./target/release/Nazara --api-url <API_URL> --api-token <API_TOKEN>
 ```
 
 #### Configuring via `nbs-config.toml`file.
@@ -86,9 +86,9 @@ system_location = "Nuremberg"
 
 # Contributing
 
-If you would like to contribute to Netbox Sync, feel free to check the [contributing guide](./CONTRIBUTING.md) for
+If you would like to contribute to Nazara, feel free to check the [contributing guide](./CONTRIBUTING.md) for
 information on our workflow and check the issues section for any open issue.
 
 # License
 
-Netbox Sync is released under the [MIT License](./LICENSE).
+Nazara is released under the [MIT License](./LICENSE).
