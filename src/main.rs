@@ -55,13 +55,17 @@ fn main() {
     let args: Args = Args::parse();
 
     let ascii_art = r#"
-░█▀█░█▀█░▀▀█░█▀█░█▀▄░█▀█
-░█░█░█▀█░▄▀░░█▀█░█▀▄░█▀█
-░▀░▀░▀░▀░▀▀▀░▀░▀░▀░▀░▀░▀"#;
+    ███╗   ██╗ █████╗ ███████╗ █████╗ ██████╗  █████╗
+    ████╗  ██║██╔══██╗╚══███╔╝██╔══██╗██╔══██╗██╔══██╗
+    ██╔██╗ ██║███████║  ███╔╝ ███████║██████╔╝███████║
+    ██║╚██╗██║██╔══██║ ███╔╝  ██╔══██║██╔══██╗██╔══██║
+    ██║ ╚████║██║  ██║███████╗██║  ██║██║  ██║██║  ██║
+    ╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝
+"#;
 
     // Welcome Message.
     println!(
-        "{} \n(c) Christopher Hock aka ByteOtter. (github.com/ByteOtter)\n\
+        "{} \n(c) Christopher Hock aka ByteOtter. (github.com/ByteOtter)\n
          Licensed under the terms of the MIT License.\n\
          Check github.com/The-Nazara-Project/Nazara/LICENSE for more info.\n",
         ascii_art
