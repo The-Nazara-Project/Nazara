@@ -5,7 +5,12 @@
 //! machine or update an existing one.
 //!
 //! The `api_client` module will provide the actual client and request logic.
-use super::{api_client::NetBoxClient, publisher_exceptions::NetBoxApiError};
+use reqwest::blocking::Client;
+use thanix_client::util::ThanixClient;
+
+use crate::publisher::api_client::{self, test_connection};
+
+use super::publisher_exceptions::NetBoxApiError;
 
 pub struct Publisher {}
 
@@ -20,13 +25,19 @@ impl Publisher {
     pub fn probe(base_url: &str, auth_token: &str) -> () {
         println!("Probing connection to Netbox...");
 
-        match create_client(base_url, auth_token).test_connection() {
+        let client = create_client(base_url, auth_token);
+
+        match test_connection(&client) {
             Ok(()) => println!("Connection established!"),
-            Err(err) => println!("{:?}", err),
+            Err(err) => panic!("Client unable to reach NetBox!"),
         }
     }
 }
 
-fn create_client(base_url: &str, auth_token: &str) -> NetBoxClient {
-    NetBoxClient::new(base_url, auth_token)
+fn create_client(base_url: &str, auth_token: &str) -> ThanixClient {
+    return ThanixClient {
+        base_url: base_url.to_string(),
+        authentication_token: auth_token.to_string(),
+        client: Client::new(),
+    };
 }

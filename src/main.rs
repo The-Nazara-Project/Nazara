@@ -8,7 +8,7 @@ use configuration::config_parser::set_up_configuration;
 use publisher::publisher::*;
 use std::process;
 
-use crate::publisher::{api_client::NetBoxClient, publisher_exceptions::NetBoxApiError};
+use crate::publisher::publisher_exceptions::NetBoxApiError;
 
 /// The arguments that Nazara expects to get via the cli.
 ///
