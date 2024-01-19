@@ -8,7 +8,7 @@
 use reqwest::blocking::Client;
 use thanix_client::util::ThanixClient;
 
-use crate::publisher::api_client::{self, test_connection};
+use crate::publisher::api_client::test_connection;
 
 use super::publisher_exceptions::NetBoxApiError;
 
@@ -28,8 +28,8 @@ impl Publisher {
         let client = create_client(base_url, auth_token);
 
         match test_connection(&client) {
-            Ok(()) => println!("Connection established!"),
-            Err(err) => panic!("Client unable to reach NetBox!"),
+            Ok(()) => println!("\x1b[32mConnection established!\x1b[0m"),
+            Err(err) => panic!("Client unable to reach NetBox! {}", err),
         }
     }
 }
