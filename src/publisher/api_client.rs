@@ -14,7 +14,7 @@ use thanix_client::util::ThanixClient;
 
 use crate::collectors::{dmi_collector::DmiInformation, network_collector::NetworkInformation};
 
-use super::publisher_exceptions;
+use super::{publisher, publisher_exceptions};
 
 /// Represents the combined system information required to create a new machine or update an existing one.
 ///

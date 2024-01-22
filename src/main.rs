@@ -6,7 +6,9 @@ use clap::Parser;
 use collectors::{dmi_collector, network_collector};
 use configuration::config_parser::set_up_configuration;
 use publisher::publisher::*;
+use thanix_client::util::ThanixClient;
 use std::process;
+use reqwest::blocking::Client;
 
 use crate::publisher::publisher_exceptions::NetBoxApiError;
 
@@ -85,7 +87,16 @@ fn main() {
         }
     };
 
-    Publisher::probe(&config.get_netbox_uri(), &config.get_api_token());
+    let client: ThanixClient = ThanixClient{
+        base_url: config.get_netbox_uri().to_string(),
+        authentication_token: config.get_api_token().to_string(),
+        client: Client::new(),
+    };
+
+    match probe(&client) {
+        Ok(()) => {},
+        Err(err) => println!("{}", err)
+    };
 
     // println!("Configuration: \n{:#?}", config);
 
@@ -96,6 +107,8 @@ fn main() {
     // println!("{:#?}", dmi_information);
 
     let network_information = network_collector::construct_network_information().unwrap();
+
+    let _ = register_machine(&client);
 
     // println!("{:#?}", network_information);
 

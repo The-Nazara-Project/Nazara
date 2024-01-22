@@ -1,0 +1,5172 @@
+{
+  "count": 63,
+  "next": "https://demo.netbox.dev/api/dcim/devices/?limit=50&offset=50",
+  "previous": null,
+  "results": [
+    {
+      "airflow": {
+        "label": "Front to rear",
+        "value": "front-to-rear"
+      },
+      "asset_tag": null,
+      "cluster": {
+        "display": "DO-AMS3",
+        "id": 9,
+        "name": "DO-AMS3",
+        "url": "https://demo.netbox.dev/api/virtualization/clusters/9/"
+      },
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2024-01-22T07:20:32.697603Z",
+      "custom_fields": {
+        "Support_Contract": "25.04.2024",
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "test",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Core Switch",
+        "id": 2,
+        "name": "Core Switch",
+        "slug": "core-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/2/"
+      },
+      "device_type": {
+        "display": "EX4300-48MP",
+        "id": 15,
+        "manufacturer": {
+          "display": "Juniper",
+          "id": 7,
+          "name": "Juniper",
+          "slug": "juniper",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/7/"
+        },
+        "model": "EX4300-48MP",
+        "slug": "ex4300-48mp",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/15/"
+      },
+      "display": "Basarabia01_EX4300-48MP-unit0",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 109,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2024-01-22T09:24:23.875351Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": {
+        "_depth": 0,
+        "display": "Sibiu",
+        "id": 5,
+        "name": "Sibiu",
+        "slug": "sibiu",
+        "url": "https://demo.netbox.dev/api/dcim/locations/5/"
+      },
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "Basarabia01_EX4300-48MP-unit0",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": {
+        "display": "Juniper",
+        "id": 4,
+        "name": "Juniper",
+        "slug": "juniper",
+        "url": "https://demo.netbox.dev/api/dcim/platforms/4/"
+      },
+      "position": 42.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Server_Room",
+        "id": 43,
+        "name": "Server_Room",
+        "url": "https://demo.netbox.dev/api/dcim/racks/43/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Core Switch",
+        "id": 2,
+        "name": "Core Switch",
+        "slug": "core-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/2/"
+      },
+      "serial": "test1234",
+      "site": {
+        "display": "Basarabia_Pamant_Romanesc",
+        "id": 25,
+        "name": "Basarabia_Pamant_Romanesc",
+        "slug": "basarabia_pamant_romanesc",
+        "url": "https://demo.netbox.dev/api/dcim/sites/25/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Sibiu_Office",
+        "id": 13,
+        "name": "Sibiu_Office",
+        "slug": "sibiu_office",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/13/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/109/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": {
+        "label": "Front to rear",
+        "value": "front-to-rear"
+      },
+      "asset_tag": null,
+      "cluster": {
+        "display": "gc-europe-west1",
+        "id": 19,
+        "name": "gc-europe-west1",
+        "url": "https://demo.netbox.dev/api/virtualization/clusters/19/"
+      },
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2024-01-22T07:16:34.306933Z",
+      "custom_fields": {
+        "Support_Contract": "20.04.2024",
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "test",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Core Switch",
+        "id": 2,
+        "name": "Core Switch",
+        "slug": "core-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/2/"
+      },
+      "device_type": {
+        "display": "EX4300-48MP",
+        "id": 15,
+        "manufacturer": {
+          "display": "Juniper",
+          "id": 7,
+          "name": "Juniper",
+          "slug": "juniper",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/7/"
+        },
+        "model": "EX4300-48MP",
+        "slug": "ex4300-48mp",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/15/"
+      },
+      "display": "Basarabia01_EX4300-48MP-unit1",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 108,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2024-01-22T09:27:21.024293Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": {
+        "_depth": 0,
+        "display": "Sibiu",
+        "id": 5,
+        "name": "Sibiu",
+        "slug": "sibiu",
+        "url": "https://demo.netbox.dev/api/dcim/locations/5/"
+      },
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "Basarabia01_EX4300-48MP-unit1",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": {
+        "display": "Juniper",
+        "id": 4,
+        "name": "Juniper",
+        "slug": "juniper",
+        "url": "https://demo.netbox.dev/api/dcim/platforms/4/"
+      },
+      "position": 41.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Server_Room",
+        "id": 43,
+        "name": "Server_Room",
+        "url": "https://demo.netbox.dev/api/dcim/racks/43/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Core Switch",
+        "id": 2,
+        "name": "Core Switch",
+        "slug": "core-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/2/"
+      },
+      "serial": "test123",
+      "site": {
+        "display": "Basarabia_Pamant_Romanesc",
+        "id": 25,
+        "name": "Basarabia_Pamant_Romanesc",
+        "slug": "basarabia_pamant_romanesc",
+        "url": "https://demo.netbox.dev/api/dcim/sites/25/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Sibiu_Office",
+        "id": 13,
+        "name": "Sibiu_Office",
+        "slug": "sibiu_office",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/13/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/108/",
+      "vc_position": 0,
+      "vc_priority": 0,
+      "virtual_chassis": {
+        "display": "basarabia01",
+        "id": 2,
+        "master": {
+          "display": "Basarabia01_EX4300-48MP-unit1",
+          "id": 108,
+          "name": "Basarabia01_EX4300-48MP-unit1",
+          "url": "https://demo.netbox.dev/api/dcim/devices/108/"
+        },
+        "member_count": -1,
+        "name": "basarabia01",
+        "url": "https://demo.netbox.dev/api/dcim/virtual-chassis/2/"
+      }
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2024-01-22T08:18:58.496136Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Patch Panel",
+        "id": 6,
+        "name": "Patch Panel",
+        "slug": "patch-panel",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/6/"
+      },
+      "device_type": {
+        "display": "48-Port Patch Panel",
+        "id": 10,
+        "manufacturer": {
+          "display": "Panduit",
+          "id": 12,
+          "name": "Panduit",
+          "slug": "panduit",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/12/"
+        },
+        "model": "48-Port Patch Panel",
+        "slug": "48-port-patch-panel",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/10/"
+      },
+      "display": "PJ-patch48-1",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 48,
+      "id": 111,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2024-01-22T08:21:08.172889Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "PJ-patch48-1",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": 40.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "PJ-rack1",
+        "id": 44,
+        "name": "PJ-rack1",
+        "url": "https://demo.netbox.dev/api/dcim/racks/44/"
+      },
+      "rear_port_count": 48,
+      "role": {
+        "display": "Patch Panel",
+        "id": 6,
+        "name": "Patch Panel",
+        "slug": "patch-panel",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/6/"
+      },
+      "serial": "",
+      "site": {
+        "display": "PJ-site1",
+        "id": 26,
+        "name": "PJ-site1",
+        "slug": "pj-site1",
+        "url": "https://demo.netbox.dev/api/dcim/sites/26/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": null,
+      "url": "https://demo.netbox.dev/api/dcim/devices/111/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2024-01-22T08:50:48.153459Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Patch Panel",
+        "id": 6,
+        "name": "Patch Panel",
+        "slug": "patch-panel",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/6/"
+      },
+      "device_type": {
+        "display": "48-Port Patch Panel",
+        "id": 10,
+        "manufacturer": {
+          "display": "Panduit",
+          "id": 12,
+          "name": "Panduit",
+          "slug": "panduit",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/12/"
+        },
+        "model": "48-Port Patch Panel",
+        "slug": "48-port-patch-panel",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/10/"
+      },
+      "display": "PJ-patch48-2",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 48,
+      "id": 112,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2024-01-22T08:50:48.153515Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "PJ-patch48-2",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": 40.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "PJ-rack2",
+        "id": 45,
+        "name": "PJ-rack2",
+        "url": "https://demo.netbox.dev/api/dcim/racks/45/"
+      },
+      "rear_port_count": 48,
+      "role": {
+        "display": "Patch Panel",
+        "id": 6,
+        "name": "Patch Panel",
+        "slug": "patch-panel",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/6/"
+      },
+      "serial": "",
+      "site": {
+        "display": "PJ-site1",
+        "id": 26,
+        "name": "PJ-site1",
+        "slug": "pj-site1",
+        "url": "https://demo.netbox.dev/api/dcim/sites/26/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": null,
+      "url": "https://demo.netbox.dev/api/dcim/devices/112/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": {
+        "label": "Front to rear",
+        "value": "front-to-rear"
+      },
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2024-01-22T10:00:23.714910Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": "test",
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Router",
+        "id": 1,
+        "name": "Router",
+        "slug": "router",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/1/"
+      },
+      "device_type": {
+        "display": "C9200-48P",
+        "id": 7,
+        "manufacturer": {
+          "display": "Cisco",
+          "id": 3,
+          "name": "Cisco",
+          "slug": "cisco",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/3/"
+        },
+        "model": "C9200-48P",
+        "slug": "c9200-48p",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/7/"
+      },
+      "display": "Test",
+      "face": null,
+      "front_port_count": 6,
+      "id": 116,
+      "interface_count": 51,
+      "inventory_item_count": 0,
+      "last_updated": "2024-01-22T10:23:38.880587Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 1,
+      "name": "Test",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": null,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": null,
+      "rear_port_count": 1,
+      "role": {
+        "display": "Router",
+        "id": 1,
+        "name": "Router",
+        "slug": "router",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/1/"
+      },
+      "serial": "",
+      "site": {
+        "display": "MDF",
+        "id": 21,
+        "name": "MDF",
+        "slug": "ncsu-065",
+        "url": "https://demo.netbox.dev/api/dcim/sites/21/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": null,
+      "url": "https://demo.netbox.dev/api/dcim/devices/116/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": {
+        "label": "Passive",
+        "value": "passive"
+      },
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2024-01-22T10:24:41.370474Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "cisco 1001x 3fror",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Access Switch",
+        "id": 4,
+        "name": "Access Switch",
+        "slug": "access-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/4/"
+      },
+      "device_type": {
+        "display": "AP7901",
+        "id": 8,
+        "manufacturer": {
+          "display": "APC",
+          "id": 11,
+          "name": "APC",
+          "slug": "apc",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/11/"
+        },
+        "model": "AP7901",
+        "slug": "ap7901",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/8/"
+      },
+      "display": "cisco 1000",
+      "face": null,
+      "front_port_count": 0,
+      "id": 119,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2024-01-22T10:24:41.370550Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "cisco 1000",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": null,
+      "power_outlet_count": 8,
+      "power_port_count": 1,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": null,
+      "rear_port_count": 0,
+      "role": {
+        "display": "Access Switch",
+        "id": 4,
+        "name": "Access Switch",
+        "slug": "access-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/4/"
+      },
+      "serial": "sn1n2n4n5n",
+      "site": {
+        "display": "DM-NYC",
+        "id": 1,
+        "name": "DM-NYC",
+        "slug": "dm-nyc",
+        "url": "https://demo.netbox.dev/api/dcim/sites/1/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": null,
+      "url": "https://demo.netbox.dev/api/dcim/devices/119/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-22T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "PDU",
+        "id": 5,
+        "name": "PDU",
+        "slug": "pdu",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/5/"
+      },
+      "device_type": {
+        "display": "AP7901",
+        "id": 8,
+        "manufacturer": {
+          "display": "APC",
+          "id": 11,
+          "name": "APC",
+          "slug": "apc",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/11/"
+        },
+        "model": "AP7901",
+        "slug": "ap7901",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/8/"
+      },
+      "display": "dmi01-akron-pdu01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 27,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-30T19:02:55.760000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-akron-pdu01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": 1.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 1,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/1/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "PDU",
+        "id": 5,
+        "name": "PDU",
+        "slug": "pdu",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/5/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Akron",
+        "id": 2,
+        "name": "DM-Akron",
+        "slug": "dm-akron",
+        "url": "https://demo.netbox.dev/api/dcim/sites/2/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/27/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-20T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Router",
+        "id": 1,
+        "name": "Router",
+        "slug": "router",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/1/"
+      },
+      "device_type": {
+        "display": "ISR 1111-8P",
+        "id": 6,
+        "manufacturer": {
+          "display": "Cisco",
+          "id": 3,
+          "name": "Cisco",
+          "slug": "cisco",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/3/"
+        },
+        "model": "ISR 1111-8P",
+        "slug": "isr1111",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/6/"
+      },
+      "display": "dmi01-akron-rtr01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 1,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-20T02:51:03.257000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-akron-rtr01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": {
+        "display": "Cisco IOS",
+        "id": 1,
+        "name": "Cisco IOS",
+        "slug": "cisco-ios",
+        "url": "https://demo.netbox.dev/api/dcim/platforms/1/"
+      },
+      "position": 4.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 1,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/1/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Router",
+        "id": 1,
+        "name": "Router",
+        "slug": "router",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/1/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Akron",
+        "id": 2,
+        "name": "DM-Akron",
+        "slug": "dm-akron",
+        "url": "https://demo.netbox.dev/api/dcim/sites/2/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/1/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-22T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Access Switch",
+        "id": 4,
+        "name": "Access Switch",
+        "slug": "access-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/4/"
+      },
+      "device_type": {
+        "display": "C9200-48P",
+        "id": 7,
+        "manufacturer": {
+          "display": "Cisco",
+          "id": 3,
+          "name": "Cisco",
+          "slug": "cisco",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/3/"
+        },
+        "model": "C9200-48P",
+        "slug": "c9200-48p",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/7/"
+      },
+      "display": "dmi01-akron-sw01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 14,
+      "interface_count": 0,
+      "inventory_item_count": 1,
+      "last_updated": "2020-12-22T02:11:11.625000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-akron-sw01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": 10.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 1,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/1/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Access Switch",
+        "id": 4,
+        "name": "Access Switch",
+        "slug": "access-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/4/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Akron",
+        "id": 2,
+        "name": "DM-Akron",
+        "slug": "dm-akron",
+        "url": "https://demo.netbox.dev/api/dcim/sites/2/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/14/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-22T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "PDU",
+        "id": 5,
+        "name": "PDU",
+        "slug": "pdu",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/5/"
+      },
+      "device_type": {
+        "display": "AP7901",
+        "id": 8,
+        "manufacturer": {
+          "display": "APC",
+          "id": 11,
+          "name": "APC",
+          "slug": "apc",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/11/"
+        },
+        "model": "AP7901",
+        "slug": "ap7901",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/8/"
+      },
+      "display": "dmi01-albany-pdu01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 34,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-30T19:02:55.909000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-albany-pdu01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": 1.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 2,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/2/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "PDU",
+        "id": 5,
+        "name": "PDU",
+        "slug": "pdu",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/5/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Albany",
+        "id": 3,
+        "name": "DM-Albany",
+        "slug": "dm-albany",
+        "url": "https://demo.netbox.dev/api/dcim/sites/3/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/34/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-20T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Router",
+        "id": 1,
+        "name": "Router",
+        "slug": "router",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/1/"
+      },
+      "device_type": {
+        "display": "ISR 1111-8P",
+        "id": 6,
+        "manufacturer": {
+          "display": "Cisco",
+          "id": 3,
+          "name": "Cisco",
+          "slug": "cisco",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/3/"
+        },
+        "model": "ISR 1111-8P",
+        "slug": "isr1111",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/6/"
+      },
+      "display": "dmi01-albany-rtr01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 2,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-20T02:51:32.863000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-albany-rtr01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": {
+        "display": "Cisco IOS",
+        "id": 1,
+        "name": "Cisco IOS",
+        "slug": "cisco-ios",
+        "url": "https://demo.netbox.dev/api/dcim/platforms/1/"
+      },
+      "position": 4.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 2,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/2/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Router",
+        "id": 1,
+        "name": "Router",
+        "slug": "router",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/1/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Albany",
+        "id": 3,
+        "name": "DM-Albany",
+        "slug": "dm-albany",
+        "url": "https://demo.netbox.dev/api/dcim/sites/3/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/2/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-22T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Access Switch",
+        "id": 4,
+        "name": "Access Switch",
+        "slug": "access-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/4/"
+      },
+      "device_type": {
+        "display": "C9200-48P",
+        "id": 7,
+        "manufacturer": {
+          "display": "Cisco",
+          "id": 3,
+          "name": "Cisco",
+          "slug": "cisco",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/3/"
+        },
+        "model": "C9200-48P",
+        "slug": "c9200-48p",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/7/"
+      },
+      "display": "dmi01-albany-sw01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 15,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-22T02:11:11.714000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-albany-sw01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": 10.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 2,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/2/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Access Switch",
+        "id": 4,
+        "name": "Access Switch",
+        "slug": "access-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/4/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Albany",
+        "id": 3,
+        "name": "DM-Albany",
+        "slug": "dm-albany",
+        "url": "https://demo.netbox.dev/api/dcim/sites/3/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/15/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-22T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "PDU",
+        "id": 5,
+        "name": "PDU",
+        "slug": "pdu",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/5/"
+      },
+      "device_type": {
+        "display": "AP7901",
+        "id": 8,
+        "manufacturer": {
+          "display": "APC",
+          "id": 11,
+          "name": "APC",
+          "slug": "apc",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/11/"
+        },
+        "model": "AP7901",
+        "slug": "ap7901",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/8/"
+      },
+      "display": "dmi01-binghamton-pdu01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 35,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-30T19:02:56.038000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-binghamton-pdu01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": 1.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 3,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/3/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "PDU",
+        "id": 5,
+        "name": "PDU",
+        "slug": "pdu",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/5/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Binghamton",
+        "id": 4,
+        "name": "DM-Binghamton",
+        "slug": "dm-binghamton",
+        "url": "https://demo.netbox.dev/api/dcim/sites/4/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/35/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-20T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Router",
+        "id": 1,
+        "name": "Router",
+        "slug": "router",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/1/"
+      },
+      "device_type": {
+        "display": "ISR 1111-8P",
+        "id": 6,
+        "manufacturer": {
+          "display": "Cisco",
+          "id": 3,
+          "name": "Cisco",
+          "slug": "cisco",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/3/"
+        },
+        "model": "ISR 1111-8P",
+        "slug": "isr1111",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/6/"
+      },
+      "display": "dmi01-binghamton-rtr01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 3,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-20T02:52:02.614000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-binghamton-rtr01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": {
+        "display": "Cisco IOS",
+        "id": 1,
+        "name": "Cisco IOS",
+        "slug": "cisco-ios",
+        "url": "https://demo.netbox.dev/api/dcim/platforms/1/"
+      },
+      "position": 4.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 3,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/3/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Router",
+        "id": 1,
+        "name": "Router",
+        "slug": "router",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/1/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Binghamton",
+        "id": 4,
+        "name": "DM-Binghamton",
+        "slug": "dm-binghamton",
+        "url": "https://demo.netbox.dev/api/dcim/sites/4/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/3/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-22T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Access Switch",
+        "id": 4,
+        "name": "Access Switch",
+        "slug": "access-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/4/"
+      },
+      "device_type": {
+        "display": "C9200-48P",
+        "id": 7,
+        "manufacturer": {
+          "display": "Cisco",
+          "id": 3,
+          "name": "Cisco",
+          "slug": "cisco",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/3/"
+        },
+        "model": "C9200-48P",
+        "slug": "c9200-48p",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/7/"
+      },
+      "display": "dmi01-binghamton-sw01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 16,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-22T02:11:11.799000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-binghamton-sw01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": 10.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 3,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/3/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Access Switch",
+        "id": 4,
+        "name": "Access Switch",
+        "slug": "access-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/4/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Binghamton",
+        "id": 4,
+        "name": "DM-Binghamton",
+        "slug": "dm-binghamton",
+        "url": "https://demo.netbox.dev/api/dcim/sites/4/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/16/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-22T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "PDU",
+        "id": 5,
+        "name": "PDU",
+        "slug": "pdu",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/5/"
+      },
+      "device_type": {
+        "display": "AP7901",
+        "id": 8,
+        "manufacturer": {
+          "display": "APC",
+          "id": 11,
+          "name": "APC",
+          "slug": "apc",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/11/"
+        },
+        "model": "AP7901",
+        "slug": "ap7901",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/8/"
+      },
+      "display": "dmi01-buffalo-pdu01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 36,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-30T19:02:56.155000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-buffalo-pdu01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": 1.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 4,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/4/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "PDU",
+        "id": 5,
+        "name": "PDU",
+        "slug": "pdu",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/5/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Buffalo",
+        "id": 5,
+        "name": "DM-Buffalo",
+        "slug": "dm-buffalo",
+        "url": "https://demo.netbox.dev/api/dcim/sites/5/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/36/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-20T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Router",
+        "id": 1,
+        "name": "Router",
+        "slug": "router",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/1/"
+      },
+      "device_type": {
+        "display": "ISR 1111-8P",
+        "id": 6,
+        "manufacturer": {
+          "display": "Cisco",
+          "id": 3,
+          "name": "Cisco",
+          "slug": "cisco",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/3/"
+        },
+        "model": "ISR 1111-8P",
+        "slug": "isr1111",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/6/"
+      },
+      "display": "dmi01-buffalo-rtr01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 4,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-20T02:52:26.146000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-buffalo-rtr01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": {
+        "display": "Cisco IOS",
+        "id": 1,
+        "name": "Cisco IOS",
+        "slug": "cisco-ios",
+        "url": "https://demo.netbox.dev/api/dcim/platforms/1/"
+      },
+      "position": 4.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 4,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/4/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Router",
+        "id": 1,
+        "name": "Router",
+        "slug": "router",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/1/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Buffalo",
+        "id": 5,
+        "name": "DM-Buffalo",
+        "slug": "dm-buffalo",
+        "url": "https://demo.netbox.dev/api/dcim/sites/5/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/4/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-22T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Access Switch",
+        "id": 4,
+        "name": "Access Switch",
+        "slug": "access-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/4/"
+      },
+      "device_type": {
+        "display": "C9200-48P",
+        "id": 7,
+        "manufacturer": {
+          "display": "Cisco",
+          "id": 3,
+          "name": "Cisco",
+          "slug": "cisco",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/3/"
+        },
+        "model": "C9200-48P",
+        "slug": "c9200-48p",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/7/"
+      },
+      "display": "dmi01-buffalo-sw01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 17,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-22T02:11:11.883000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-buffalo-sw01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": 10.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 4,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/4/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Access Switch",
+        "id": 4,
+        "name": "Access Switch",
+        "slug": "access-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/4/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Buffalo",
+        "id": 5,
+        "name": "DM-Buffalo",
+        "slug": "dm-buffalo",
+        "url": "https://demo.netbox.dev/api/dcim/sites/5/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/17/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-22T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "PDU",
+        "id": 5,
+        "name": "PDU",
+        "slug": "pdu",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/5/"
+      },
+      "device_type": {
+        "display": "AP7901",
+        "id": 8,
+        "manufacturer": {
+          "display": "APC",
+          "id": 11,
+          "name": "APC",
+          "slug": "apc",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/11/"
+        },
+        "model": "AP7901",
+        "slug": "ap7901",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/8/"
+      },
+      "display": "dmi01-camden-pdu01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 37,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-30T19:02:56.256000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-camden-pdu01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": 1.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 5,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/5/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "PDU",
+        "id": 5,
+        "name": "PDU",
+        "slug": "pdu",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/5/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Camden",
+        "id": 6,
+        "name": "DM-Camden",
+        "slug": "dm-camden",
+        "url": "https://demo.netbox.dev/api/dcim/sites/6/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/37/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-20T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Router",
+        "id": 1,
+        "name": "Router",
+        "slug": "router",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/1/"
+      },
+      "device_type": {
+        "display": "ISR 1111-8P",
+        "id": 6,
+        "manufacturer": {
+          "display": "Cisco",
+          "id": 3,
+          "name": "Cisco",
+          "slug": "cisco",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/3/"
+        },
+        "model": "ISR 1111-8P",
+        "slug": "isr1111",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/6/"
+      },
+      "display": "dmi01-camden-rtr01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 5,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-20T02:53:47.838000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-camden-rtr01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": {
+        "display": "Cisco IOS",
+        "id": 1,
+        "name": "Cisco IOS",
+        "slug": "cisco-ios",
+        "url": "https://demo.netbox.dev/api/dcim/platforms/1/"
+      },
+      "position": 4.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 5,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/5/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Router",
+        "id": 1,
+        "name": "Router",
+        "slug": "router",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/1/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Camden",
+        "id": 6,
+        "name": "DM-Camden",
+        "slug": "dm-camden",
+        "url": "https://demo.netbox.dev/api/dcim/sites/6/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/5/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-22T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Access Switch",
+        "id": 4,
+        "name": "Access Switch",
+        "slug": "access-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/4/"
+      },
+      "device_type": {
+        "display": "C9200-48P",
+        "id": 7,
+        "manufacturer": {
+          "display": "Cisco",
+          "id": 3,
+          "name": "Cisco",
+          "slug": "cisco",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/3/"
+        },
+        "model": "C9200-48P",
+        "slug": "c9200-48p",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/7/"
+      },
+      "display": "dmi01-camden-sw01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 18,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-22T02:11:11.968000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-camden-sw01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": 10.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 5,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/5/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Access Switch",
+        "id": 4,
+        "name": "Access Switch",
+        "slug": "access-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/4/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Camden",
+        "id": 6,
+        "name": "DM-Camden",
+        "slug": "dm-camden",
+        "url": "https://demo.netbox.dev/api/dcim/sites/6/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/18/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-22T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "PDU",
+        "id": 5,
+        "name": "PDU",
+        "slug": "pdu",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/5/"
+      },
+      "device_type": {
+        "display": "AP7901",
+        "id": 8,
+        "manufacturer": {
+          "display": "APC",
+          "id": 11,
+          "name": "APC",
+          "slug": "apc",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/11/"
+        },
+        "model": "AP7901",
+        "slug": "ap7901",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/8/"
+      },
+      "display": "dmi01-nashua-pdu01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 38,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-30T19:02:56.357000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-nashua-pdu01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": 1.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 6,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/6/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "PDU",
+        "id": 5,
+        "name": "PDU",
+        "slug": "pdu",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/5/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Nashua",
+        "id": 7,
+        "name": "DM-Nashua",
+        "slug": "dm-nashua",
+        "url": "https://demo.netbox.dev/api/dcim/sites/7/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/38/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-20T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Router",
+        "id": 1,
+        "name": "Router",
+        "slug": "router",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/1/"
+      },
+      "device_type": {
+        "display": "ISR 1111-8P",
+        "id": 6,
+        "manufacturer": {
+          "display": "Cisco",
+          "id": 3,
+          "name": "Cisco",
+          "slug": "cisco",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/3/"
+        },
+        "model": "ISR 1111-8P",
+        "slug": "isr1111",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/6/"
+      },
+      "display": "dmi01-nashua-rtr01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 6,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-20T02:54:08.200000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-nashua-rtr01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": {
+        "display": "Cisco IOS",
+        "id": 1,
+        "name": "Cisco IOS",
+        "slug": "cisco-ios",
+        "url": "https://demo.netbox.dev/api/dcim/platforms/1/"
+      },
+      "position": 4.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 6,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/6/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Router",
+        "id": 1,
+        "name": "Router",
+        "slug": "router",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/1/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Nashua",
+        "id": 7,
+        "name": "DM-Nashua",
+        "slug": "dm-nashua",
+        "url": "https://demo.netbox.dev/api/dcim/sites/7/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/6/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-22T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Access Switch",
+        "id": 4,
+        "name": "Access Switch",
+        "slug": "access-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/4/"
+      },
+      "device_type": {
+        "display": "C9200-48P",
+        "id": 7,
+        "manufacturer": {
+          "display": "Cisco",
+          "id": 3,
+          "name": "Cisco",
+          "slug": "cisco",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/3/"
+        },
+        "model": "C9200-48P",
+        "slug": "c9200-48p",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/7/"
+      },
+      "display": "dmi01-nashua-sw01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 19,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-22T02:11:12.071000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-nashua-sw01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": 10.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 6,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/6/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Access Switch",
+        "id": 4,
+        "name": "Access Switch",
+        "slug": "access-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/4/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Nashua",
+        "id": 7,
+        "name": "DM-Nashua",
+        "slug": "dm-nashua",
+        "url": "https://demo.netbox.dev/api/dcim/sites/7/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/19/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-22T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "PDU",
+        "id": 5,
+        "name": "PDU",
+        "slug": "pdu",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/5/"
+      },
+      "device_type": {
+        "display": "AP7901",
+        "id": 8,
+        "manufacturer": {
+          "display": "APC",
+          "id": 11,
+          "name": "APC",
+          "slug": "apc",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/11/"
+        },
+        "model": "AP7901",
+        "slug": "ap7901",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/8/"
+      },
+      "display": "dmi01-pittsfield-pdu01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 39,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-30T19:02:56.460000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-pittsfield-pdu01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": 1.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 7,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/7/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "PDU",
+        "id": 5,
+        "name": "PDU",
+        "slug": "pdu",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/5/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Pittsfield",
+        "id": 8,
+        "name": "DM-Pittsfield",
+        "slug": "dm-pittsfield",
+        "url": "https://demo.netbox.dev/api/dcim/sites/8/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/39/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-20T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Router",
+        "id": 1,
+        "name": "Router",
+        "slug": "router",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/1/"
+      },
+      "device_type": {
+        "display": "ISR 1111-8P",
+        "id": 6,
+        "manufacturer": {
+          "display": "Cisco",
+          "id": 3,
+          "name": "Cisco",
+          "slug": "cisco",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/3/"
+        },
+        "model": "ISR 1111-8P",
+        "slug": "isr1111",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/6/"
+      },
+      "display": "dmi01-pittsfield-rtr01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 7,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-20T02:55:17.095000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-pittsfield-rtr01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": {
+        "display": "Cisco IOS",
+        "id": 1,
+        "name": "Cisco IOS",
+        "slug": "cisco-ios",
+        "url": "https://demo.netbox.dev/api/dcim/platforms/1/"
+      },
+      "position": 4.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 7,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/7/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Router",
+        "id": 1,
+        "name": "Router",
+        "slug": "router",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/1/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Pittsfield",
+        "id": 8,
+        "name": "DM-Pittsfield",
+        "slug": "dm-pittsfield",
+        "url": "https://demo.netbox.dev/api/dcim/sites/8/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/7/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-22T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Access Switch",
+        "id": 4,
+        "name": "Access Switch",
+        "slug": "access-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/4/"
+      },
+      "device_type": {
+        "display": "C9200-48P",
+        "id": 7,
+        "manufacturer": {
+          "display": "Cisco",
+          "id": 3,
+          "name": "Cisco",
+          "slug": "cisco",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/3/"
+        },
+        "model": "C9200-48P",
+        "slug": "c9200-48p",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/7/"
+      },
+      "display": "dmi01-pittsfield-sw01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 20,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-22T02:11:12.204000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-pittsfield-sw01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": 10.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 7,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/7/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Access Switch",
+        "id": 4,
+        "name": "Access Switch",
+        "slug": "access-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/4/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Pittsfield",
+        "id": 8,
+        "name": "DM-Pittsfield",
+        "slug": "dm-pittsfield",
+        "url": "https://demo.netbox.dev/api/dcim/sites/8/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/20/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-22T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "PDU",
+        "id": 5,
+        "name": "PDU",
+        "slug": "pdu",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/5/"
+      },
+      "device_type": {
+        "display": "AP7901",
+        "id": 8,
+        "manufacturer": {
+          "display": "APC",
+          "id": 11,
+          "name": "APC",
+          "slug": "apc",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/11/"
+        },
+        "model": "AP7901",
+        "slug": "ap7901",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/8/"
+      },
+      "display": "dmi01-rochester-pdu01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 40,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-30T19:02:56.562000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-rochester-pdu01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": 1.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 8,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/8/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "PDU",
+        "id": 5,
+        "name": "PDU",
+        "slug": "pdu",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/5/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Rochester",
+        "id": 9,
+        "name": "DM-Rochester",
+        "slug": "dm-rochester",
+        "url": "https://demo.netbox.dev/api/dcim/sites/9/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/40/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-20T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Router",
+        "id": 1,
+        "name": "Router",
+        "slug": "router",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/1/"
+      },
+      "device_type": {
+        "display": "ISR 1111-8P",
+        "id": 6,
+        "manufacturer": {
+          "display": "Cisco",
+          "id": 3,
+          "name": "Cisco",
+          "slug": "cisco",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/3/"
+        },
+        "model": "ISR 1111-8P",
+        "slug": "isr1111",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/6/"
+      },
+      "display": "dmi01-rochester-rtr01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 8,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-20T02:55:35.846000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-rochester-rtr01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": {
+        "display": "Cisco IOS",
+        "id": 1,
+        "name": "Cisco IOS",
+        "slug": "cisco-ios",
+        "url": "https://demo.netbox.dev/api/dcim/platforms/1/"
+      },
+      "position": 4.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 8,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/8/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Router",
+        "id": 1,
+        "name": "Router",
+        "slug": "router",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/1/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Rochester",
+        "id": 9,
+        "name": "DM-Rochester",
+        "slug": "dm-rochester",
+        "url": "https://demo.netbox.dev/api/dcim/sites/9/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/8/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-22T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Access Switch",
+        "id": 4,
+        "name": "Access Switch",
+        "slug": "access-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/4/"
+      },
+      "device_type": {
+        "display": "C9200-48P",
+        "id": 7,
+        "manufacturer": {
+          "display": "Cisco",
+          "id": 3,
+          "name": "Cisco",
+          "slug": "cisco",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/3/"
+        },
+        "model": "C9200-48P",
+        "slug": "c9200-48p",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/7/"
+      },
+      "display": "dmi01-rochster-sw01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 21,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-22T02:11:12.287000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-rochster-sw01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": 10.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 8,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/8/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Access Switch",
+        "id": 4,
+        "name": "Access Switch",
+        "slug": "access-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/4/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Rochester",
+        "id": 9,
+        "name": "DM-Rochester",
+        "slug": "dm-rochester",
+        "url": "https://demo.netbox.dev/api/dcim/sites/9/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/21/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-22T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "PDU",
+        "id": 5,
+        "name": "PDU",
+        "slug": "pdu",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/5/"
+      },
+      "device_type": {
+        "display": "AP7901",
+        "id": 8,
+        "manufacturer": {
+          "display": "APC",
+          "id": 11,
+          "name": "APC",
+          "slug": "apc",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/11/"
+        },
+        "model": "AP7901",
+        "slug": "ap7901",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/8/"
+      },
+      "display": "dmi01-scranton-pdu01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 41,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-30T19:02:56.664000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-scranton-pdu01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": 1.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 9,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/9/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "PDU",
+        "id": 5,
+        "name": "PDU",
+        "slug": "pdu",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/5/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Scranton",
+        "id": 10,
+        "name": "DM-Scranton",
+        "slug": "dm-scranton",
+        "url": "https://demo.netbox.dev/api/dcim/sites/10/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/41/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-20T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Router",
+        "id": 1,
+        "name": "Router",
+        "slug": "router",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/1/"
+      },
+      "device_type": {
+        "display": "ISR 1111-8P",
+        "id": 6,
+        "manufacturer": {
+          "display": "Cisco",
+          "id": 3,
+          "name": "Cisco",
+          "slug": "cisco",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/3/"
+        },
+        "model": "ISR 1111-8P",
+        "slug": "isr1111",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/6/"
+      },
+      "display": "dmi01-scranton-rtr01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 9,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-20T02:55:49.316000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-scranton-rtr01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": {
+        "display": "Cisco IOS",
+        "id": 1,
+        "name": "Cisco IOS",
+        "slug": "cisco-ios",
+        "url": "https://demo.netbox.dev/api/dcim/platforms/1/"
+      },
+      "position": 4.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 9,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/9/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Router",
+        "id": 1,
+        "name": "Router",
+        "slug": "router",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/1/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Scranton",
+        "id": 10,
+        "name": "DM-Scranton",
+        "slug": "dm-scranton",
+        "url": "https://demo.netbox.dev/api/dcim/sites/10/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/9/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-22T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Access Switch",
+        "id": 4,
+        "name": "Access Switch",
+        "slug": "access-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/4/"
+      },
+      "device_type": {
+        "display": "C9200-48P",
+        "id": 7,
+        "manufacturer": {
+          "display": "Cisco",
+          "id": 3,
+          "name": "Cisco",
+          "slug": "cisco",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/3/"
+        },
+        "model": "C9200-48P",
+        "slug": "c9200-48p",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/7/"
+      },
+      "display": "dmi01-scranton-sw01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 22,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-22T02:11:12.370000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-scranton-sw01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": 10.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 9,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/9/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Access Switch",
+        "id": 4,
+        "name": "Access Switch",
+        "slug": "access-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/4/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Scranton",
+        "id": 10,
+        "name": "DM-Scranton",
+        "slug": "dm-scranton",
+        "url": "https://demo.netbox.dev/api/dcim/sites/10/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/22/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-22T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "PDU",
+        "id": 5,
+        "name": "PDU",
+        "slug": "pdu",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/5/"
+      },
+      "device_type": {
+        "display": "AP7901",
+        "id": 8,
+        "manufacturer": {
+          "display": "APC",
+          "id": 11,
+          "name": "APC",
+          "slug": "apc",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/11/"
+        },
+        "model": "AP7901",
+        "slug": "ap7901",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/8/"
+      },
+      "display": "dmi01-stamford-pdu01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 42,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-30T19:02:56.767000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-stamford-pdu01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": 1.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 10,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/10/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "PDU",
+        "id": 5,
+        "name": "PDU",
+        "slug": "pdu",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/5/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Stamford",
+        "id": 11,
+        "name": "DM-Stamford",
+        "slug": "dm-stamford",
+        "url": "https://demo.netbox.dev/api/dcim/sites/11/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/42/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-20T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Router",
+        "id": 1,
+        "name": "Router",
+        "slug": "router",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/1/"
+      },
+      "device_type": {
+        "display": "ISR 1111-8P",
+        "id": 6,
+        "manufacturer": {
+          "display": "Cisco",
+          "id": 3,
+          "name": "Cisco",
+          "slug": "cisco",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/3/"
+        },
+        "model": "ISR 1111-8P",
+        "slug": "isr1111",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/6/"
+      },
+      "display": "dmi01-stamford-rtr01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 10,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-20T02:56:06.592000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-stamford-rtr01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": {
+        "display": "Cisco IOS",
+        "id": 1,
+        "name": "Cisco IOS",
+        "slug": "cisco-ios",
+        "url": "https://demo.netbox.dev/api/dcim/platforms/1/"
+      },
+      "position": 4.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 10,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/10/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Router",
+        "id": 1,
+        "name": "Router",
+        "slug": "router",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/1/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Stamford",
+        "id": 11,
+        "name": "DM-Stamford",
+        "slug": "dm-stamford",
+        "url": "https://demo.netbox.dev/api/dcim/sites/11/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/10/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-22T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Access Switch",
+        "id": 4,
+        "name": "Access Switch",
+        "slug": "access-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/4/"
+      },
+      "device_type": {
+        "display": "C9200-48P",
+        "id": 7,
+        "manufacturer": {
+          "display": "Cisco",
+          "id": 3,
+          "name": "Cisco",
+          "slug": "cisco",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/3/"
+        },
+        "model": "C9200-48P",
+        "slug": "c9200-48p",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/7/"
+      },
+      "display": "dmi01-stamford-sw01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 23,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-22T02:11:12.454000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-stamford-sw01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": 10.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 10,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/10/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Access Switch",
+        "id": 4,
+        "name": "Access Switch",
+        "slug": "access-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/4/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Stamford",
+        "id": 11,
+        "name": "DM-Stamford",
+        "slug": "dm-stamford",
+        "url": "https://demo.netbox.dev/api/dcim/sites/11/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/23/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-22T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "PDU",
+        "id": 5,
+        "name": "PDU",
+        "slug": "pdu",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/5/"
+      },
+      "device_type": {
+        "display": "AP7901",
+        "id": 8,
+        "manufacturer": {
+          "display": "APC",
+          "id": 11,
+          "name": "APC",
+          "slug": "apc",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/11/"
+        },
+        "model": "AP7901",
+        "slug": "ap7901",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/8/"
+      },
+      "display": "dmi01-syracuse-pdu01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 43,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-30T19:02:56.870000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-syracuse-pdu01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": 1.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 11,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/11/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "PDU",
+        "id": 5,
+        "name": "PDU",
+        "slug": "pdu",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/5/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Syracuse",
+        "id": 12,
+        "name": "DM-Syracuse",
+        "slug": "dm-syracuse",
+        "url": "https://demo.netbox.dev/api/dcim/sites/12/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/43/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-20T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Router",
+        "id": 1,
+        "name": "Router",
+        "slug": "router",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/1/"
+      },
+      "device_type": {
+        "display": "ISR 1111-8P",
+        "id": 6,
+        "manufacturer": {
+          "display": "Cisco",
+          "id": 3,
+          "name": "Cisco",
+          "slug": "cisco",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/3/"
+        },
+        "model": "ISR 1111-8P",
+        "slug": "isr1111",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/6/"
+      },
+      "display": "dmi01-syracuse-rtr01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 11,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-20T02:56:24.173000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-syracuse-rtr01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": {
+        "display": "Cisco IOS",
+        "id": 1,
+        "name": "Cisco IOS",
+        "slug": "cisco-ios",
+        "url": "https://demo.netbox.dev/api/dcim/platforms/1/"
+      },
+      "position": 4.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 11,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/11/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Router",
+        "id": 1,
+        "name": "Router",
+        "slug": "router",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/1/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Syracuse",
+        "id": 12,
+        "name": "DM-Syracuse",
+        "slug": "dm-syracuse",
+        "url": "https://demo.netbox.dev/api/dcim/sites/12/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/11/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-22T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Access Switch",
+        "id": 4,
+        "name": "Access Switch",
+        "slug": "access-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/4/"
+      },
+      "device_type": {
+        "display": "C9200-48P",
+        "id": 7,
+        "manufacturer": {
+          "display": "Cisco",
+          "id": 3,
+          "name": "Cisco",
+          "slug": "cisco",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/3/"
+        },
+        "model": "C9200-48P",
+        "slug": "c9200-48p",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/7/"
+      },
+      "display": "dmi01-syracuse-sw01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 24,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-22T02:11:12.540000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-syracuse-sw01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": 10.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 11,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/11/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Access Switch",
+        "id": 4,
+        "name": "Access Switch",
+        "slug": "access-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/4/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Syracuse",
+        "id": 12,
+        "name": "DM-Syracuse",
+        "slug": "dm-syracuse",
+        "url": "https://demo.netbox.dev/api/dcim/sites/12/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/24/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-22T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "PDU",
+        "id": 5,
+        "name": "PDU",
+        "slug": "pdu",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/5/"
+      },
+      "device_type": {
+        "display": "AP7901",
+        "id": 8,
+        "manufacturer": {
+          "display": "APC",
+          "id": 11,
+          "name": "APC",
+          "slug": "apc",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/11/"
+        },
+        "model": "AP7901",
+        "slug": "ap7901",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/8/"
+      },
+      "display": "dmi01-utica-pdu01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 44,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-30T19:02:56.973000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-utica-pdu01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": 1.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 12,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/12/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "PDU",
+        "id": 5,
+        "name": "PDU",
+        "slug": "pdu",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/5/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Utica",
+        "id": 13,
+        "name": "DM-Utica",
+        "slug": "dm-utica",
+        "url": "https://demo.netbox.dev/api/dcim/sites/13/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/44/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-20T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Router",
+        "id": 1,
+        "name": "Router",
+        "slug": "router",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/1/"
+      },
+      "device_type": {
+        "display": "ISR 1111-8P",
+        "id": 6,
+        "manufacturer": {
+          "display": "Cisco",
+          "id": 3,
+          "name": "Cisco",
+          "slug": "cisco",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/3/"
+        },
+        "model": "ISR 1111-8P",
+        "slug": "isr1111",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/6/"
+      },
+      "display": "dmi01-utica-rtr01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 12,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-20T02:56:38.212000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-utica-rtr01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": {
+        "display": "Cisco IOS",
+        "id": 1,
+        "name": "Cisco IOS",
+        "slug": "cisco-ios",
+        "url": "https://demo.netbox.dev/api/dcim/platforms/1/"
+      },
+      "position": 4.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 12,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/12/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Router",
+        "id": 1,
+        "name": "Router",
+        "slug": "router",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/1/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Utica",
+        "id": 13,
+        "name": "DM-Utica",
+        "slug": "dm-utica",
+        "url": "https://demo.netbox.dev/api/dcim/sites/13/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/12/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-22T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Access Switch",
+        "id": 4,
+        "name": "Access Switch",
+        "slug": "access-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/4/"
+      },
+      "device_type": {
+        "display": "C9200-48P",
+        "id": 7,
+        "manufacturer": {
+          "display": "Cisco",
+          "id": 3,
+          "name": "Cisco",
+          "slug": "cisco",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/3/"
+        },
+        "model": "C9200-48P",
+        "slug": "c9200-48p",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/7/"
+      },
+      "display": "dmi01-utica-sw01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 25,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-22T02:11:12.622000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-utica-sw01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": 10.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 12,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/12/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Access Switch",
+        "id": 4,
+        "name": "Access Switch",
+        "slug": "access-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/4/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Utica",
+        "id": 13,
+        "name": "DM-Utica",
+        "slug": "dm-utica",
+        "url": "https://demo.netbox.dev/api/dcim/sites/13/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/25/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-22T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "PDU",
+        "id": 5,
+        "name": "PDU",
+        "slug": "pdu",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/5/"
+      },
+      "device_type": {
+        "display": "AP7901",
+        "id": 8,
+        "manufacturer": {
+          "display": "APC",
+          "id": 11,
+          "name": "APC",
+          "slug": "apc",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/11/"
+        },
+        "model": "AP7901",
+        "slug": "ap7901",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/8/"
+      },
+      "display": "dmi01-yonkers-pdu01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 45,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-30T19:02:57.075000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-yonkers-pdu01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": 1.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 13,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/13/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "PDU",
+        "id": 5,
+        "name": "PDU",
+        "slug": "pdu",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/5/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Yonkers",
+        "id": 14,
+        "name": "DM-Yonkers",
+        "slug": "dm-yonkers",
+        "url": "https://demo.netbox.dev/api/dcim/sites/14/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/45/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-20T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Router",
+        "id": 1,
+        "name": "Router",
+        "slug": "router",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/1/"
+      },
+      "device_type": {
+        "display": "ISR 1111-8P",
+        "id": 6,
+        "manufacturer": {
+          "display": "Cisco",
+          "id": 3,
+          "name": "Cisco",
+          "slug": "cisco",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/3/"
+        },
+        "model": "ISR 1111-8P",
+        "slug": "isr1111",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/6/"
+      },
+      "display": "dmi01-yonkers-rtr01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 13,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-20T02:56:52.908000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-yonkers-rtr01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": {
+        "display": "Cisco IOS",
+        "id": 1,
+        "name": "Cisco IOS",
+        "slug": "cisco-ios",
+        "url": "https://demo.netbox.dev/api/dcim/platforms/1/"
+      },
+      "position": 4.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 13,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/13/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Router",
+        "id": 1,
+        "name": "Router",
+        "slug": "router",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/1/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Yonkers",
+        "id": 14,
+        "name": "DM-Yonkers",
+        "slug": "dm-yonkers",
+        "url": "https://demo.netbox.dev/api/dcim/sites/14/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/13/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-22T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Access Switch",
+        "id": 4,
+        "name": "Access Switch",
+        "slug": "access-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/4/"
+      },
+      "device_type": {
+        "display": "C9200-48P",
+        "id": 7,
+        "manufacturer": {
+          "display": "Cisco",
+          "id": 3,
+          "name": "Cisco",
+          "slug": "cisco",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/3/"
+        },
+        "model": "C9200-48P",
+        "slug": "c9200-48p",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/7/"
+      },
+      "display": "dmi01-yonkers-sw01",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 26,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-22T02:11:12.705000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "dmi01-yonkers-sw01",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": 10.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 13,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/13/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Access Switch",
+        "id": 4,
+        "name": "Access Switch",
+        "slug": "access-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/4/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Yonkers",
+        "id": 14,
+        "name": "DM-Yonkers",
+        "slug": "dm-yonkers",
+        "url": "https://demo.netbox.dev/api/dcim/sites/14/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": {
+        "display": "Dunder-Mifflin, Inc.",
+        "id": 5,
+        "name": "Dunder-Mifflin, Inc.",
+        "slug": "dunder-mifflin",
+        "url": "https://demo.netbox.dev/api/tenancy/tenants/5/"
+      },
+      "url": "https://demo.netbox.dev/api/dcim/devices/26/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2024-01-22T10:18:23.671080Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Distribution Switch",
+        "id": 3,
+        "name": "Distribution Switch",
+        "slug": "distribution-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/3/"
+      },
+      "device_type": {
+        "display": "5363803",
+        "id": 17,
+        "manufacturer": {
+          "display": "Arista",
+          "id": 1,
+          "name": "Arista",
+          "slug": "arista",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/1/"
+        },
+        "model": "5363803",
+        "slug": "5363803",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/17/"
+      },
+      "display": "mast_1001",
+      "face": null,
+      "front_port_count": 0,
+      "id": 117,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2024-01-22T10:18:23.671118Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": "mast_1001",
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": null,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 2,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/2/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Distribution Switch",
+        "id": 3,
+        "name": "Distribution Switch",
+        "slug": "distribution-switch",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/3/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Albany",
+        "id": 3,
+        "name": "DM-Albany",
+        "slug": "dm-albany",
+        "url": "https://demo.netbox.dev/api/dcim/sites/3/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": null,
+      "url": "https://demo.netbox.dev/api/dcim/devices/117/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-30T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Patch Panel",
+        "id": 6,
+        "name": "Patch Panel",
+        "slug": "patch-panel",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/6/"
+      },
+      "device_type": {
+        "display": "48-Port Patch Panel",
+        "id": 10,
+        "manufacturer": {
+          "display": "Panduit",
+          "id": 12,
+          "name": "Panduit",
+          "slug": "panduit",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/12/"
+        },
+        "model": "48-Port Patch Panel",
+        "slug": "48-port-patch-panel",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/10/"
+      },
+      "display": "Panduit 48-Port Patch Panel (74)",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 74,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-30T20:44:53.681000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": null,
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": 11.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 1,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/1/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Patch Panel",
+        "id": 6,
+        "name": "Patch Panel",
+        "slug": "patch-panel",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/6/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Akron",
+        "id": 2,
+        "name": "DM-Akron",
+        "slug": "dm-akron",
+        "url": "https://demo.netbox.dev/api/dcim/sites/2/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": null,
+      "url": "https://demo.netbox.dev/api/dcim/devices/74/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-30T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Patch Panel",
+        "id": 6,
+        "name": "Patch Panel",
+        "slug": "patch-panel",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/6/"
+      },
+      "device_type": {
+        "display": "48-Port Patch Panel",
+        "id": 10,
+        "manufacturer": {
+          "display": "Panduit",
+          "id": 12,
+          "name": "Panduit",
+          "slug": "panduit",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/12/"
+        },
+        "model": "48-Port Patch Panel",
+        "slug": "48-port-patch-panel",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/10/"
+      },
+      "display": "Panduit 48-Port Patch Panel (75)",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 75,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-30T20:44:53.808000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": null,
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": 11.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 2,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/2/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Patch Panel",
+        "id": 6,
+        "name": "Patch Panel",
+        "slug": "patch-panel",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/6/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Albany",
+        "id": 3,
+        "name": "DM-Albany",
+        "slug": "dm-albany",
+        "url": "https://demo.netbox.dev/api/dcim/sites/3/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": null,
+      "url": "https://demo.netbox.dev/api/dcim/devices/75/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-30T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Patch Panel",
+        "id": 6,
+        "name": "Patch Panel",
+        "slug": "patch-panel",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/6/"
+      },
+      "device_type": {
+        "display": "48-Port Patch Panel",
+        "id": 10,
+        "manufacturer": {
+          "display": "Panduit",
+          "id": 12,
+          "name": "Panduit",
+          "slug": "panduit",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/12/"
+        },
+        "model": "48-Port Patch Panel",
+        "slug": "48-port-patch-panel",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/10/"
+      },
+      "display": "Panduit 48-Port Patch Panel (76)",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 76,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-30T20:44:53.932000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": null,
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": 11.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 3,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/3/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Patch Panel",
+        "id": 6,
+        "name": "Patch Panel",
+        "slug": "patch-panel",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/6/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Binghamton",
+        "id": 4,
+        "name": "DM-Binghamton",
+        "slug": "dm-binghamton",
+        "url": "https://demo.netbox.dev/api/dcim/sites/4/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": null,
+      "url": "https://demo.netbox.dev/api/dcim/devices/76/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    },
+    {
+      "airflow": null,
+      "asset_tag": null,
+      "cluster": null,
+      "comments": "",
+      "config_context": {},
+      "config_template": null,
+      "console_port_count": 0,
+      "console_server_port_count": 0,
+      "created": "2020-12-30T00:00:00Z",
+      "custom_fields": {
+        "Support_Contract": null,
+        "special_management": null,
+        "test1CF": null
+      },
+      "description": "",
+      "device_bay_count": 0,
+      "device_role": {
+        "display": "Patch Panel",
+        "id": 6,
+        "name": "Patch Panel",
+        "slug": "patch-panel",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/6/"
+      },
+      "device_type": {
+        "display": "48-Port Patch Panel",
+        "id": 10,
+        "manufacturer": {
+          "display": "Panduit",
+          "id": 12,
+          "name": "Panduit",
+          "slug": "panduit",
+          "url": "https://demo.netbox.dev/api/dcim/manufacturers/12/"
+        },
+        "model": "48-Port Patch Panel",
+        "slug": "48-port-patch-panel",
+        "url": "https://demo.netbox.dev/api/dcim/device-types/10/"
+      },
+      "display": "Panduit 48-Port Patch Panel (77)",
+      "face": {
+        "label": "Front",
+        "value": "front"
+      },
+      "front_port_count": 0,
+      "id": 77,
+      "interface_count": 0,
+      "inventory_item_count": 0,
+      "last_updated": "2020-12-30T20:44:54.054000Z",
+      "latitude": null,
+      "local_context_data": null,
+      "location": null,
+      "longitude": null,
+      "module_bay_count": 0,
+      "name": null,
+      "oob_ip": null,
+      "parent_device": null,
+      "platform": null,
+      "position": 11.0,
+      "power_outlet_count": 0,
+      "power_port_count": 0,
+      "primary_ip": null,
+      "primary_ip4": null,
+      "primary_ip6": null,
+      "rack": {
+        "display": "Comms closet",
+        "id": 4,
+        "name": "Comms closet",
+        "url": "https://demo.netbox.dev/api/dcim/racks/4/"
+      },
+      "rear_port_count": 0,
+      "role": {
+        "display": "Patch Panel",
+        "id": 6,
+        "name": "Patch Panel",
+        "slug": "patch-panel",
+        "url": "https://demo.netbox.dev/api/dcim/device-roles/6/"
+      },
+      "serial": "",
+      "site": {
+        "display": "DM-Buffalo",
+        "id": 5,
+        "name": "DM-Buffalo",
+        "slug": "dm-buffalo",
+        "url": "https://demo.netbox.dev/api/dcim/sites/5/"
+      },
+      "status": {
+        "label": "Active",
+        "value": "active"
+      },
+      "tags": [],
+      "tenant": null,
+      "url": "https://demo.netbox.dev/api/dcim/devices/77/",
+      "vc_position": null,
+      "vc_priority": null,
+      "virtual_chassis": null
+    }
+  ]
+}
