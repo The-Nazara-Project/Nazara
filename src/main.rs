@@ -6,9 +6,9 @@ use clap::Parser;
 use collectors::{dmi_collector, network_collector};
 use configuration::config_parser::set_up_configuration;
 use publisher::publisher::*;
-use thanix_client::util::ThanixClient;
-use std::process;
 use reqwest::blocking::Client;
+use std::process;
+use thanix_client::util::ThanixClient;
 
 use crate::publisher::publisher_exceptions::NetBoxApiError;
 
@@ -87,15 +87,15 @@ fn main() {
         }
     };
 
-    let client: ThanixClient = ThanixClient{
+    let client: ThanixClient = ThanixClient {
         base_url: config.get_netbox_uri().to_string(),
         authentication_token: config.get_api_token().to_string(),
         client: Client::new(),
     };
 
     match probe(&client) {
-        Ok(()) => {},
-        Err(err) => println!("{}", err)
+        Ok(()) => {}
+        Err(err) => println!("{}", err),
     };
 
     // println!("Configuration: \n{:#?}", config);
