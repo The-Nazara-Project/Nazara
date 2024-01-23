@@ -22,3 +22,4 @@ Cargo.lock
 
 # output.txt file used for testing
 output.txt
+output.json
