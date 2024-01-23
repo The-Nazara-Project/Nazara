@@ -10,7 +10,7 @@ use std::ops::Deref;
 use serde::{Deserialize, Serialize};
 use thanix_client::{
     paths::{self, DcimDevicesListQuery},
-    types::PaginatedDeviceWithConfigContextList,
+    types::{DeviceWithConfigContext, PaginatedDeviceWithConfigContextList},
     util::ThanixClient,
 };
 
@@ -31,32 +31,58 @@ pub fn probe(client: &ThanixClient) -> Result<(), NetBoxApiError> {
 }
 
 pub fn register_machine(client: &ThanixClient) -> Result<(), NetBoxApiError> {
-    println!("Registering your machine. This may take a while...");
+    println!("Starting registration process. This may take a while...");
     get_machines(client);
     Ok(())
 }
 
-/// Get list of machines
+/// Get list of machines.
+///
+/// Sends a `GET` request to the `/dcim/devices` endpoint to retrieve
+/// a list of machines.
+///
+/// This is later needed to search for the current machine in the response to decide
+/// whether to register a new one or update an existing one.
+///
+/// # Arguments
+///
+/// - `client: &ThanixClient` - Instance of the current API client.
+///
+/// # Returns
+///
+/// # Panics
+///
+/// The function panics, when the request returns an error.
 fn get_machines(client: &ThanixClient) {
     println!("Retrieving list of machines...");
 
     match paths::dcim_devices_list(client, paths::DcimDevicesListQuery::default()) {
         Ok(response) => {
+            println!("List received. Analyzing...");
             let debug_json = response.text().unwrap();
 
             // Write the JSON string into a file
             std::fs::write("output.txt", &debug_json).unwrap();
-            println!("{:?}", &debug_json);
+            //println!("{:?}", &debug_json);
             let response_text: PaginatedDeviceWithConfigContextList =
                 serde_json::from_str(&debug_json).unwrap();
 
             // Convert the Rust object back into a JSON string
             let json_string = serde_json::to_string_pretty(&response_text).unwrap();
 
-            println!("Response \n -------\n\t{:?}", &json_string)
+            // println!("Response \n -------\n\t{:?}", &json_string)
         }
         Err(err) => panic!("{}", err),
     }
+}
+
+/// Searches for matching device in list of machines.
+///
+/// # Returns
+///
+/// - `bool` - Depending on if the device has been found or not.
+fn search_for_matches(list: &Vec<DeviceWithConfigContext>) -> bool {
+    true
 }
 
 /// Determine Error code based on response.
