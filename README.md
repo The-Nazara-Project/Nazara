@@ -52,7 +52,7 @@ Here is an example for passing these parameters on using the CLI:
 
 #### Configuring via `nbs-config.toml`file.
 
-Alternatively, you can provide the configuration parameters in a config file named `nbs-config.toml`, located in the same
+Alternatively, you can provide the configuration parameters in a config file named `nazara-config.toml`, located in the same
 directory as the executable file. Here is an example how the config file should look like:
 
 ```toml
@@ -61,7 +61,7 @@ netbox_api_token = "$API_TOKEN"
 netbox_uri = "$API_URI"
 ```
 
-Aside from the NetBox system parameters, configuration via the `.nbs-config.toml` also allows you to add certain
+Aside from the NetBox system parameters, configuration via the `.nazara-config.toml` also allows you to add certain
 custom fields to your system information that cannot be automatically selected. A great example would be the
 `System Location` entry. To specify that, simply add the parameter under the `[system]` block in your configuration file.
 
