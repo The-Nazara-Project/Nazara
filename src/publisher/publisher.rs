@@ -4,20 +4,36 @@
 //! Based on the conditions in this logic it is decided whether to use the machine or VM endpoints, to create a new
 //! machine or update an existing one.
 //!
+//! The actual request logic will be provided by the `thanix_client` crate.
+//!
 //! The `api_client` module will provide the actual client and request logic.
-use std::ops::Deref;
-
 use serde::{Deserialize, Serialize};
 use thanix_client::{
     paths::{self, DcimDevicesListQuery},
-    types::{DeviceWithConfigContext, PaginatedDeviceWithConfigContextList},
+    types::{
+        DeviceWithConfigContext, PaginatedDeviceWithConfigContextList,
+        WritableDeviceWithConfigContextRequest,
+    },
     util::ThanixClient,
 };
 
-use crate::publisher::api_client::test_connection;
+use crate::{
+    collectors::{dmi_collector::DmiInformation, network_collector::NetworkInformation},
+    publisher::api_client::test_connection,
+    Machine,
+};
 
 use super::publisher_exceptions::NetBoxApiError;
 
+/// Test connection to NetBox.
+///
+/// # Paramters
+///
+/// - `client: &ThanixClient` - Reference to a `thanix_client` instance
+///
+/// # Returns
+///
+/// - `Result<(), NetBoxApiError` - Either returns an empty Ok() or a new instance of `NetBoxApiError`
 pub fn probe(client: &ThanixClient) -> Result<(), NetBoxApiError> {
     println!("Probing connection to NetBox...");
 
@@ -30,9 +46,19 @@ pub fn probe(client: &ThanixClient) -> Result<(), NetBoxApiError> {
     }
 }
 
-pub fn register_machine(client: &ThanixClient) -> Result<(), NetBoxApiError> {
+/// Register this machine in NetBox.
+///
+/// # Parameters
+///
+/// - `client: &ThanixClient` - Reference to a `thanix_client` instance
+///
+/// # Returns
+///
+/// TODO
+pub fn register_machine(client: &ThanixClient, machine: Machine) -> Result<(), NetBoxApiError> {
     println!("Starting registration process. This may take a while...");
-    get_machines(client);
+    let machines: Vec<DeviceWithConfigContext> = get_machines(client);
+    search_for_matches(machine, &machines);
     Ok(())
 }
 
@@ -50,27 +76,25 @@ pub fn register_machine(client: &ThanixClient) -> Result<(), NetBoxApiError> {
 ///
 /// # Returns
 ///
+/// - `device_list: Vec<DeviceWithConfigContext>` - Returns a list of `DeviceWithConfigContext` objects.
+///
 /// # Panics
 ///
 /// The function panics, when the request returns an error.
-fn get_machines(client: &ThanixClient) {
+fn get_machines(client: &ThanixClient) -> Vec<DeviceWithConfigContext> {
     println!("Retrieving list of machines...");
 
-    match paths::dcim_devices_list(client, paths::DcimDevicesListQuery::default()) {
+    match paths::dcim_devices_list(client, DcimDevicesListQuery::default()) {
         Ok(response) => {
             println!("List received. Analyzing...");
             let debug_json = response.text().unwrap();
 
-            // Write the JSON string into a file
-            std::fs::write("output.txt", &debug_json).unwrap();
-            //println!("{:?}", &debug_json);
-            let response_text: PaginatedDeviceWithConfigContextList =
+            let response_content: PaginatedDeviceWithConfigContextList =
                 serde_json::from_str(&debug_json).unwrap();
 
-            // Convert the Rust object back into a JSON string
-            let json_string = serde_json::to_string_pretty(&response_text).unwrap();
+            let device_list: Vec<DeviceWithConfigContext> = response_content.results;
 
-            // println!("Response \n -------\n\t{:?}", &json_string)
+            return device_list;
         }
         Err(err) => panic!("{}", err),
     }
@@ -78,12 +102,36 @@ fn get_machines(client: &ThanixClient) {
 
 /// Searches for matching device in list of machines.
 ///
+/// Primary search parameters are the device's **serial number** and **UUID** acquired by `dmidecode`.
+///
+/// If a name has been provided, it is assumed that you do want to use this as primary search vector.
+/// (Maybe because for your use case serial numbers or UUIDs are not reliable.)
+///
+/// # Parameters
+///
+/// - `machine: `Machine`` - Instance of a `Machine` containing all the local machines information.
+/// - `device_list: &Vec<DeviceWithConfigContext>` - List of all devices.
+///
 /// # Returns
 ///
 /// - `bool` - Depending on if the device has been found or not.
-fn search_for_matches(list: &Vec<DeviceWithConfigContext>) -> bool {
-    true
+fn search_for_matches(machine: Machine, device_list: &Vec<DeviceWithConfigContext>) -> bool {
+    if machine.name.is_none() {
+        for device in device_list {
+            if machine.dmi_information.system_information.serial == device.serial {
+                println!("\x1b[32m[success]\x1b[0m Machine found using serial number!");
+                return true;
+            }
+        }
+        println!("\x1b[32m[info]\x1b[0m Machine not found using serial number.");
+        return false;
+    }
+    for device in device_list {
+        if device.name == machine.name {
+            println!("\x1b[32m[success]\x1b[0m Machine found using name!");
+            return true;
+        }
+    }
+    println!("\x1b[32m[info]\x1b[0m Machine not found in registered machines.");
+    false
 }
-
-/// Determine Error code based on response.
-fn determine_resp_code() {}

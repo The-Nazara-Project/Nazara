@@ -27,9 +27,9 @@ use std::{
 /// * cpu_information: [`CpuInformation`](struct.CpuInformation) - Information about the processor(s).
 #[derive(Serialize, Debug)]
 pub struct DmiInformation {
-    system_information: SystemInformation,
-    chassis_information: ChassisInformation,
-    cpu_information: CpuInformation,
+    pub system_information: SystemInformation,
+    pub chassis_information: ChassisInformation,
+    pub cpu_information: CpuInformation,
 }
 
 /// ## SystemInformation
@@ -44,12 +44,12 @@ pub struct DmiInformation {
 /// * serial: `String` - The serial number of the machine.
 /// * is_virtual: `bool` - Whether the machine is a virtual machine or not.
 #[derive(Serialize, Debug)]
-struct SystemInformation {
-    vendor: String,
-    model: String,
-    uuid: String,
-    serial: String,
-    is_virtual: bool,
+pub struct SystemInformation {
+    pub vendor: String,
+    pub model: String,
+    pub uuid: String,
+    pub serial: String,
+    pub is_virtual: bool,
 }
 
 /// ## Chassis Information
@@ -62,10 +62,10 @@ struct SystemInformation {
 /// * asset: `String`- Type of asset.
 /// * chassis_serial: `Serial` - Serial number of the chassis.
 #[derive(Serialize, Debug)]
-struct ChassisInformation {
-    chassis_type: String,
-    asset: String,
-    chassis_serial: String,
+pub struct ChassisInformation {
+    pub chassis_type: String,
+    pub asset: String,
+    pub chassis_serial: String,
 }
 
 /// ## CpuInformation
@@ -82,14 +82,14 @@ struct ChassisInformation {
 /// * voltage: `String` - The voltage the CPU runs at.
 /// * status: `String` - Shows if the socket is enabled/disabled and populated/empty.
 #[derive(Serialize, Debug)]
-struct CpuInformation {
-    version: String,
-    core_count: String,
-    cores_enabled: String,
-    thread_count: String,
-    max_speed: String,
-    voltage: String,
-    status: String,
+pub struct CpuInformation {
+    pub version: String,
+    pub core_count: String,
+    pub cores_enabled: String,
+    pub thread_count: String,
+    pub max_speed: String,
+    pub voltage: String,
+    pub status: String,
 }
 
 /// List of possible system parameters to collect dmi information from.

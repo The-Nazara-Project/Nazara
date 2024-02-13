@@ -3,7 +3,10 @@ pub mod configuration;
 pub mod publisher;
 
 use clap::Parser;
-use collectors::{dmi_collector, network_collector};
+use collectors::{
+    dmi_collector::{self, DmiInformation},
+    network_collector::{self, NetworkInformation},
+};
 use configuration::config_parser::set_up_configuration;
 use publisher::publisher::*;
 use reqwest::blocking::Client;
@@ -11,6 +14,21 @@ use std::process;
 use thanix_client::util::ThanixClient;
 
 use crate::publisher::publisher_exceptions::NetBoxApiError;
+
+/// The Machine struct
+///
+/// This struct represents your machine.
+/// It holds all information collected and allows for sharing this
+/// information between Nazara's modules.
+///
+/// It is used in places where it is necessary to have access to various
+/// pieces of collected information from a single source of truth.
+/// It will also be translated into the proper API type by the translator.
+pub struct Machine {
+    pub name: Option<String>,
+    pub dmi_information: DmiInformation,
+    pub network_information: Vec<NetworkInformation>,
+}
 
 /// The arguments that Nazara expects to get via the cli.
 ///
@@ -76,7 +94,7 @@ fn main() {
     let config = match set_up_configuration(
         args.uri,
         args.token,
-        args.name,
+        args.name.clone(),
         args.location,
         args.device_role,
     ) {
@@ -98,17 +116,17 @@ fn main() {
         Err(err) => println!("{}", err),
     };
 
-    // println!("Configuration: \n{:#?}", config);
-
-    // println!("Uri: {}\nToken: {}", args.uri.clone().unwrap(), args.token.clone().unwrap());
-
     let dmi_information: dmi_collector::DmiInformation = dmi_collector::construct_dmi_information();
-
-    // println!("{:#?}", dmi_information);
 
     let network_information = network_collector::construct_network_information().unwrap();
 
-    let _ = register_machine(&client);
+    let machine: Machine = Machine {
+        name: args.name,
+        dmi_information,
+        network_information,
+    };
+
+    let _ = register_machine(&client, machine);
 
     // println!("{:#?}", network_information);
 
