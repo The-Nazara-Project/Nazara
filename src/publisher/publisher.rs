@@ -9,9 +9,10 @@
 //! The `api_client` module will provide the actual client and request logic.
 use serde::{Deserialize, Serialize};
 use thanix_client::{
-    paths::{self, DcimDevicesListQuery},
+    paths::{self, DcimDevicesListQuery, VirtualizationVirtualMachinesListQuery},
     types::{
         DeviceWithConfigContext, PaginatedDeviceWithConfigContextList,
+        PaginatedVirtualMachineWithConfigContextList, VirtualMachineWithConfigContext,
         WritableDeviceWithConfigContextRequest,
     },
     util::ThanixClient,
@@ -20,10 +21,18 @@ use thanix_client::{
 use crate::{
     collectors::{dmi_collector::DmiInformation, network_collector::NetworkInformation},
     publisher::api_client::test_connection,
+    publisher::translator,
     Machine,
 };
 
 use super::publisher_exceptions::NetBoxApiError;
+
+/// Workaround until rust supports return type polymorphism on stable
+/// to allow for generics to be used instead.
+enum DeviceListOrVMList {
+    DeviceList(Vec<DeviceWithConfigContext>),
+    VmList(Vec<VirtualMachineWithConfigContext>),
+}
 
 /// Test connection to NetBox.
 ///
@@ -57,8 +66,34 @@ pub fn probe(client: &ThanixClient) -> Result<(), NetBoxApiError> {
 /// TODO
 pub fn register_machine(client: &ThanixClient, machine: Machine) -> Result<(), NetBoxApiError> {
     println!("Starting registration process. This may take a while...");
-    let machines: Vec<DeviceWithConfigContext> = get_machines(client);
-    search_for_matches(machine, &machines);
+    let nb_devices: DeviceListOrVMList = get_machines(client, &machine);
+
+    search_for_matches(&machine, &nb_devices);
+    // if search_for_matches(&machine, &nb_devices) {
+    //     // TODO: If machine is found,
+    //     // get the machine struct translated
+    //     // put the translated data into an UPDATE request
+    //     // profit
+    //     let machine_writable = translator::information_to_device(&machine);
+
+    //     // TODO BUG FIXME: correct query type empty!!! -> paths.rs 12959 DcimDeviceUpdateQuery
+    //     match paths::dcim_devices_update(client, machine_writable, id) {
+    //         Ok(response) => {
+    //             println!("{}", response);
+    //         },
+    //         Err(err) => {
+    //             panic!("[FATAL] {}", err)
+    //         }
+    //     }
+    // }
+
+    // if machine is NOT found,
+    // get the machine struct translated
+    // put the translated data into an POST request
+    // profit
+
+    // if fuckaroo, panic! (or find out)
+
     Ok(())
 }
 
@@ -81,22 +116,44 @@ pub fn register_machine(client: &ThanixClient, machine: Machine) -> Result<(), N
 /// # Panics
 ///
 /// The function panics, when the request returns an error.
-fn get_machines(client: &ThanixClient) -> Vec<DeviceWithConfigContext> {
-    println!("Retrieving list of machines...");
+fn get_machines(client: &ThanixClient, machine: &Machine) -> DeviceListOrVMList {
+    if machine.dmi_information.system_information.is_virtual {
+        println!("Retrieving list of virtual machines...");
 
-    match paths::dcim_devices_list(client, DcimDevicesListQuery::default()) {
-        Ok(response) => {
-            println!("List received. Analyzing...");
-            let debug_json = response.text().unwrap();
+        match paths::virtualization_virtual_machines_list(
+            client,
+            VirtualizationVirtualMachinesListQuery::default(),
+        ) {
+            Ok(response) => {
+                println!("List received. Analyzing...");
+                let debug_json = response.text().unwrap();
 
-            let response_content: PaginatedDeviceWithConfigContextList =
-                serde_json::from_str(&debug_json).unwrap();
+                let response_content: PaginatedVirtualMachineWithConfigContextList =
+                    serde_json::from_str(&debug_json).unwrap();
 
-            let device_list: Vec<DeviceWithConfigContext> = response_content.results;
+                let vm_list: Vec<VirtualMachineWithConfigContext> = response_content.results;
 
-            return device_list;
+                DeviceListOrVMList::VmList(vm_list)
+            }
+            Err(err) => panic!("{}", err),
         }
-        Err(err) => panic!("{}", err),
+    } else {
+        println!("Retrieving list of machines...");
+
+        match paths::dcim_devices_list(client, DcimDevicesListQuery::default()) {
+            Ok(response) => {
+                println!("List received. Analyzing...");
+                let debug_json = response.text().unwrap();
+
+                let response_content: PaginatedDeviceWithConfigContextList =
+                    serde_json::from_str(&debug_json).unwrap();
+
+                let device_list: Vec<DeviceWithConfigContext> = response_content.results;
+
+                DeviceListOrVMList::DeviceList(device_list)
+            }
+            Err(err) => panic!("{}", err),
+        }
     }
 }
 
@@ -115,23 +172,37 @@ fn get_machines(client: &ThanixClient) -> Vec<DeviceWithConfigContext> {
 /// # Returns
 ///
 /// - `bool` - Depending on if the device has been found or not.
-fn search_for_matches(machine: Machine, device_list: &Vec<DeviceWithConfigContext>) -> bool {
-    if machine.name.is_none() {
-        for device in device_list {
-            if machine.dmi_information.system_information.serial == device.serial {
-                println!("\x1b[32m[success]\x1b[0m Machine found using serial number!");
-                return true;
+fn search_for_matches(machine: &Machine, device_list: &DeviceListOrVMList) -> bool {
+    match device_list {
+        DeviceListOrVMList::DeviceList(devices) => {
+            if machine.name.is_none() {
+                for device in devices {
+                    if machine.dmi_information.system_information.serial == device.serial {
+                        println!("\x1b[32m[success]\x1b[0m Machine found using serial number!");
+                        return true;
+                    }
+                }
+                println!("\x1b[32m[info]\x1b[0m Machine not found using serial number.");
+                return false;
             }
+            for device in devices {
+                if device.name == machine.name {
+                    println!("\x1b[32m[success]\x1b[0m Machine found using name!");
+                    return true;
+                }
+            }
+            println!("\x1b[36m[info]\x1b[0m Machine not found in registered machines using name.");
+            false
         }
-        println!("\x1b[32m[info]\x1b[0m Machine not found using serial number.");
-        return false;
-    }
-    for device in device_list {
-        if device.name == machine.name {
-            println!("\x1b[32m[success]\x1b[0m Machine found using name!");
-            return true;
+        DeviceListOrVMList::VmList(virtual_machines) => {
+            for vm in virtual_machines {
+                if machine.name.as_ref().unwrap() == &vm.name {
+                    println!("\x1b[32m[success]\x1b[0m VM found found using serial number!");
+                    return true;
+                }
+            }
+            println!("\x1b[36m[info]\x1b[0m VM not found in registered machines.");
+            false
         }
     }
-    println!("\x1b[32m[info]\x1b[0m Machine not found in registered machines.");
-    false
 }

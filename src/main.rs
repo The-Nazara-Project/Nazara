@@ -13,8 +13,6 @@ use reqwest::blocking::Client;
 use std::process;
 use thanix_client::util::ThanixClient;
 
-use crate::publisher::publisher_exceptions::NetBoxApiError;
-
 /// The Machine struct
 ///
 /// This struct represents your machine.
@@ -125,6 +123,11 @@ fn main() {
         dmi_information,
         network_information,
     };
+
+    // Passing a name in any way is mandatory for a virtual machine
+    if machine.dmi_information.system_information.is_virtual && machine.name.is_none() {
+        panic!("[FATAL] No name has been provided for this virtual machine! Providing a name as search parameter is mandatory for virtual machines.")
+    }
 
     let _ = register_machine(&client, machine);
 
