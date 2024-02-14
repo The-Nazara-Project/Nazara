@@ -94,4 +94,4 @@ information on our workflow and check the issues section for any open issue.
 
 # License
 
-Nazara is released under the [MIT License](./LICENSE).
+Nazara is released under the terms of the [GPL-v3.0](./LICENSE).
