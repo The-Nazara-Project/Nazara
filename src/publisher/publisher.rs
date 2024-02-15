@@ -7,6 +7,8 @@
 //! The actual request logic will be provided by the `thanix_client` crate.
 //!
 //! The `api_client` module will provide the actual client and request logic.
+use std::io::{self, Write};
+
 use serde::{Deserialize, Serialize};
 use thanix_client::{
     paths::{self, DcimDevicesListQuery, VirtualizationVirtualMachinesListQuery},
@@ -66,41 +68,21 @@ pub fn probe(client: &ThanixClient) -> Result<(), NetBoxApiError> {
 /// TODO
 pub fn register_machine(client: &ThanixClient, machine: Machine) -> Result<(), NetBoxApiError> {
     println!("Starting registration process. This may take a while...");
+
     let nb_devices: DeviceListOrVMList = get_machines(client, &machine);
 
     search_for_matches(&machine, &nb_devices);
-    // if search_for_matches(&machine, &nb_devices) {
-    //     // TODO: If machine is found,
-    //     // get the machine struct translated
-    //     // put the translated data into an UPDATE request
-    //     // profit
-    //     let machine_writable = translator::information_to_device(&machine);
-
-    //     // TODO BUG FIXME: correct query type empty!!! -> paths.rs 12959 DcimDeviceUpdateQuery
-    //     match paths::dcim_devices_update(client, machine_writable, id) {
-    //         Ok(response) => {
-    //             println!("{}", response);
-    //         },
-    //         Err(err) => {
-    //             panic!("[FATAL] {}", err)
-    //         }
-    //     }
-    // }
-
-    // if machine is NOT found,
-    // get the machine struct translated
-    // put the translated data into an POST request
-    // profit
-
-    // if fuckaroo, panic! (or find out)
 
     Ok(())
 }
 
 /// Get list of machines.
 ///
-/// Sends a `GET` request to the `/dcim/devices` endpoint to retrieve
-/// a list of machines.
+/// Sends a `GET` request to either the `/dcim/devices` endpoint, in case of physical machines,
+/// or to the `virtualization/virtual-machines` endpoint to retrieve either
+/// a list of machines or of virtual machines.
+///
+/// This depends on whether the `collector` has detected that the current device is pyhsical or virtual.
 ///
 /// This is later needed to search for the current machine in the response to decide
 /// whether to register a new one or update an existing one.
@@ -176,13 +158,14 @@ fn search_for_matches(machine: &Machine, device_list: &DeviceListOrVMList) -> bo
     match device_list {
         DeviceListOrVMList::DeviceList(devices) => {
             if machine.name.is_none() {
+                println!("\x1b[36m[info]\x1b[0m No machine name provided. Searching via serial number...");
                 for device in devices {
                     if machine.dmi_information.system_information.serial == device.serial {
                         println!("\x1b[32m[success]\x1b[0m Machine found using serial number!");
                         return true;
                     }
                 }
-                println!("\x1b[32m[info]\x1b[0m Machine not found using serial number.");
+                println!("\x1b[36m[info]\x1b[0m Machine not found using serial number.");
                 return false;
             }
             for device in devices {
