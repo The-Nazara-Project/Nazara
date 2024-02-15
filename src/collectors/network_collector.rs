@@ -68,7 +68,7 @@ pub fn collect_network_information(
         Ok(network_interfaces) => {
             if network_interfaces.is_empty() {
                 return Err(collector_exceptions::NoNetworkInterfacesException {
-                    message: "Error: No network interfaces found!".to_string(),
+                    message: "\x1b[31m[error]\x1b[0m No network interfaces found!".to_string(),
                 });
             } else {
                 return Ok(network_interfaces);
@@ -77,7 +77,7 @@ pub fn collect_network_information(
         Err(_) => {
             let exc: collector_exceptions::UnableToCollectDataError =
                 collector_exceptions::UnableToCollectDataError {
-                    message: "FATAL: Unable to collect information about network interfaces!"
+                    message: "\x1b[31m[FATAL]\x1b[0m Unable to collect information about network interfaces!"
                         .to_string(),
                 };
             exc.abort(20);
@@ -105,7 +105,7 @@ pub fn construct_network_information(
         Ok(information) => information,
         Err(_) => {
             return Err(collector_exceptions::NoNetworkInterfacesException {
-                message: "Error: No network interfaces to process".to_string(),
+                message: "\x1b[31m[error]\x1b[0m No network interfaces to process".to_string(),
             });
         }
     };
@@ -189,7 +189,7 @@ pub fn construct_network_information(
                 // If a Network interface is completely missing an address block, it is assumed that it is invalid.
                 // This will raise a custom exception and cause the program to panic.
                 let exc = collector_exceptions::InvalidNetworkInterfaceError {
-                    message: "FATAL: A Network interface cannot be recognized!".to_string(),
+                    message: "\x1b[31m[FATAL]\x1b[0m A Network interface cannot be recognized!".to_string(),
                 };
                 exc.abort(25);
             }
@@ -199,7 +199,7 @@ pub fn construct_network_information(
         }
         interfaces.push(network_information)
     }
-    println!("\x1b[32mSuccess:\x1b[0m Network Interface collection completed.");
+    println!("\x1b[32m[success]\x1b[0m Network Interface collection completed.");
     return Ok(interfaces);
 }
 
@@ -279,7 +279,7 @@ fn build_interface_file_from_name(interface_name: &str) -> Result<std::fs::File,
         }
         Err(_) => {
             return Err(format!(
-                "\x1b[33mWARNING:\x1b[0m Speed file for interface '{}' does not exist.",
+                "\x1b[33m[warning]\x1b[0m Speed file for interface '{}' does not exist.",
                 interface_name
             ))
         }
@@ -305,14 +305,14 @@ fn collect_interface_speed(interface_name: &str, mut input: impl Read) -> Result
     match input.read_to_string(&mut network_speed) {
         Ok(_) => {}
         Err(err) => {
-            return Err(format!("\x1b[33mWARNING:\x1b[0m Unable to open speed file for interface '{}'. This may happen for the loopback or wireless devices. ({}))", interface_name, err));
+            return Err(format!("\x1b[33m[warning]\x1b[0m Unable to open speed file for interface '{}'. This may happen for the loopback or wireless devices. ({}))", interface_name, err));
         }
     };
     network_speed = network_speed.trim().replace("\n", "");
 
     if network_speed == "-1" {
         return Err(format!(
-            "\x1b[36mInfo:\x1b[0m No interface speed known for '{}'. The interface might be disabled.",
+            "\x1b[36m[info]\x1b[0m No interface speed known for '{}'. The interface might be disabled.",
             interface_name
         ));
     }
@@ -322,7 +322,7 @@ fn collect_interface_speed(interface_name: &str, mut input: impl Read) -> Result
             .parse::<u32>()
             .map_err(|e: std::num::ParseIntError| {
                 format!(
-                    "ERROR: Failed to parse speed as u32 for interface '{}': {}!",
+                    "\x1b[31m[error]\x1b[0m Failed to parse speed as u32 for interface '{}': {}!",
                     interface_name, e
                 )
             })?;
@@ -350,7 +350,7 @@ mod network_collector_tests {
             }
             Err(e) => match e {
                 collector_exceptions::NoNetworkInterfacesException { message } => {
-                    assert_eq!(message, "Error: No network interfaces found!".to_string());
+                    assert_eq!(message, "\x1b[31m[error]\x1b[0m No network interfaces found!".to_string());
                 }
             },
         }
@@ -413,7 +413,7 @@ mod network_collector_tests {
                 collector_exceptions::NoNetworkInterfacesException { message } => {
                     assert_eq!(
                         message,
-                        "Error: No network interfaces to process".to_string()
+                        "\x1b[31m[error]\x1b[0m No network interfaces to process".to_string()
                     );
                 }
             },
@@ -448,7 +448,7 @@ mod network_collector_tests {
         assert_eq!(
             result,
             Err(format!(
-                "\x1b[36mInfo:\x1b[0m No interface speed known for '{}'. The interface might be disabled.",
+                "\x1b[36m[info]\x1b[0m No interface speed known for '{}'. The interface might be disabled.",
                 interface_name
             )),
             "Test Scenario Failed (2): No error was raised by collect_interface_speed when passing speed = -1. The function did not identify the interface as disabled!"
@@ -467,7 +467,7 @@ mod network_collector_tests {
         assert_eq!(
             result,
             Err(format!(
-                    "ERROR: Failed to parse speed as u32 for interface '{}': cannot parse integer from empty string!",
+                    "\x1b[31m[error]\x1b[0m Failed to parse speed as u32 for interface '{}': cannot parse integer from empty string!",
                     interface_name
                 )),
             "Test Scenario Failed (3): No error was raised by collect_interface_speed when trying to parse an empty string into u32!"
