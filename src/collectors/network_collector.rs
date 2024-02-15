@@ -189,7 +189,8 @@ pub fn construct_network_information(
                 // If a Network interface is completely missing an address block, it is assumed that it is invalid.
                 // This will raise a custom exception and cause the program to panic.
                 let exc = collector_exceptions::InvalidNetworkInterfaceError {
-                    message: "\x1b[31m[FATAL]\x1b[0m A Network interface cannot be recognized!".to_string(),
+                    message: "\x1b[31m[FATAL]\x1b[0m A Network interface cannot be recognized!"
+                        .to_string(),
                 };
                 exc.abort(25);
             }
@@ -350,7 +351,10 @@ mod network_collector_tests {
             }
             Err(e) => match e {
                 collector_exceptions::NoNetworkInterfacesException { message } => {
-                    assert_eq!(message, "\x1b[31m[error]\x1b[0m No network interfaces found!".to_string());
+                    assert_eq!(
+                        message,
+                        "\x1b[31m[error]\x1b[0m No network interfaces found!".to_string()
+                    );
                 }
             },
         }

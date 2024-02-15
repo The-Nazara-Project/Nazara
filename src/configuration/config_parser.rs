@@ -167,7 +167,10 @@ fn get_config_dir() -> PathBuf {
     let home_dir: String = match std::env::var("HOME") {
         Ok(val) => val,
         Err(err) => {
-            panic!("\x1b[31m[FATAL]\x1b[0m No $XDG_CONFIG_HOME variable found! ({})", err)
+            panic!(
+                "\x1b[31m[FATAL]\x1b[0m No $XDG_CONFIG_HOME variable found! ({})",
+                err
+            )
         }
     };
 
