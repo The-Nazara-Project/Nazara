@@ -3,12 +3,30 @@ pub mod configuration;
 pub mod publisher;
 
 use clap::Parser;
-use collectors::{dmi_collector, network_collector};
+use collectors::{
+    dmi_collector::{self, DmiInformation},
+    network_collector::{self, NetworkInformation},
+};
 use configuration::config_parser::set_up_configuration;
 use publisher::publisher::*;
+use reqwest::blocking::Client;
 use std::process;
+use thanix_client::util::ThanixClient;
 
-use crate::publisher::{api_client::NetBoxClient, publisher_exceptions::NetBoxApiError};
+/// The Machine struct
+///
+/// This struct represents your machine.
+/// It holds all information collected and allows for sharing this
+/// information between Nazara's modules.
+///
+/// It is used in places where it is necessary to have access to various
+/// pieces of collected information from a single source of truth.
+/// It will also be translated into the proper API type by the translator.
+pub struct Machine {
+    pub name: Option<String>,
+    pub dmi_information: DmiInformation,
+    pub network_information: Vec<NetworkInformation>,
+}
 
 /// The arguments that Nazara expects to get via the cli.
 ///
@@ -74,7 +92,7 @@ fn main() {
     let config = match set_up_configuration(
         args.uri,
         args.token,
-        args.name,
+        args.name.clone(),
         args.location,
         args.device_role,
     ) {
@@ -85,17 +103,33 @@ fn main() {
         }
     };
 
-    Publisher::probe(&config.get_netbox_uri(), &config.get_api_token());
+    let client: ThanixClient = ThanixClient {
+        base_url: config.get_netbox_uri().to_string(),
+        authentication_token: config.get_api_token().to_string(),
+        client: Client::new(),
+    };
 
-    // println!("Configuration: \n{:#?}", config);
-
-    // println!("Uri: {}\nToken: {}", args.uri.clone().unwrap(), args.token.clone().unwrap());
+    match probe(&client) {
+        Ok(()) => {}
+        Err(err) => println!("{}", err),
+    };
 
     let dmi_information: dmi_collector::DmiInformation = dmi_collector::construct_dmi_information();
 
-    // println!("{:#?}", dmi_information);
-
     let network_information = network_collector::construct_network_information().unwrap();
+
+    let machine: Machine = Machine {
+        name: args.name,
+        dmi_information,
+        network_information,
+    };
+
+    // Passing a name in any way is mandatory for a virtual machine
+    if machine.dmi_information.system_information.is_virtual && machine.name.is_none() {
+        panic!("[FATAL] No name has been provided for this virtual machine! Providing a name as search parameter is mandatory for virtual machines.")
+    }
+
+    let _ = register_machine(&client, machine);
 
     // println!("{:#?}", network_information);
 

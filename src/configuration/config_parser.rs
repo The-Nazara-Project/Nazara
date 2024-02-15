@@ -12,7 +12,7 @@
 //! location = ""
 //! ```
 //!
-//! It will be created at ` ~/.nbs-config.toml`.
+//! It will be created at ` ~/.nazara-config.toml`.
 
 use serde::Deserialize;
 use std::fs::File;
@@ -34,7 +34,7 @@ pub struct ConfigData {
 
 /// Set up configuration
 ///
-/// This function reads the configuration file located at `~/.nbs-config.toml`. If no file can be found, a warning is
+/// This function reads the configuration file located at `~/.nazara-config.toml`. If no file can be found, a warning is
 /// displayed to the user and a default config file is written.
 /// If command line arguments are given, the parameters read from the file will be overwritten.
 ///
@@ -158,7 +158,7 @@ fn file_exists(path: &Path) -> bool {
 ///
 /// # Returns
 ///
-/// * `config_file_path: PathBuf` - The directory the config file is located (~/.nbs-config.toml)
+/// * `config_file_path: PathBuf` - The directory the config file is located (~/.nazara-config.toml)
 ///
 /// # Panics
 ///
@@ -171,7 +171,7 @@ fn get_config_dir() -> PathBuf {
         }
     };
 
-    let config_file_path: PathBuf = Path::new(&home_dir).join(".nbs-config.toml");
+    let config_file_path: PathBuf = Path::new(&home_dir).join(".nazara-config.toml");
 
     return config_file_path;
 }
@@ -185,7 +185,7 @@ impl ConfigData {
     ///
     /// # Panics
     ///
-    /// If it is not able to create a new config file at `~/.nbs-config.toml` or if it cannot write the defaults
+    /// If it is not able to create a new config file at `~/.nazara-config.toml` or if it cannot write the defaults
     /// to the file, the function panics as this is the main method of configuring the program.
     fn initialize_config_file() -> std::io::Result<()> {
         // Create new toml table
