@@ -174,7 +174,7 @@ impl DmiDecodeTable for DefaultDmiDecodeTable {
             Err(_) => {
                 let error: UnableToCollectDataError = UnableToCollectDataError {
                     message: format!(
-                        "\x1b[31mFATAL:\x1b[0m Unable to get dmidecode table '{}'!",
+                        "\x1b[31m[FATAL]\x1b[0m Unable to get dmidecode table '{}'!",
                         dmidecode_table
                     ),
                 };
@@ -229,7 +229,7 @@ impl DmiDecodeInformation for DefaultDmiDecodeInformation {
             Err(_) => {
                 let error: UnableToCollectDataError = UnableToCollectDataError {
                     message: format!(
-                        "\x1b[31mFATAL:\x1b[0m Unable to collect system information for '{}'!",
+                        "\x1b[31m[FATAL]\x1b[0m Unable to collect system information for '{}'!",
                         parameter
                     ),
                 };
@@ -289,13 +289,13 @@ fn dmidecode_system<T: DmiDecodeInformation>(_param: T) -> SystemInformation {
             }
             _ => {
                 println!(
-                    "INFO: Parameter {} not supported therefore not collected.",
+                    "\x1b[36m[info]\x1b[0m Parameter {} not supported therefore not collected.",
                     parameter
                 );
             }
         }
     }
-    println!("\x1b[32mSuccess:\x1b[0m System information collection completed.");
+    println!("\x1b[32m[success]\x1b[0m System information collection completed.");
     return system_information;
 }
 
@@ -330,13 +330,13 @@ fn dmidecode_chassis<T: DmiDecodeInformation>(_param: T) -> ChassisInformation {
             }
             _ => {
                 println!(
-                    "INFO: Parameter {} not supported. Therefore will not be collected.",
+                    "\x1b[36m[info]\x1b[0m Parameter {} not supported. Therefore will not be collected.",
                     parameter
                 );
             }
         }
     }
-    println!("\x1b[32mSuccess:\x1b[0m Chassis information collection completed.");
+    println!("\x1b[32m[success]\x1b[0m Chassis information collection completed.");
     return chassis_information;
 }
 
@@ -384,13 +384,13 @@ fn dmidecode_cpu<T: DmiDecodeTable>(_param: T) -> CpuInformation {
             Some(x) => {
                 key = x.to_string();
             }
-            None => println!("Info: Key not found at this location..."),
+            None => println!("\x1b[36m[info]\x1b[0m Key not found at this location..."),
         }
         match split.get(1) {
             Some(x) => {
                 value = x.to_string();
             }
-            None => println!("Info: Value not found at this location..."),
+            None => println!("\x1b[36m[info]\x1b[0m Value not found at this location..."),
         }
         match key.as_str() {
             "Version" => {
@@ -419,7 +419,7 @@ fn dmidecode_cpu<T: DmiDecodeTable>(_param: T) -> CpuInformation {
             }
         }
     }
-    println!("\x1b[32mSuccess:\x1b[0m CPU information collection completed.");
+    println!("\x1b[32m[success]\x1b[0m CPU information collection completed.");
     return cpu_information;
 }
 
