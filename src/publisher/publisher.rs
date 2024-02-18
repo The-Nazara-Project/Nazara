@@ -7,11 +7,17 @@
 //! The actual request logic will be provided by the `thanix_client` crate.
 //!
 //! The `api_client` module will provide the actual client and request logic.
+//!
+/// TODO: 1. Implement Creation/update logic 2. Denest by splitting query logic off 3. Do not panic upon request fail
 use std::io::{self, Write};
 
 use serde::{Deserialize, Serialize};
 use thanix_client::{
-    paths::{self, DcimDevicesListQuery, VirtualizationVirtualMachinesListQuery},
+    paths::{
+        self, DcimDevicesCreateQuery, DcimDevicesListQuery, DcimDevicesUpdateQuery,
+        VirtualizationVirtualMachinesCreateQuery, VirtualizationVirtualMachinesListQuery,
+        VirtualizationVirtualMachinesUpdateQuery,
+    },
     types::{
         DeviceWithConfigContext, PaginatedDeviceWithConfigContextList,
         PaginatedVirtualMachineWithConfigContextList, VirtualMachineWithConfigContext,
@@ -71,7 +77,60 @@ pub fn register_machine(client: &ThanixClient, machine: Machine) -> Result<(), N
 
     let nb_devices: DeviceListOrVMList = get_machines(client, &machine);
 
-    search_for_matches(&machine, &nb_devices);
+    // check if virtual machine, create or update virtual machine.
+    if machine.dmi_information.system_information.is_virtual {
+        match search_for_matches(&machine, &nb_devices) {
+            Some(vm_id) => {
+                match paths::virtualization_virtual_machines_update(
+                    &client,
+                    VirtualizationVirtualMachinesUpdateQuery::default(),
+                    vm_id,
+                ) {
+                    Ok(response) => {
+                        todo!()
+                    }
+                    Err(err) => {
+                        panic!("{}", err)
+                    }
+                }
+            }
+            None => {
+                match paths::virtualization_virtual_machines_create(
+                    &client,
+                    VirtualizationVirtualMachinesCreateQuery::default(),
+                ) {
+                    Ok(response) => {
+                        todo!()
+                    }
+                    Err(err) => {
+                        panic!("{}", err)
+                    }
+                }
+            }
+        }
+    } else {
+        // proper physical machines
+        match search_for_matches(&machine, &nb_devices) {
+            Some(id) => {
+                match paths::dcim_devices_update(&client, DcimDevicesUpdateQuery::default(), id) {
+                    Ok(response) => {
+                        todo!()
+                    }
+                    Err(err) => {
+                        panic!("{}", err)
+                    }
+                }
+            }
+            None => match paths::dcim_devices_create(&client, DcimDevicesCreateQuery::default()) {
+                Ok(response) => {
+                    todo!()
+                }
+                Err(err) => {
+                    panic!("{}", err)
+                }
+            },
+        }
+    }
 
     Ok(())
 }
@@ -139,7 +198,7 @@ fn get_machines(client: &ThanixClient, machine: &Machine) -> DeviceListOrVMList 
     }
 }
 
-/// Searches for matching device in list of machines.
+/// Searches for matching device in list of machines and returns the device id in case of a match.
 ///
 /// Primary search parameters are the device's **serial number** and **UUID** acquired by `dmidecode`.
 ///
@@ -153,8 +212,8 @@ fn get_machines(client: &ThanixClient, machine: &Machine) -> DeviceListOrVMList 
 ///
 /// # Returns
 ///
-/// - `bool` - Depending on if the device has been found or not.
-fn search_for_matches(machine: &Machine, device_list: &DeviceListOrVMList) -> bool {
+/// - `Option<i64, None>` - Either returns the id of the device or Vm found, or None.
+fn search_for_matches(machine: &Machine, device_list: &DeviceListOrVMList) -> Option<i64> {
     match device_list {
         DeviceListOrVMList::DeviceList(devices) => {
             if machine.name.is_none() {
@@ -162,30 +221,30 @@ fn search_for_matches(machine: &Machine, device_list: &DeviceListOrVMList) -> bo
                 for device in devices {
                     if machine.dmi_information.system_information.serial == device.serial {
                         println!("\x1b[32m[success]\x1b[0m Machine found using serial number!");
-                        return true;
+                        return Some(device.id);
                     }
                 }
                 println!("\x1b[36m[info]\x1b[0m Machine not found using serial number.");
-                return false;
+                return None;
             }
             for device in devices {
                 if device.name == machine.name {
                     println!("\x1b[32m[success]\x1b[0m Machine found using name!");
-                    return true;
+                    return Some(device.id);
                 }
             }
             println!("\x1b[36m[info]\x1b[0m Machine not found in registered machines using name.");
-            false
+            None
         }
         DeviceListOrVMList::VmList(virtual_machines) => {
             for vm in virtual_machines {
                 if machine.name.as_ref().unwrap() == &vm.name {
                     println!("\x1b[32m[success]\x1b[0m VM found found using serial number!");
-                    return true;
+                    return Some(vm.id);
                 }
             }
             println!("\x1b[36m[info]\x1b[0m VM not found in registered machines.");
-            false
+            None
         }
     }
 }
