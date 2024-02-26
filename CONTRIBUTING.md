@@ -47,4 +47,13 @@ If you discover a security vulnerability in our code, please inform us privately
 
 If you wish to fix a vulnerability, please also inform us and stand by for our green light. We would still like to investigate the vulnerability for ourselves to get an overview over the severity and scope of the problem. *Please refrain from publishing a fix until we came back to you or have published a security advisory*.
 
+# Disclaimer
+
+By contributing to this project you agree to surrender your contribution to the Nazara Project.
+
+Your contribution to this project will be subject to the same licensing terms as the rest of the project.
+
+This is a standard practice in open-source projects to ensure that all contributions are compatible with the project's overall license and to maintain consistency in the project's legal framework. 
+
+It's important for contributors to be aware of this agreement to ensure that their contributions are properly integrated into the project without any legal conflicts.
 #### Thank you for your contribution!
