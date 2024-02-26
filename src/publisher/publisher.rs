@@ -18,8 +18,8 @@ use thanix_client::{
         VirtualizationVirtualMachinesListQuery, VirtualizationVirtualMachinesListResponse,
     },
     types::{
-        DeviceWithConfigContext, PaginatedDeviceWithConfigContextList,
-        PaginatedVirtualMachineWithConfigContextList, VirtualMachineWithConfigContext,
+        DeviceWithConfigContext,
+        VirtualMachineWithConfigContext,
         WritableDeviceWithConfigContextRequest,
     },
     util::ThanixClient,
