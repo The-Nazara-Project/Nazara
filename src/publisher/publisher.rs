@@ -14,8 +14,9 @@ use std::io::{self, Write};
 use serde::{Deserialize, Serialize};
 use thanix_client::{
     paths::{
-        self, DcimDevicesCreateQuery, DcimDevicesListQuery, DcimDevicesUpdateQuery,
-        VirtualizationVirtualMachinesCreateQuery, VirtualizationVirtualMachinesListQuery,
+        self, DcimDevicesCreateQuery, DcimDevicesListQuery, DcimDevicesListResponse,
+        DcimDevicesUpdateQuery, VirtualizationVirtualMachinesCreateQuery,
+        VirtualizationVirtualMachinesListQuery, VirtualizationVirtualMachinesListResponse,
         VirtualizationVirtualMachinesUpdateQuery,
     },
     types::{
@@ -78,59 +79,59 @@ pub fn register_machine(client: &ThanixClient, machine: Machine) -> Result<(), N
     let nb_devices: DeviceListOrVMList = get_machines(client, &machine);
 
     // check if virtual machine, create or update virtual machine.
-    if machine.dmi_information.system_information.is_virtual {
-        match search_for_matches(&machine, &nb_devices) {
-            Some(vm_id) => {
-                match paths::virtualization_virtual_machines_update(
-                    &client,
-                    VirtualizationVirtualMachinesUpdateQuery::default(),
-                    vm_id,
-                ) {
-                    Ok(response) => {
-                        todo!()
-                    }
-                    Err(err) => {
-                        panic!("{}", err)
-                    }
-                }
-            }
-            None => {
-                match paths::virtualization_virtual_machines_create(
-                    &client,
-                    VirtualizationVirtualMachinesCreateQuery::default(),
-                ) {
-                    Ok(response) => {
-                        todo!()
-                    }
-                    Err(err) => {
-                        panic!("{}", err)
-                    }
-                }
-            }
-        }
-    } else {
-        // proper physical machines
-        match search_for_matches(&machine, &nb_devices) {
-            Some(id) => {
-                match paths::dcim_devices_update(&client, DcimDevicesUpdateQuery::default(), id) {
-                    Ok(response) => {
-                        todo!()
-                    }
-                    Err(err) => {
-                        panic!("{}", err)
-                    }
-                }
-            }
-            None => match paths::dcim_devices_create(&client, DcimDevicesCreateQuery::default()) {
-                Ok(response) => {
-                    todo!()
-                }
-                Err(err) => {
-                    panic!("{}", err)
-                }
-            },
-        }
-    }
+    // if machine.dmi_information.system_information.is_virtual {
+    //     match search_for_matches(&machine, &nb_devices) {
+    //         Some(vm_id) => {
+    //             match paths::virtualization_virtual_machines_update(
+    //                 &client,
+    //                 VirtualizationVirtualMachinesUpdateQuery::default(),
+    //                 vm_id,
+    //             ) {
+    //                 Ok(response) => {
+    //                     todo!()
+    //                 }
+    //                 Err(err) => {
+    //                     panic!("{}", err)
+    //                 }
+    //             }
+    //         }
+    //         None => {
+    //             match paths::virtualization_virtual_machines_create(
+    //                 &client,
+    //                 VirtualizationVirtualMachinesCreateQuery::default(),
+    //             ) {
+    //                 Ok(response) => {
+    //                     todo!()
+    //                 }
+    //                 Err(err) => {
+    //                     panic!("{}", err)
+    //                 }
+    //             }
+    //         }
+    //     }
+    // } else {
+    //     // proper physical machines
+    //     match search_for_matches(&machine, &nb_devices) {
+    //         Some(id) => {
+    //             match paths::dcim_devices_update(&client, DcimDevicesUpdateQuery::default(), id) {
+    //                 Ok(response) => {
+    //                     todo!()
+    //                 }
+    //                 Err(err) => {
+    //                     panic!("{}", err)
+    //                 }
+    //             }
+    //         }
+    //         None => match paths::dcim_devices_create(&client, DcimDevicesCreateQuery::default()) {
+    //             Ok(response) => {
+    //                 todo!()
+    //             }
+    //             Err(err) => {
+    //                 panic!("{}", err)
+    //             }
+    //         },
+    //     }
+    // }
 
     Ok(())
 }
@@ -167,12 +168,15 @@ fn get_machines(client: &ThanixClient, machine: &Machine) -> DeviceListOrVMList 
         ) {
             Ok(response) => {
                 println!("List received. Analyzing...");
-                let debug_json = response.text().unwrap();
 
-                let response_content: PaginatedVirtualMachineWithConfigContextList =
-                    serde_json::from_str(&debug_json).unwrap();
-
-                let vm_list: Vec<VirtualMachineWithConfigContext> = response_content.results;
+                let vm_list: Vec<VirtualMachineWithConfigContext> = match response {
+                    VirtualizationVirtualMachinesListResponse::Http200(virtual_machines) => {
+                        virtual_machines.results
+                    }
+                    _ => {
+                        todo!();
+                    }
+                };
 
                 DeviceListOrVMList::VmList(vm_list)
             }
@@ -184,12 +188,13 @@ fn get_machines(client: &ThanixClient, machine: &Machine) -> DeviceListOrVMList 
         match paths::dcim_devices_list(client, DcimDevicesListQuery::default()) {
             Ok(response) => {
                 println!("List received. Analyzing...");
-                let debug_json = response.text().unwrap();
 
-                let response_content: PaginatedDeviceWithConfigContextList =
-                    serde_json::from_str(&debug_json).unwrap();
-
-                let device_list: Vec<DeviceWithConfigContext> = response_content.results;
+                let device_list: Vec<DeviceWithConfigContext> = match response {
+                    DcimDevicesListResponse::Http200(devices) => devices.results,
+                    _ => {
+                        todo!();
+                    }
+                };
 
                 DeviceListOrVMList::DeviceList(device_list)
             }
