@@ -14,10 +14,8 @@ use std::io::{self, Write};
 use serde::{Deserialize, Serialize};
 use thanix_client::{
     paths::{
-        self, DcimDevicesCreateQuery, DcimDevicesListQuery, DcimDevicesListResponse,
-        DcimDevicesUpdateQuery, VirtualizationVirtualMachinesCreateQuery,
+        self, DcimDevicesListQuery, DcimDevicesListResponse,
         VirtualizationVirtualMachinesListQuery, VirtualizationVirtualMachinesListResponse,
-        VirtualizationVirtualMachinesUpdateQuery,
     },
     types::{
         DeviceWithConfigContext, PaginatedDeviceWithConfigContextList,
