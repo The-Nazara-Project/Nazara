@@ -8,29 +8,22 @@
 //!
 //! The `api_client` module will provide the actual client and request logic.
 //!
-/// TODO: 1. Implement Creation/update logic 2. Denest by splitting query logic off 3. Do not panic upon request fail
-use std::io::{self, Write};
+use std::process;
 
-use serde::{Deserialize, Serialize};
+/// TODO: 1. Implement Creation/update logic 2. Denest by splitting query logic off 3. Do not panic upon request fail
 use thanix_client::{
     paths::{
         self, DcimDevicesListQuery, DcimDevicesListResponse,
         VirtualizationVirtualMachinesListQuery, VirtualizationVirtualMachinesListResponse,
     },
     types::{
-        DeviceWithConfigContext,
-        VirtualMachineWithConfigContext,
-        WritableDeviceWithConfigContextRequest,
+        DeviceWithConfigContext, PaginatedDeviceWithConfigContextList,
+        VirtualMachineWithConfigContext, WritableDeviceWithConfigContextRequest,
     },
     util::ThanixClient,
 };
 
-use crate::{
-    collectors::{dmi_collector::DmiInformation, network_collector::NetworkInformation},
-    publisher::api_client::test_connection,
-    publisher::translator,
-    Machine,
-};
+use crate::{publisher::api_client::test_connection, publisher::translator, Machine};
 
 use super::publisher_exceptions::NetBoxApiError;
 
@@ -62,7 +55,7 @@ pub fn probe(client: &ThanixClient) -> Result<(), NetBoxApiError> {
     }
 }
 
-/// Register this machine in NetBox.
+/// Register this machine or VM in NetBox.
 ///
 /// # Parameters
 ///
@@ -75,6 +68,29 @@ pub fn register_machine(client: &ThanixClient, machine: Machine) -> Result<(), N
     println!("Starting registration process. This may take a while...");
 
     let nb_devices: DeviceListOrVMList = get_machines(client, &machine);
+
+    if machine.dmi_information.system_information.is_virtual {
+        todo!() // TODO: VM Creation / Update
+    } else {
+        let payload: WritableDeviceWithConfigContextRequest =
+            translator::information_to_device(&machine);
+
+        match search_for_matches(&machine, &nb_devices) {
+            Some(device_id) => {
+                todo!() // TODO Implement machine update
+            }
+            None => {
+                match paths::dcim_devices_create(&client, payload) {
+                    Ok(response) => {
+                        todo!() // Check response code 201, handle other. (Should not happen)
+                    }
+                    Err(err) => {
+                        panic!("{}", err) // Handle failure correctly
+                    }
+                }
+            }
+        }
+    }
 
     // check if virtual machine, create or update virtual machine.
     // if machine.dmi_information.system_information.is_virtual {
@@ -131,6 +147,14 @@ pub fn register_machine(client: &ThanixClient, machine: Machine) -> Result<(), N
     //     }
     // }
 
+    Ok(())
+}
+
+/// Creates a new machine in NetBox by calling the `translator` module to translate the `machine` parameter
+/// struct into the correct data type required by the API.
+fn create_machine(client: &ThanixClient, machine: &Machine) -> Result<(), NetBoxApiError> {
+    println!("Creating new machine in NetBox...");
+    let payload = translator::information_to_device(machine);
     Ok(())
 }
 
@@ -196,7 +220,10 @@ fn get_machines(client: &ThanixClient, machine: &Machine) -> DeviceListOrVMList 
 
                 DeviceListOrVMList::DeviceList(device_list)
             }
-            Err(err) => panic!("{}", err),
+            Err(err) => {
+                eprintln!("\x1b[31m[error]\x1b[0m Failure while retrieving list of devices. Please make sure your NetBox database is set up correctly.\n{}", err);
+                process::exit(1);
+            }
         }
     }
 }

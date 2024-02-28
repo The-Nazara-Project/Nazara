@@ -116,7 +116,8 @@ fn main() {
 
     let dmi_information: dmi_collector::DmiInformation = dmi_collector::construct_dmi_information();
 
-    let network_information = network_collector::construct_network_information().unwrap();
+    let network_information: Vec<NetworkInformation> =
+        network_collector::construct_network_information().unwrap();
 
     let machine: Machine = Machine {
         name: args.name,
@@ -126,25 +127,10 @@ fn main() {
 
     // Passing a name in any way is mandatory for a virtual machine
     if machine.dmi_information.system_information.is_virtual && machine.name.is_none() {
-        panic!("[FATAL] No name has been provided for this virtual machine! Providing a name as search parameter is mandatory for virtual machines.")
+        eprintln!("[FATAL] No name has been provided for this virtual machine! Providing a name as search parameter is mandatory for virtual machines.");
+        process::exit(1)
     }
 
+    // Register the machine or VM with NetBox
     let _ = register_machine(&client, machine);
-
-    // println!("{:#?}", network_information);
-
-    // let system_information: SystemData = SystemData {
-    //     dmi_information,
-    //     network_information,
-    //     name: config.name,
-    //     system_location: config.get_system_location().to_string(),
-    //     device_role: config.device_role,
-    // };
-
-    // let payload: CreateMachinePayload = CreateMachinePayload { system_information };
-
-    // match netbox_client.create_machine(&payload) {
-    //     Ok(()) => println!("Machine created!"),
-    //     Err(err) => eprintln!("Error: {:?}", err),
-    // }
 }

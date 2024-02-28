@@ -45,7 +45,7 @@ pub struct ConfigData {
 ///
 /// # Panics
 ///
-/// The function panics under these condition:
+/// The function panics under these conditions:
 ///
 /// * If the initialization of the config file raises an error.
 /// * When using a default (empty) configuration file and not providing all required CLI arguments.
@@ -176,7 +176,7 @@ fn get_config_dir() -> PathBuf {
 
     let config_file_path: PathBuf = Path::new(&home_dir).join(".nazara-config.toml");
 
-    return config_file_path;
+    config_file_path
 }
 
 impl ConfigData {
