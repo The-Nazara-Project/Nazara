@@ -13,16 +13,21 @@ use std::process;
 /// TODO: 1. Implement Creation/update logic 2. Denest by splitting query logic off 3. Do not panic upon request fail
 use thanix_client::{
     paths::{
-        self, DcimDevicesCreateResponse, DcimDevicesListQuery, DcimDevicesListResponse, VirtualizationVirtualMachinesListQuery, VirtualizationVirtualMachinesListResponse
+        self, DcimDevicesCreateResponse, DcimDevicesListQuery, DcimDevicesListResponse,
+        VirtualizationVirtualMachinesListQuery, VirtualizationVirtualMachinesListResponse,
     },
     types::{
-        DeviceWithConfigContext, 
-        VirtualMachineWithConfigContext, WritableDeviceWithConfigContextRequest,
+        DeviceWithConfigContext, VirtualMachineWithConfigContext,
+        WritableDeviceWithConfigContextRequest,
     },
     util::ThanixClient,
 };
 
-use crate::{publisher::api_client::test_connection, publisher::translator, Machine};
+use crate::{
+    configuration::config_parser::ConfigData,
+    publisher::{api_client::test_connection, translator},
+    Machine,
+};
 
 use super::publisher_exceptions::NetBoxApiError;
 
@@ -63,7 +68,11 @@ pub fn probe(client: &ThanixClient) -> Result<(), NetBoxApiError> {
 /// # Returns
 ///
 /// Empty Result object upon successful completeion. Otherwise a `NetBoxApiError`.
-pub fn register_machine(client: &ThanixClient, machine: Machine) -> Result<(), NetBoxApiError> {
+pub fn register_machine(
+    client: &ThanixClient,
+    machine: Machine,
+    config_data: ConfigData,
+) -> Result<(), NetBoxApiError> {
     println!("Starting registration process. This may take a while...");
 
     let nb_devices: DeviceListOrVMList = get_machines(client, &machine);
@@ -72,7 +81,7 @@ pub fn register_machine(client: &ThanixClient, machine: Machine) -> Result<(), N
         todo!("Virtual machine creation not yet implemented!") // TODO: VM Creation / Update
     } else {
         let payload: WritableDeviceWithConfigContextRequest =
-            translator::information_to_device(&machine);
+            translator::information_to_device(&machine, config_data);
 
         match search_for_matches(&machine, &nb_devices) {
             Some(device_id) => {
@@ -86,10 +95,12 @@ pub fn register_machine(client: &ThanixClient, machine: Machine) -> Result<(), N
                             DcimDevicesCreateResponse::Http201(created_device) => {
                                 // TODO
                                 todo!("Device creation not yet implemented!")
-                            },
+                            }
                             DcimDevicesCreateResponse::Other(other_response) => {
                                 // TODO
-                                todo!("Unexpected response code on device creation not handled yet!")
+                                todo!(
+                                    "Unexpected response code on device creation not handled yet!"
+                                )
                             }
                         }
                     }
@@ -163,7 +174,7 @@ pub fn register_machine(client: &ThanixClient, machine: Machine) -> Result<(), N
 /// struct into the correct data type required by the API.
 fn create_machine(client: &ThanixClient, machine: &Machine) -> Result<(), NetBoxApiError> {
     println!("Creating new machine in NetBox...");
-    let payload = translator::information_to_device(machine);
+    // let payload = translator::information_to_device(machine);
     Ok(())
 }
 

@@ -59,7 +59,6 @@ struct Args {
     /// The name of the device
     #[arg(short, long)]
     name: Option<String>,
-
 }
 
 fn main() {
@@ -82,11 +81,7 @@ fn main() {
         ascii_art
     );
 
-    let config = match set_up_configuration(
-        args.uri,
-        args.token,
-        args.name.clone(),
-    ) {
+    let config = match set_up_configuration(args.uri, args.token, args.name.clone()) {
         Ok(conf) => conf,
         Err(err) => {
             println!("{}", err);
@@ -123,5 +118,5 @@ fn main() {
     }
 
     // Register the machine or VM with NetBox
-    let _ = register_machine(&client, machine);
+    let _ = register_machine(&client, machine, config);
 }
