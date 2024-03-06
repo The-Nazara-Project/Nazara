@@ -59,14 +59,6 @@ struct Args {
     /// The name of the device
     #[arg(short, long)]
     name: Option<String>,
-
-    /// The location of the machine (must be one of the locations you have set as available in your Netbox instance)
-    #[arg(short, long)]
-    location: Option<String>,
-
-    /// The role of the machine (switch, server, router, etc.)
-    #[arg(short, long)]
-    device_role: Option<String>,
 }
 
 fn main() {
@@ -89,13 +81,7 @@ fn main() {
         ascii_art
     );
 
-    let config = match set_up_configuration(
-        args.uri,
-        args.token,
-        args.name.clone(),
-        args.location,
-        args.device_role,
-    ) {
+    let config = match set_up_configuration(args.uri, args.token, args.name.clone()) {
         Ok(conf) => conf,
         Err(err) => {
             println!("{}", err);
@@ -132,5 +118,5 @@ fn main() {
     }
 
     // Register the machine or VM with NetBox
-    let _ = register_machine(&client, machine);
+    let _ = register_machine(&client, machine, config);
 }
