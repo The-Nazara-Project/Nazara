@@ -60,13 +60,6 @@ struct Args {
     #[arg(short, long)]
     name: Option<String>,
 
-    /// The location of the machine (must be one of the locations you have set as available in your Netbox instance)
-    #[arg(short, long)]
-    location: Option<String>,
-
-    /// The role of the machine (switch, server, router, etc.)
-    #[arg(short, long)]
-    device_role: Option<String>,
 }
 
 fn main() {
@@ -93,8 +86,6 @@ fn main() {
         args.uri,
         args.token,
         args.name.clone(),
-        args.location,
-        args.device_role,
     ) {
         Ok(conf) => conf,
         Err(err) => {

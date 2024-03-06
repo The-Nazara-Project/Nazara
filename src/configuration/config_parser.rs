@@ -9,17 +9,36 @@
 //! netbox_api_token = ""
 //!
 //! [system]
-//! location = ""
+//! name = "some_name" # Required for virtual machines!
+//! site_id = 0
+//! description = ""
+//! comments = "Automatically registered using Nazara."
+//! device_type = 0
+//! role = 0
+//!
+//!
+//! # These will be parse as one JSON object
+//! # Make sure that these custom fields line up with the
+//! # Custom fields of your NetBox instance.
+//! [[system.custom]]
+//! cpu_count = 1
+//! platform = "x86_64" # Overriden by collector
+//! collect_cpu_information = true
+//! collect_network_information = true
+//! primary_network_interface = "eth0"
+//! config_template = 0 # integer of the config_template ID
 //! ```
 //!
 //! It will be created at ` ~/.nazara-config.toml`.
 
 use serde::Deserialize;
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 use std::{fs, path::PathBuf};
 use toml::Value;
+use std::hash::RandomState;
 
 use super::config_exceptions::{self, *};
 
@@ -28,8 +47,13 @@ pub struct ConfigData {
     netbox_api_token: String,
     netbox_uri: String,
     name: String,
-    system_location: String,
+    site_id: i64,
+    system_location: Option<i64>,
     device_role: String,
+    face: String,
+    status: String,
+    primary_network_interface: Option<String>,
+    custom_fields: Option<HashMap<String, Value, RandomState>>,
 }
 
 /// Set up configuration
@@ -54,8 +78,6 @@ pub fn set_up_configuration(
     uri: Option<String>,
     token: Option<String>,
     name: Option<String>,
-    location: Option<String>,
-    device_role: Option<String>,
 ) -> Result<ConfigData, String> {
     let mut conf_data: ConfigData;
 
@@ -79,14 +101,6 @@ pub fn set_up_configuration(
 
                 if name.is_some() {
                     conf_data.name = name.unwrap();
-                }
-
-                if location.is_some() {
-                    conf_data.system_location = location.unwrap();
-                }
-
-                if device_role.is_some() {
-                    conf_data.device_role = device_role.unwrap();
                 }
 
                 return Ok(conf_data);
@@ -119,12 +133,10 @@ pub fn set_up_configuration(
 
     conf_data = ConfigData::read_config_file();
 
-    if uri.is_some() && token.is_some() && location.is_some() {
+    if uri.is_some() && token.is_some() {
         conf_data.netbox_uri = uri.unwrap();
         conf_data.netbox_api_token = token.unwrap();
         conf_data.name = name.unwrap();
-        conf_data.system_location = location.unwrap();
-        conf_data.device_role = device_role.unwrap();
     }
 
     println!("\x1b[32m[success]\x1b[0m Configuration loaded.\x1b[0m");
