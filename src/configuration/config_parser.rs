@@ -9,27 +9,69 @@
 //! netbox_api_token = ""
 //!
 //! [system]
-//! location = ""
+//! name = "some_name" # Required for virtual machines!
+//! site_id = 0
+//! description = ""
+//! comments = "Automatically registered using Nazara."
+//! device_type = 0
+//! role = 0
+//!
+//!
+//! # These will be parsed a singl HashMap with no further checking.
+//! # Make sure that these custom fields line up with the
+//! # Custom fields of your NetBox instance.
+//! [[system.custom]]
+//! cpu_count = 1
+//! platform = "x86_64" # Overriden by collector
+//! collect_cpu_information = true
+//! collect_network_information = true
+//! primary_network_interface = "eth0"
+//! config_template = 0 # integer of the config_template ID
 //! ```
 //!
 //! It will be created at ` ~/.nazara-config.toml`.
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
+use std::collections::HashMap;
 use std::fs::File;
+use std::hash::RandomState;
 use std::io::prelude::*;
 use std::path::Path;
 use std::{fs, path::PathBuf};
-use toml::Value;
 
 use super::config_exceptions::{self, *};
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ConfigData {
-    netbox_api_token: String,
-    netbox_uri: String,
-    name: String,
-    system_location: String,
-    device_role: String,
+    pub netbox: NetboxConfig,
+    pub system: SystemConfig,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct NetboxConfig {
+    pub netbox_api_token: String,
+    pub netbox_uri: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SystemConfig {
+    pub name: String,
+    pub site_id: i64,
+    pub description: String,
+    pub comments: String,
+    pub device_type: i64,
+    pub device_role: i64,
+    pub face: String,
+    pub status: String,
+    pub airflow: String,
+    pub primary_network_interface: Option<String>,
+    pub custom_fields: Option<HashMap<String, Value, RandomState>>,
+    // optional System information
+    pub tenant_group: Option<i64>,
+    pub tenant: Option<i64>,
+    pub rack: Option<i64>,
+    pub position: Option<i64>,
 }
 
 /// Set up configuration
@@ -54,8 +96,6 @@ pub fn set_up_configuration(
     uri: Option<String>,
     token: Option<String>,
     name: Option<String>,
-    location: Option<String>,
-    device_role: Option<String>,
 ) -> Result<ConfigData, String> {
     let mut conf_data: ConfigData;
 
@@ -70,23 +110,15 @@ pub fn set_up_configuration(
                 conf_data = ConfigData::read_config_file();
 
                 if uri.is_some() {
-                    conf_data.netbox_uri = uri.unwrap();
+                    conf_data.netbox.netbox_uri = uri.unwrap();
                 }
 
                 if token.is_some() {
-                    conf_data.netbox_api_token = token.unwrap();
+                    conf_data.netbox.netbox_api_token = token.unwrap();
                 }
 
                 if name.is_some() {
-                    conf_data.name = name.unwrap();
-                }
-
-                if location.is_some() {
-                    conf_data.system_location = location.unwrap();
-                }
-
-                if device_role.is_some() {
-                    conf_data.device_role = device_role.unwrap();
+                    conf_data.system.name = name.unwrap();
                 }
 
                 return Ok(conf_data);
@@ -97,7 +129,7 @@ pub fn set_up_configuration(
 
     println!("\x1b[36m[info]\x1b[0m No config file found. Creating default...");
 
-    match ConfigData::initialize_config_file() {
+    match ConfigData::initialize_config_file(&uri, &token, &name) {
         Ok(_) => {
             println!("\x1b[32m[success]\x1b[0m Default configuration file created successfully.")
         }
@@ -119,12 +151,10 @@ pub fn set_up_configuration(
 
     conf_data = ConfigData::read_config_file();
 
-    if uri.is_some() && token.is_some() && location.is_some() {
-        conf_data.netbox_uri = uri.unwrap();
-        conf_data.netbox_api_token = token.unwrap();
-        conf_data.name = name.unwrap();
-        conf_data.system_location = location.unwrap();
-        conf_data.device_role = device_role.unwrap();
+    if uri.is_some() && token.is_some() && name.is_some() {
+        conf_data.netbox.netbox_uri = uri.unwrap();
+        conf_data.netbox.netbox_api_token = token.unwrap();
+        conf_data.system.name = name.unwrap();
     }
 
     println!("\x1b[32m[success]\x1b[0m Configuration loaded.\x1b[0m");
@@ -190,70 +220,55 @@ impl ConfigData {
     ///
     /// If it is not able to create a new config file at `~/.nazara-config.toml` or if it cannot write the defaults
     /// to the file, the function panics as this is the main method of configuring the program.
-    fn initialize_config_file() -> std::io::Result<()> {
-        // Create new toml table
-        let mut config: toml::map::Map<String, Value> = toml::value::Table::new();
-
-        // Create netbox section
-        let netbox_section: toml::map::Map<String, Value> = {
-            let mut netbox_config_table: toml::map::Map<String, Value> = toml::value::Table::new();
-            netbox_config_table.insert("netbox_uri".to_string(), Value::String("".to_string()));
-            netbox_config_table.insert(
-                "netbox_api_token".to_string(),
-                Value::String("".to_string()),
-            );
-            netbox_config_table
-        };
-
-        let system_section: toml::map::Map<String, Value> = {
-            let mut system_config_table: toml::map::Map<String, Value> = toml::value::Table::new();
-            system_config_table.insert("name".to_string(), Value::String("".to_string()));
-            system_config_table
-                .insert("system_location".to_string(), Value::String("".to_string()));
-            system_config_table.insert("device_role".to_string(), Value::String("".to_string()));
-            system_config_table
-        };
-
-        // Insert the netbox section as value under the header "netbox"
-        config.insert("netbox".to_string(), Value::Table(netbox_section));
-
-        config.insert("system".to_string(), Value::Table(system_section));
-
-        let toml_string: String = match toml::to_string(&Value::Table(config)) {
-            Ok(result) => result,
-            Err(err) => {
-                println!("{}", err);
-                String::new()
-            }
-        };
-
-        // Create a new File
-        let mut file: File = match File::create(get_config_dir()) {
+    fn initialize_config_file(
+        uri: &Option<String>,
+        token: &Option<String>,
+        name: &Option<String>,
+    ) -> std::io::Result<()> {
+        let template_path: &Path = Path::new("src/configuration/config_template.toml");
+        let mut file: File = match File::open(&template_path) {
             Ok(file) => file,
             Err(err) => {
-                let exc: UnableToCreateConfigError = config_exceptions::UnableToCreateConfigError {
-                    message: format!(
-                        "\x1b[31mFATAL:\x1b[0m Unable to create config file! ({})",
-                        err
-                    ),
-                };
-                exc.abort(10);
+                let exc = config_exceptions::UnableToReadConfigError {
+                message: format!("\x1b[31m[error]\x1b[0m An Error occurred while attempting to read template file! {}", err)
+            };
+                exc.abort(1);
+            }
+        };
+        let mut contents: String = String::new();
+        match file.read_to_string(&mut contents) {
+            Ok(x) => x,
+            Err(err) => {
+                panic!("{}", err);
             }
         };
 
-        // Write default contents to file
-        match file.write_all(toml_string.as_bytes()) {
-            Ok(_) => {}
-            Err(err) => {
-                let exc: UnableToCreateConfigError = config_exceptions::UnableToCreateConfigError {
-                    message: format!(
-                        "\x1b[31mFATAL:\x1b[0m Unable to write defaults to config file! ({})",
-                        err
-                    ),
-                };
-                exc.abort(13);
-            }
+        // Replace placeholders with actual values if exist.
+        if let Some(uri) = uri {
+            contents = contents.replace("{NETBOX_URI}", &uri);
         }
+        if let Some(token) = token {
+            contents = contents.replace("{NETBOX_TOKEN}", &token);
+        }
+        if let Some(name) = name {
+            contents = contents.replace("{SYSTEM_NAME}", &name);
+        }
+
+        // Path to the output file
+        let output_path = get_config_dir();
+        let mut output_file = match File::create(&output_path) {
+            Ok(file) => file,
+            Err(err) => {
+                panic!("{}", err)
+            }
+        };
+        match output_file.write_all(contents.as_bytes()) {
+            Ok(()) => {}
+            Err(err) => {
+                panic!("{}", err)
+            }
+        };
+
         Ok(())
     }
 
@@ -272,85 +287,32 @@ impl ConfigData {
     /// * not able to read the config file.
     /// * the config file does not have valid TOML syntax.
     fn validate_config_file() -> Result<(), String> {
-        let file_contents: String = match fs::read_to_string(get_config_dir()) {
-            Ok(contents) => contents,
-            Err(err) => {
-                let exc: UnableToReadConfigError = config_exceptions::UnableToReadConfigError {
-                    message: format!("x1b[31m[FATAL]x1b[0m Unable to open config file! {}", err),
-                };
-                exc.abort(14)
-            }
-        };
+        let mut file = File::open(get_config_dir())
+            .map_err(|e| format!("[error] Failed to open config file! {}", e))?;
+        let mut contents = String::new();
+        file.read_to_string(&mut contents)
+            .map_err(|e| format!("[error] Failed to read config file! {}", e))?;
 
-        let config_contents: Value = match toml::from_str(&file_contents) {
-            Ok(config) => config,
-            Err(err) => {
-                let exc: InvalidConfigFileError = config_exceptions::InvalidConfigFileError {
-                    message: format!("\x1b[31m[FATAL]\x1b[0m Invalid config file syntax! Make sure the configuration file has valid TOML syntax. ({})", err),
-                };
-                exc.abort(15)
-            }
-        };
+        let config_data: ConfigData = toml::from_str(&contents)
+            .map_err(|e| format!("[error] Failed to deserialize toml parameters! {}", e))?;
 
-        let config_parameters: ConfigData = ConfigData {
-            netbox_api_token: config_contents["netbox"]["netbox_uri"]
-                .as_str()
-                .unwrap()
-                .trim()
-                .to_string(),
-            netbox_uri: config_contents["netbox"]["netbox_api_token"]
-                .as_str()
-                .unwrap()
-                .trim()
-                .to_string(),
-            name: config_contents["system"]["name"]
-                .as_str()
-                .unwrap()
-                .trim()
-                .to_string(),
-            system_location: config_contents["system"]["system_location"]
-                .as_str()
-                .unwrap()
-                .trim()
-                .to_string(),
-            device_role: config_contents["system"]["device_role"]
-                .as_str()
-                .unwrap()
-                .trim()
-                .to_string(),
-        };
-
-        if config_parameters.netbox_uri.is_empty() {
+        if config_data.netbox.netbox_uri.is_empty() {
             return Err(
                 "\x1b[31m[error]\x1b[0m Validation Error: Config parameter 'netbox_uri' is empty! This parameter is mandatory."
                     .to_string(),
             );
         }
 
-        if config_parameters.netbox_api_token.is_empty() {
+        if config_data.netbox.netbox_api_token.is_empty() {
             return Err(
                 "\x1b[31m[error]\x1b[0m Validation Error: Config parameter 'netbox_api_token' is empty! This parameter is mandatory."
                     .to_string(),
             );
         }
 
-        if config_parameters.name.is_empty() {
+        if config_data.system.name.is_empty() {
             return Err(
                 "\x1b[31m[error]\x1b[0m Validation Error: Config parameter 'name' is empty! This parameter is mandatory."
-                    .to_string(),
-            );
-        }
-
-        if config_parameters.system_location.is_empty() {
-            return Err(
-                "\x1b[31m[error]\x1b[0m Validation Error: Config parameter 'system_location' is empty! This parameter is mandatory."
-                    .to_string(),
-            );
-        }
-
-        if config_parameters.device_role.is_empty() {
-            return Err(
-                "\x1b[31m[error]\x1b[0m Validation Error: Config parameter 'device_role' is empty! This parameter is mandatory."
                     .to_string(),
             );
         }
@@ -365,55 +327,44 @@ impl ConfigData {
     ///
     /// * `config: ConfigData` - A `ConfigData` object.
     fn read_config_file() -> ConfigData {
-        let file_contents: String = match fs::read_to_string(get_config_dir()) {
-            Ok(contents) => contents,
+        let mut file = match File::open(get_config_dir()) {
+            Ok(file) => file,
             Err(err) => {
-                let exc: UnableToReadConfigError = config_exceptions::UnableToReadConfigError {
-                    message: format!("\x1b[31m[FATAL]\x1b[0m Unable to open config file! {}", err),
+                let exc = config_exceptions::UnableToReadConfigError {
+                    message: format!(
+                        "[error] An error occurred while attempting to read the config file: {}",
+                        err
+                    ),
                 };
-                exc.abort(14)
+                exc.abort(1);
             }
         };
 
-        let config_content: Value = match toml::from_str(&file_contents) {
-            Ok(config) => config,
+        let mut contents = String::new();
+        match file.read_to_string(&mut contents) {
+            Ok(u) => u,
             Err(err) => {
-                let exc: InvalidConfigFileError = config_exceptions::InvalidConfigFileError {
-                    message: format!("\x1b[31m[FATAL]\x1b[0m Invalid config file syntax! Make sure the configuration file has valid TOML syntax. ({})", err),
+                let exc = config_exceptions::UnableToReadConfigError {
+                    message: format!("[error] Unable to read config file to buffer! {}", err),
                 };
-                exc.abort(15)
+                exc.abort(1);
             }
         };
 
-        let config_parameters: ConfigData = ConfigData {
-            netbox_api_token: config_content["netbox"]["netbox_api_token"]
-                .as_str()
-                .unwrap()
-                .trim()
-                .to_string(),
-            netbox_uri: config_content["netbox"]["netbox_uri"]
-                .as_str()
-                .unwrap()
-                .trim()
-                .to_string(),
-            name: config_content["system"]["name"]
-                .as_str()
-                .unwrap()
-                .trim()
-                .to_string(),
-            system_location: config_content["system"]["system_location"]
-                .as_str()
-                .unwrap()
-                .trim()
-                .to_string(),
-            device_role: config_content["system"]["device_role"]
-                .as_str()
-                .unwrap()
-                .trim()
-                .to_string(),
+        let config_data: ConfigData = match toml::from_str(&contents) {
+            Ok(t) => t,
+            Err(err) => {
+                let exc = config_exceptions::UnableToCreateConfigError {
+                    message: format!(
+                        "[error] An error occured while trying to parse the toml: {}",
+                        err
+                    ),
+                };
+                exc.abort(1);
+            }
         };
 
-        return config_parameters;
+        config_data
     }
 
     /// Return NetBox URL. Necessary for payload generation.
@@ -422,7 +373,7 @@ impl ConfigData {
     ///
     /// * `system_location: &str` - The location of the system to be created/updated as read from the config file.
     pub fn get_netbox_uri(&self) -> &str {
-        &self.netbox_uri
+        &self.netbox.netbox_uri
     }
 
     /// Return API auth token. Necessary for payload generation.
@@ -431,15 +382,6 @@ impl ConfigData {
     ///
     /// * `system_location: String` - The location of the system to be created/updated as read from the config file.
     pub fn get_api_token(&self) -> &str {
-        &self.netbox_api_token
-    }
-
-    /// Return system location. Necessary for payload generation.
-    ///
-    /// # Returns
-    ///
-    /// * `system_location: String` - The location of the system to be created/updated as read from the config file.
-    pub fn get_system_location(&self) -> &str {
-        &self.system_location
+        &self.netbox.netbox_api_token
     }
 }
