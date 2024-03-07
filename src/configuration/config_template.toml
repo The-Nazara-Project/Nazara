@@ -29,7 +29,6 @@ airflow = "Front to rear" # Direction of airflow
 # rack = 0 # ID of the rack the device is mounted in if any
 # position = 0 # Position of the device within the rack if any
 
-
 # TODO
 
 # Custom parameters about the system, which fall under the "custom_fields" section.
