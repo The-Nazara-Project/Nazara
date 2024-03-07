@@ -10,6 +10,8 @@
  * 3. REMOVE DEBUG PRINT STATEMENTS.
  * */
 
+use crate::collectors::collector_exceptions;
+
 use super::collector_exceptions::UnableToCollectDataError;
 use super::util::{find_table, split_output};
 use serde::{Deserialize, Serialize};
@@ -81,6 +83,7 @@ pub struct ChassisInformation {
 /// * max_speed: `String`- The maximum speed of the CPU.
 /// * voltage: `String` - The voltage the CPU runs at.
 /// * status: `String` - Shows if the socket is enabled/disabled and populated/empty.
+/// * arch: `String` - The architecture of the CPU (x86_64, etc).
 #[derive(Serialize, Debug)]
 pub struct CpuInformation {
     pub version: String,
@@ -90,6 +93,7 @@ pub struct CpuInformation {
     pub max_speed: String,
     pub voltage: String,
     pub status: String,
+    pub arch: Option<String>,
 }
 
 /// List of possible system parameters to collect dmi information from.
@@ -361,6 +365,7 @@ fn dmidecode_cpu<T: DmiDecodeTable>(_param: T) -> CpuInformation {
         max_speed: String::new(),
         voltage: String::new(),
         status: String::new(),
+        arch: None,
     };
 
     let mut table_found: bool = false;
@@ -419,8 +424,39 @@ fn dmidecode_cpu<T: DmiDecodeTable>(_param: T) -> CpuInformation {
             }
         }
     }
+    cpu_information.arch = match get_architecture() {
+        Ok(arch) => Some(arch),
+        Err(e) => {
+            eprintln!("\x1b[31m[error]\x1b[0m Failure to get cpu information via `uname`!\n{}", e);
+            None
+        }
+    };
     println!("\x1b[32m[success]\x1b[0m CPU information collection completed.");
     return cpu_information;
+}
+
+/// Gets the architecture name through `uname`.
+///
+/// *This will override any information entered in the config file's `platform` field!*
+///
+/// # Returns
+/// - Ok(arch_name): `string` - Name of the CPU architecture.
+/// - Err(UnableToCollectDataError)
+fn get_architecture() -> Result<String, UnableToCollectDataError> {
+    println!("Running uname to collect CPU architecture...");
+    let output = match Command::new("uname").arg("-p").output() {
+        Ok(output) => {
+            output        
+        },
+        Err(e) => {
+            let exc: UnableToCollectDataError = UnableToCollectDataError {
+                message: String::from(format!("\x1b[31m[error]\x1b[0m An error occured while attempting to execute `uname -p`! {}", e))
+            };
+            return Err(exc);
+        }
+    };
+
+    Ok(String::from_utf8_lossy(&output.stdout).trim().to_string())
 }
 
 #[cfg(test)]
@@ -533,6 +569,7 @@ pub mod dmi_collector_tests {
             max_speed: "4000 MHz".to_string(),
             voltage: "1.2 V".to_string(),
             status: "Populated, Enabled".to_string(),
+            arch: Some("x86_64".to_string()),
         };
 
         let result = dmidecode_cpu(MockDmiDecodeTable {});
@@ -544,5 +581,6 @@ pub mod dmi_collector_tests {
         assert_eq!(expected.max_speed, result.max_speed);
         assert_eq!(expected.voltage, result.voltage);
         assert_eq!(expected.status, result.status);
+        assert_eq!(expected.arch, result.arch);
     }
 }
