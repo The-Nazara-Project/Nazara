@@ -67,6 +67,7 @@ pub struct SystemConfig {
     pub airflow: String,
     pub primary_network_interface: Option<String>,
     pub custom_fields: Option<HashMap<String, Value, RandomState>>,
+    pub platform_name: Option<String>,
     // optional System information
     pub tenant_group: Option<i64>,
     pub tenant: Option<i64>,

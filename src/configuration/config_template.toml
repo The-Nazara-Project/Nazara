@@ -2,12 +2,12 @@
 
 # Configuration parameters for the NetBox connection
 [netbox]
-netbox_api_token = ""
-netbox_uri = "https://demo.netbox.dev"
+netbox_api_token = "{NETBOX_TOKEN}"
+netbox_uri = "{NETBOX_URI}"
 
 # Mandatory information about the system
 [system]
-name = "" # Name of the machine or VM. **Required** when device is a VM
+name = "{SYSTEM_NAME}" # Name of the machine or VM. **Required** when device is a VM
 site_id = 0 # The id of the site this device is located at. (Stored in NetBox)
 description = ""
 comments = "Automatically registered by Nazara."
@@ -28,6 +28,7 @@ airflow = "Front to rear" # Direction of airflow
 # location = 0 # ID of the location of the device
 # rack = 0 # ID of the rack the device is mounted in if any
 # position = 0 # Position of the device within the rack if any
+platform = "x86_64"
 
 # TODO
 
@@ -35,7 +36,6 @@ airflow = "Front to rear" # Direction of airflow
 # Basically anything can go here, these are example values Nazara collects.
 [[system.custom]]
 cpu_count = 1 # overriden by collector
-platform = "x86_64" # overriden bei collector
 config_template = 0
 ##  ...
 # TODO: Does this make sense if this information is collected anyway?
