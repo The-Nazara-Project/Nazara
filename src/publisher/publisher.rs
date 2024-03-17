@@ -5,9 +5,6 @@
 //! machine or update an existing one.
 //!
 //! The actual request logic will be provided by the `thanix_client` crate.
-//!
-//! The `api_client` module will provide the actual client and request logic.
-//!
 use std::process;
 
 /// TODO: 1. Implement Creation/update logic 2. Denest by splitting query logic off 3. Do not panic upon request fail
@@ -25,7 +22,7 @@ use thanix_client::{
 
 use crate::{
     configuration::config_parser::ConfigData,
-    publisher::{api_client::test_connection, translator},
+    publisher::{api_client::{create_device, test_connection}, translator},
     Machine,
 };
 
@@ -81,33 +78,14 @@ pub fn register_machine(
         todo!("Virtual machine creation not yet implemented!") // TODO: VM Creation / Update
     } else {
         let payload: WritableDeviceWithConfigContextRequest =
-            translator::information_to_device(&machine, config_data);
+            translator::information_to_device(&client, &machine, config_data);
 
         match search_for_matches(&machine, &nb_devices) {
             Some(device_id) => {
                 todo!("Device update not yet implemented.") // TODO Implement machine update
             }
             None => {
-                match paths::dcim_devices_create(&client, payload) {
-                    Ok(response) => {
-                        // Check response code 201, handle other. (Should not happen)
-                        match response {
-                            DcimDevicesCreateResponse::Http201(created_device) => {
-                                // TODO
-                                todo!("Device creation not yet implemented!")
-                            }
-                            DcimDevicesCreateResponse::Other(other_response) => {
-                                // TODO
-                                todo!(
-                                    "Unexpected response code on device creation not handled yet!"
-                                )
-                            }
-                        }
-                    }
-                    Err(err) => {
-                        panic!("{}", err) // Handle failure correctly
-                    }
-                }
+                create_device(client, &payload);
             }
         }
     }

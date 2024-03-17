@@ -15,7 +15,7 @@ device_type = 0 # ID of the type of the Device Type in NetBox
 device_role = 0 # ID of the device role in NetBox
 # Name of the network interface to set. (e.g eth0, etc)
 # If not set, the first active interface will be selected.
-primary_network_interface = ""
+primary_network_interface = "eth0"
 face = "" # Direction this device may face in (e.g front or rear)
 status = "active" # status of the device. default: active
 airflow = "Front to rear" # Direction of airflow
