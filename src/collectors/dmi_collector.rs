@@ -427,7 +427,10 @@ fn dmidecode_cpu<T: DmiDecodeTable>(_param: T) -> CpuInformation {
     cpu_information.arch = match get_architecture() {
         Ok(arch) => Some(arch),
         Err(e) => {
-            eprintln!("\x1b[31m[error]\x1b[0m Failure to get cpu information via `uname`!\n{}", e);
+            eprintln!(
+                "\x1b[31m[error]\x1b[0m Failure to get cpu information via `uname`!\n{}",
+                e
+            );
             None
         }
     };
@@ -445,9 +448,7 @@ fn dmidecode_cpu<T: DmiDecodeTable>(_param: T) -> CpuInformation {
 fn get_architecture() -> Result<String, UnableToCollectDataError> {
     println!("Running uname to collect CPU architecture...");
     let output = match Command::new("uname").arg("-p").output() {
-        Ok(output) => {
-            output        
-        },
+        Ok(output) => output,
         Err(e) => {
             let exc: UnableToCollectDataError = UnableToCollectDataError {
                 message: String::from(format!("\x1b[31m[error]\x1b[0m An error occured while attempting to execute `uname -p`! {}", e))

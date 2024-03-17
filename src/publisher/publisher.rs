@@ -81,7 +81,7 @@ pub fn register_machine(
         todo!("Virtual machine creation not yet implemented!") // TODO: VM Creation / Update
     } else {
         let payload: WritableDeviceWithConfigContextRequest =
-            translator::information_to_device(&machine, config_data);
+            translator::information_to_device(&client, &machine, config_data);
 
         match search_for_matches(&machine, &nb_devices) {
             Some(device_id) => {
