@@ -59,14 +59,6 @@ struct Args {
     /// The name of the device
     #[arg(short, long)]
     name: Option<String>,
-
-    /// The location of the machine (must be one of the locations you have set as available in your Netbox instance)
-    #[arg(short, long)]
-    location: Option<String>,
-
-    /// The role of the machine (switch, server, router, etc.)
-    #[arg(short, long)]
-    device_role: Option<String>,
 }
 
 fn main() {
@@ -89,13 +81,7 @@ fn main() {
         ascii_art
     );
 
-    let config = match set_up_configuration(
-        args.uri,
-        args.token,
-        args.name.clone(),
-        args.location,
-        args.device_role,
-    ) {
+    let config = match set_up_configuration(args.uri, args.token, args.name.clone()) {
         Ok(conf) => conf,
         Err(err) => {
             println!("{}", err);
@@ -116,7 +102,8 @@ fn main() {
 
     let dmi_information: dmi_collector::DmiInformation = dmi_collector::construct_dmi_information();
 
-    let network_information = network_collector::construct_network_information().unwrap();
+    let network_information: Vec<NetworkInformation> =
+        network_collector::construct_network_information().unwrap();
 
     let machine: Machine = Machine {
         name: args.name,
@@ -126,25 +113,10 @@ fn main() {
 
     // Passing a name in any way is mandatory for a virtual machine
     if machine.dmi_information.system_information.is_virtual && machine.name.is_none() {
-        panic!("[FATAL] No name has been provided for this virtual machine! Providing a name as search parameter is mandatory for virtual machines.")
+        eprintln!("[FATAL] No name has been provided for this virtual machine! Providing a name as search parameter is mandatory for virtual machines.");
+        process::exit(1)
     }
 
-    let _ = register_machine(&client, machine);
-
-    // println!("{:#?}", network_information);
-
-    // let system_information: SystemData = SystemData {
-    //     dmi_information,
-    //     network_information,
-    //     name: config.name,
-    //     system_location: config.get_system_location().to_string(),
-    //     device_role: config.device_role,
-    // };
-
-    // let payload: CreateMachinePayload = CreateMachinePayload { system_information };
-
-    // match netbox_client.create_machine(&payload) {
-    //     Ok(()) => println!("Machine created!"),
-    //     Err(err) => eprintln!("Error: {:?}", err),
-    // }
+    // Register the machine or VM with NetBox
+    let _ = register_machine(&client, machine, config);
 }

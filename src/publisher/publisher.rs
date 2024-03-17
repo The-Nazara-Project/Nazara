@@ -7,23 +7,25 @@
 //! The actual request logic will be provided by the `thanix_client` crate.
 //!
 //! The `api_client` module will provide the actual client and request logic.
-use std::io::{self, Write};
+//!
+use std::process;
 
-use serde::{Deserialize, Serialize};
+/// TODO: 1. Implement Creation/update logic 2. Denest by splitting query logic off 3. Do not panic upon request fail
 use thanix_client::{
-    paths::{self, DcimDevicesListQuery, VirtualizationVirtualMachinesListQuery},
+    paths::{
+        self, DcimDevicesCreateResponse, DcimDevicesListQuery, DcimDevicesListResponse,
+        VirtualizationVirtualMachinesListQuery, VirtualizationVirtualMachinesListResponse,
+    },
     types::{
-        DeviceWithConfigContext, PaginatedDeviceWithConfigContextList,
-        PaginatedVirtualMachineWithConfigContextList, VirtualMachineWithConfigContext,
+        DeviceWithConfigContext, VirtualMachineWithConfigContext,
         WritableDeviceWithConfigContextRequest,
     },
     util::ThanixClient,
 };
 
 use crate::{
-    collectors::{dmi_collector::DmiInformation, network_collector::NetworkInformation},
-    publisher::api_client::test_connection,
-    publisher::translator,
+    configuration::config_parser::ConfigData,
+    publisher::{api_client::test_connection, translator},
     Machine,
 };
 
@@ -57,7 +59,7 @@ pub fn probe(client: &ThanixClient) -> Result<(), NetBoxApiError> {
     }
 }
 
-/// Register this machine in NetBox.
+/// Register this machine or VM in NetBox.
 ///
 /// # Parameters
 ///
@@ -65,14 +67,114 @@ pub fn probe(client: &ThanixClient) -> Result<(), NetBoxApiError> {
 ///
 /// # Returns
 ///
-/// TODO
-pub fn register_machine(client: &ThanixClient, machine: Machine) -> Result<(), NetBoxApiError> {
+/// Empty Result object upon successful completeion. Otherwise a `NetBoxApiError`.
+pub fn register_machine(
+    client: &ThanixClient,
+    machine: Machine,
+    config_data: ConfigData,
+) -> Result<(), NetBoxApiError> {
     println!("Starting registration process. This may take a while...");
 
     let nb_devices: DeviceListOrVMList = get_machines(client, &machine);
 
-    search_for_matches(&machine, &nb_devices);
+    if machine.dmi_information.system_information.is_virtual {
+        todo!("Virtual machine creation not yet implemented!") // TODO: VM Creation / Update
+    } else {
+        let payload: WritableDeviceWithConfigContextRequest =
+            translator::information_to_device(&client, &machine, config_data);
 
+        match search_for_matches(&machine, &nb_devices) {
+            Some(device_id) => {
+                todo!("Device update not yet implemented.") // TODO Implement machine update
+            }
+            None => {
+                match paths::dcim_devices_create(&client, payload) {
+                    Ok(response) => {
+                        // Check response code 201, handle other. (Should not happen)
+                        match response {
+                            DcimDevicesCreateResponse::Http201(created_device) => {
+                                // TODO
+                                todo!("Device creation not yet implemented!")
+                            }
+                            DcimDevicesCreateResponse::Other(other_response) => {
+                                // TODO
+                                todo!(
+                                    "Unexpected response code on device creation not handled yet!"
+                                )
+                            }
+                        }
+                    }
+                    Err(err) => {
+                        panic!("{}", err) // Handle failure correctly
+                    }
+                }
+            }
+        }
+    }
+
+    // check if virtual machine, create or update virtual machine.
+    // if machine.dmi_information.system_information.is_virtual {
+    //     match search_for_matches(&machine, &nb_devices) {
+    //         Some(vm_id) => {
+    //             match paths::virtualization_virtual_machines_update(
+    //                 &client,
+    //                 VirtualizationVirtualMachinesUpdateQuery::default(),
+    //                 vm_id,
+    //             ) {
+    //                 Ok(response) => {
+    //                     todo!()
+    //                 }
+    //                 Err(err) => {
+    //                     panic!("{}", err)
+    //                 }
+    //             }
+    //         }
+    //         None => {
+    //             match paths::virtualization_virtual_machines_create(
+    //                 &client,
+    //                 VirtualizationVirtualMachinesCreateQuery::default(),
+    //             ) {
+    //                 Ok(response) => {
+    //                     todo!()
+    //                 }
+    //                 Err(err) => {
+    //                     panic!("{}", err)
+    //                 }
+    //             }
+    //         }
+    //     }
+    // } else {
+    //     // proper physical machines
+    //     match search_for_matches(&machine, &nb_devices) {
+    //         Some(id) => {
+    //             match paths::dcim_devices_update(&client, DcimDevicesUpdateQuery::default(), id) {
+    //                 Ok(response) => {
+    //                     todo!()
+    //                 }
+    //                 Err(err) => {
+    //                     panic!("{}", err)
+    //                 }
+    //             }
+    //         }
+    //         None => match paths::dcim_devices_create(&client, DcimDevicesCreateQuery::default()) {
+    //             Ok(response) => {
+    //                 todo!()
+    //             }
+    //             Err(err) => {
+    //                 panic!("{}", err)
+    //             }
+    //         },
+    //     }
+    // }
+
+    Ok(())
+}
+
+/// Creates a new machine in NetBox by calling the `translator` module to translate the `machine` parameter
+/// struct into the correct data type required by the API.
+fn create_machine(client: &ThanixClient, machine: &Machine) -> Result<(), NetBoxApiError> {
+    println!("Creating new machine in NetBox...");
+    // let payload = translator::information_to_device(machine);
     Ok(())
 }
 
@@ -108,16 +210,21 @@ fn get_machines(client: &ThanixClient, machine: &Machine) -> DeviceListOrVMList 
         ) {
             Ok(response) => {
                 println!("List received. Analyzing...");
-                let debug_json = response.text().unwrap();
 
-                let response_content: PaginatedVirtualMachineWithConfigContextList =
-                    serde_json::from_str(&debug_json).unwrap();
-
-                let vm_list: Vec<VirtualMachineWithConfigContext> = response_content.results;
+                let vm_list: Vec<VirtualMachineWithConfigContext> = match response {
+                    VirtualizationVirtualMachinesListResponse::Http200(virtual_machines) => {
+                        virtual_machines.results
+                    }
+                    _ => {
+                        // TODO change the way Nazara exits here
+                        eprintln!("\x1b[31m[error]\x1b[0m Failure while retrieving list of virtual machines. Please make sure your NetBox database is set up correctly.");
+                        process::exit(1);
+                    }
+                };
 
                 DeviceListOrVMList::VmList(vm_list)
             }
-            Err(err) => panic!("{}", err),
+            Err(e) => panic!("{}", e),
         }
     } else {
         println!("Retrieving list of machines...");
@@ -125,21 +232,26 @@ fn get_machines(client: &ThanixClient, machine: &Machine) -> DeviceListOrVMList 
         match paths::dcim_devices_list(client, DcimDevicesListQuery::default()) {
             Ok(response) => {
                 println!("List received. Analyzing...");
-                let debug_json = response.text().unwrap();
 
-                let response_content: PaginatedDeviceWithConfigContextList =
-                    serde_json::from_str(&debug_json).unwrap();
-
-                let device_list: Vec<DeviceWithConfigContext> = response_content.results;
+                let device_list: Vec<DeviceWithConfigContext> = match response {
+                    DcimDevicesListResponse::Http200(devices) => devices.results,
+                    _ => {
+                        todo!("Handling of non 200 Response code when getting machines not implemented yet!");
+                    }
+                };
 
                 DeviceListOrVMList::DeviceList(device_list)
             }
-            Err(err) => panic!("{}", err),
+            Err(e) => {
+                // TODO change the way Nazara exits here
+                eprintln!("\x1b[31m[error]\x1b[0m Failure while retrieving list of devices. Please make sure your NetBox database is set up correctly.\n{}", e);
+                process::exit(1);
+            }
         }
     }
 }
 
-/// Searches for matching device in list of machines.
+/// Searches for matching device in list of machines and returns the device id in case of a match.
 ///
 /// Primary search parameters are the device's **serial number** and **UUID** acquired by `dmidecode`.
 ///
@@ -153,8 +265,8 @@ fn get_machines(client: &ThanixClient, machine: &Machine) -> DeviceListOrVMList 
 ///
 /// # Returns
 ///
-/// - `bool` - Depending on if the device has been found or not.
-fn search_for_matches(machine: &Machine, device_list: &DeviceListOrVMList) -> bool {
+/// - `Option<i64, None>` - Either returns the id of the device or Vm found, or None.
+fn search_for_matches(machine: &Machine, device_list: &DeviceListOrVMList) -> Option<i64> {
     match device_list {
         DeviceListOrVMList::DeviceList(devices) => {
             if machine.name.is_none() {
@@ -162,30 +274,30 @@ fn search_for_matches(machine: &Machine, device_list: &DeviceListOrVMList) -> bo
                 for device in devices {
                     if machine.dmi_information.system_information.serial == device.serial {
                         println!("\x1b[32m[success]\x1b[0m Machine found using serial number!");
-                        return true;
+                        return Some(device.id);
                     }
                 }
                 println!("\x1b[36m[info]\x1b[0m Machine not found using serial number.");
-                return false;
+                return None;
             }
             for device in devices {
                 if device.name == machine.name {
                     println!("\x1b[32m[success]\x1b[0m Machine found using name!");
-                    return true;
+                    return Some(device.id);
                 }
             }
             println!("\x1b[36m[info]\x1b[0m Machine not found in registered machines using name.");
-            false
+            None
         }
         DeviceListOrVMList::VmList(virtual_machines) => {
             for vm in virtual_machines {
                 if machine.name.as_ref().unwrap() == &vm.name {
                     println!("\x1b[32m[success]\x1b[0m VM found found using serial number!");
-                    return true;
+                    return Some(vm.id);
                 }
             }
             println!("\x1b[36m[info]\x1b[0m VM not found in registered machines.");
-            false
+            None
         }
     }
 }
