@@ -42,6 +42,11 @@ use std::{fs, path::PathBuf};
 
 use super::config_exceptions::{self, *};
 
+/// Configuration State set by the configuration file.
+///
+/// # Members
+/// - netbox: `NetBoxConfig` - Configuration parameters for the NetBox connection.
+/// - system: `SystemConfig` - Parameters abouth the system.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ConfigData {
     pub netbox: NetboxConfig,
@@ -54,6 +59,29 @@ pub struct NetboxConfig {
     pub netbox_uri: String,
 }
 
+/// Additional information about the system.
+///
+/// # Members
+///
+/// * name: `String` - Name of the device. *Required for virtual machines! Must be unique!*
+/// * site_id: `i64` - ID of the site the device is located in.
+/// * description: `String` - Short description of the device.
+/// * comments: `String` - Comment field.
+/// * device_type: `i64` - ID of the device type.
+/// * device_role: `i64` - ID of the device role.
+/// * face: `String` - Tag of the orientation of the device.
+/// * status: `String` - Status of the device. (Default: `active`)
+/// * airflow `String` - Airflow orientation of the device.
+/// * primary_network_interface: `Option<String>` - Name of the network interface you want to set as
+/// primary.
+/// * custom_fields: `Option<HashMap<String, Value, RandomState>>` - Unsorted, unfiltered list of
+/// information that will be handed to NetBox as-is.
+/// * platform_name: `Option<String>` - Name of the processor architecture used as a fallback if collection by `uname`
+/// fails. *Must be present in your NetBox instance!*
+/// * tenant_group: `Option<i64>` - ID of the tenant group this device belongs to. (e.g: department)
+/// * tenant: `Option<i64>` - ID of tenant this device belongs to. (e.g: team or individual)
+/// * rack: `Option<i64>` - ID of the rack this device is located in.
+/// * position: `Option<i64>` - Position of the device within a rack if any.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SystemConfig {
     pub name: String,
@@ -71,6 +99,7 @@ pub struct SystemConfig {
     // optional System information
     pub tenant_group: Option<i64>,
     pub tenant: Option<i64>,
+    pub location: Option<i64>,
     pub rack: Option<i64>,
     pub position: Option<i64>,
 }
@@ -318,7 +347,7 @@ impl ConfigData {
             );
         }
 
-        return Ok(());
+        Ok(())
     }
 
     /// Opens and reads the config file and writes the set parameters into a [`ConfigData`](struct.ConfigData) Object

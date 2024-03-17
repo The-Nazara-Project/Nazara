@@ -8,41 +8,9 @@
 extern crate thanix_client;
 
 use reqwest::{blocking::Client, Error as ReqwestError};
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use serde_json;
-use thanix_client::util::ThanixClient;
-
-use crate::collectors::{dmi_collector::DmiInformation, network_collector::NetworkInformation};
+use thanix_client::{paths::{dcim_devices_create, DcimDevicesCreateResponse}, types::WritableDeviceWithConfigContextRequest, util::ThanixClient};
 
 use super::{publisher, publisher_exceptions};
-
-/// Represents the combined system information required to create a new machine or update an existing one.
-///
-/// # Members
-///
-/// * `dmi_information: DmiInformation` - DMI (Desktop Management Interface) details of the system such as model and manufacturer.
-/// * `network_information: NetworkInformation` - A list of network interface details.
-/// * `system_location: String` A string representing the location or office the system is located at. Read from the config file.
-#[derive(Serialize)]
-pub struct SystemData {
-    pub dmi_information: DmiInformation,
-    pub network_information: Vec<NetworkInformation>,
-    pub system_name: String,
-    pub system_location: String,
-    pub device_role: String,
-}
-
-/// Encapsulates the payload required to create a new machine in NetBox.
-///
-/// This struct is serialized into JSON format and sent as the body of the HTTP request to create a new machine.
-///
-/// # Members
-///
-/// * `system_information: SystemData` - System Information to include in the request.
-#[derive(Serialize)]
-pub struct CreateMachinePayload {
-    pub system_information: SystemData,
-}
 
 /// Tests connection to the NetBox API.
 ///
@@ -75,5 +43,29 @@ pub fn test_connection(client: &ThanixClient) -> Result<(), publisher_exceptions
             }
         }
         Err(e) => Err(publisher_exceptions::NetBoxApiError::Reqwest(e)),
+    }
+}
+
+pub fn create_device(client: &ThanixClient, payload: &WritableDeviceWithConfigContextRequest) {
+    println!("Creating Device in NetBox...");
+
+    match dcim_devices_create(client, payload.clone()) {
+        Ok(response) => {
+            match response {
+                DcimDevicesCreateResponse::Http201(created_device) => {
+                    // TODO
+                    println!(
+                    "[success] Device creation successful!\nYour machine can be found under the ID {}.", created_device.id
+                );
+                }
+                DcimDevicesCreateResponse::Other(other_response) => {
+                    // TODO
+                    todo!("Other Response codes from creation not yet implemented! {}", other_response.text().unwrap());
+                }
+            }
+        }
+        Err(err) => {
+            panic!("{}", err); // Handle this better
+        }
     }
 }
