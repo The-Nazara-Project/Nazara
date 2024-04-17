@@ -8,7 +8,8 @@ use std::collections::HashMap;
 use std::process;
 use thanix_client::paths::{self, DcimPlatformsListQuery, IpamIpAddressesListQuery};
 use thanix_client::types::{
-    IPAddress, Platform, WritableDeviceWithConfigContextRequest, WritableVirtualMachineWithConfigContextRequest
+    IPAddress, Platform, WritableDeviceWithConfigContextRequest,
+    WritableVirtualMachineWithConfigContextRequest,
 };
 use thanix_client::util::ThanixClient;
 
@@ -22,9 +23,9 @@ use crate::{configuration::config_parser::ConfigData, Machine};
 ///
 /// # Parameters
 ///
-/// - `state: &ThanixClient` - API Client instance used for search and validation.
-/// - `machine: &Machine` - Collected information about the device.
-/// - `config_data: ConfigData` - Additional information about the device provided by config file
+/// - state: `&ThanixClient` - API Client instance used for search and validation.
+/// - machine: `&Machine` - Collected information about the device.
+/// - config_data: `ConfigData` - Additional information about the device provided by config file
 /// or CLI.
 ///
 /// # Returns
@@ -48,7 +49,9 @@ pub fn information_to_device(
         None
     };
 
-    let mut payload: WritableDeviceWithConfigContextRequest = WritableDeviceWithConfigContextRequest::default();
+    let mut payload: WritableDeviceWithConfigContextRequest =
+        WritableDeviceWithConfigContextRequest::default();
+
     payload.name = Some(config_data.system.name);
     payload.device_type = config_data.system.device_type;
     payload.role = config_data.system.device_role;
@@ -69,7 +72,7 @@ pub fn information_to_device(
     payload.airflow = config_data.system.airflow;
     payload.comments = config_data.system.comments;
     // payload.config_template = todo!();
-    payload.custom_fields = Some(HashMap::new());
+    payload.custom_fields = config_data.system.custom_fields;
     // payload.description = todo!();
     // payload.local_context_data = todo!();
     // payload.oob_ip = todo!();
@@ -79,6 +82,7 @@ pub fn information_to_device(
     // payload.virtual_chassis = todo!();
     // payload.vc_position = todo!();
     // payload.vc_priority = todo!();
+    // payload.tenant = todo!();
 
     payload
 }
@@ -109,6 +113,7 @@ pub fn information_to_vm(
 ///
 /// * state: `&ThanixClient` - The client required for searching for the platform.
 fn get_platform_id(state: &ThanixClient, platform_name: String) -> Option<i64> {
+    println!("Searching for id of platform '{}' ... ", platform_name);
     let platform_list: Vec<Platform>;
 
     match paths::dcim_platforms_list(&state, DcimPlatformsListQuery::default()) {
@@ -163,7 +168,9 @@ fn get_primary_ip4(state: &ThanixClient, machine: &Machine, preferred_nwi: Strin
             ip4_list = match response {
                 paths::IpamIpAddressesListResponse::Http200(adresses) => adresses.results,
                 _ => {
-                    todo!("Handling of non 200 Response code for Ipv4 retrieval not yet implemented.")
+                    todo!(
+                        "Handling of non 200 Response code for Ipv4 retrieval not yet implemented."
+                    )
                 }
             };
         }
@@ -190,4 +197,4 @@ fn get_primary_ip4(state: &ThanixClient, machine: &Machine, preferred_nwi: Strin
 /// * location_id: `i64` - The id of the location the system is located at.
 fn get_location_id(state: &ThanixClient, location_id: i64) -> Option<i64> {
     todo!("Getting device location not implemented yet.")
-}   
+}
