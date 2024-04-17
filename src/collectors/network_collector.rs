@@ -31,18 +31,18 @@ use super::collector_exceptions;
 /// * interface_speed - `u32` the speed of the interface.
 #[derive(Serialize, Debug)]
 pub struct NetworkInformation {
-    name: String,
-    interface_speed: Option<u32>,
-    v4ip: Option<IpAddr>,
-    v4broadcast: Option<IpAddr>,
-    v4netmask: Option<IpAddr>,
-    v6ip: Option<IpAddr>,
-    v6broadcast: Option<IpAddr>,
-    v6netmask: Option<IpAddr>,
-    mac_addr: Option<String>,
-    index: Option<u32>,
-    is_physical: bool,
-    is_connected: bool,
+    pub name: String,
+    pub interface_speed: Option<u32>,
+    pub v4ip: Option<IpAddr>,
+    pub v4broadcast: Option<IpAddr>,
+    pub v4netmask: Option<IpAddr>,
+    pub v6ip: Option<IpAddr>,
+    pub v6broadcast: Option<IpAddr>,
+    pub v6netmask: Option<IpAddr>,
+    pub mac_addr: Option<String>,
+    pub index: Option<u32>,
+    pub is_physical: bool,
+    pub is_connected: bool,
 }
 
 /// Collect information about all network interfaces.
