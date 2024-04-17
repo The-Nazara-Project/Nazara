@@ -8,7 +8,11 @@
 extern crate thanix_client;
 
 use reqwest::{blocking::Client, Error as ReqwestError};
-use thanix_client::{paths::{dcim_devices_create, DcimDevicesCreateResponse}, types::WritableDeviceWithConfigContextRequest, util::ThanixClient};
+use thanix_client::{
+    paths::{dcim_devices_create, DcimDevicesCreateResponse},
+    types::WritableDeviceWithConfigContextRequest,
+    util::ThanixClient,
+};
 
 use super::{publisher, publisher_exceptions};
 
@@ -60,7 +64,10 @@ pub fn create_device(client: &ThanixClient, payload: &WritableDeviceWithConfigCo
                 }
                 DcimDevicesCreateResponse::Other(other_response) => {
                     // TODO
-                    todo!("Other Response codes from creation not yet implemented! {}", other_response.text().unwrap());
+                    todo!(
+                        "Other Response codes from creation not yet implemented! {}",
+                        other_response.text().unwrap()
+                    );
                 }
             }
         }

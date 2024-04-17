@@ -19,6 +19,10 @@ publisher:
 api-client:
 - src/publisher/api_client/*
 
+translator:
+- src/publisher/translator.rs
+- src/publisher/trans_validation.rs
+
 dependencies:
 - Cargo.toml
 - Cargo.lock

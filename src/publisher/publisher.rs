@@ -22,7 +22,10 @@ use thanix_client::{
 
 use crate::{
     configuration::config_parser::ConfigData,
-    publisher::{api_client::{create_device, test_connection}, translator},
+    publisher::{
+        api_client::{create_device, test_connection},
+        translator,
+    },
     Machine,
 };
 
