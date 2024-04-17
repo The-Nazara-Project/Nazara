@@ -10,23 +10,35 @@
 //!
 //! [system]
 //! name = "some_name" # Required for virtual machines!
-//! site_id = 0
+//! site_id = 0 # The ID of the site this device is located at.
 //! description = ""
 //! comments = "Automatically registered using Nazara."
 //! device_type = 0
 //! role = 0
+//! # Name of the network interface to set. (e.g eth0, etc)
+//! # If not set, the first active interface will be selected.
+//! primary_network_interface = ""
+//! face = "" # Direction this device may face (e.g front or rear)
+//! status = "active" # Status of the device. 'active' by default.
+//! airflow = "front-to-rear" # Direction of airflow.
 //!
+//! # Optional data of your device
+//! # This section may be empty
+//! [[system.optional]]
+//! # tenant_group = 0 # The ID of the department this device belongs to.
+//! # tenant = 0 # ID of the team or individual this device blongs to.
+//! # location = 0 # ID of the location of the device.
+//! # rack = 0 # ID of the Rack this device sits in.
+//! # position = 0 # Position of the device within the Rack.
+//! platform = "x86_64" # Name of the paltform of this device.
 //!
-//! # These will be parsed a singl HashMap with no further checking.
-//! # Make sure that these custom fields line up with the
-//! # Custom fields of your NetBox instance.
-//! [[system.custom]]
-//! cpu_count = 1
-//! platform = "x86_64" # Overriden by collector
-//! collect_cpu_information = true
-//! collect_network_information = true
-//! primary_network_interface = "eth0"
-//! config_template = 0 # integer of the config_template ID
+//! # These will be parsed into a single HashMap. You must provide
+//! # the correct field labels as there is no way for Nazara to know.
+//!
+//! # These values are purely exemplary.
+//! [system.custom_fields]
+//! # cpu_count = 1
+//! # config_template = 0
 //! ```
 //!
 //! It will be created at ` ~/.nazara-config.toml`.

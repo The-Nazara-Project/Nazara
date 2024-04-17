@@ -18,7 +18,7 @@ device_role = 0 # ID of the device role in NetBox
 primary_network_interface = "eth0"
 face = "" # Direction this device may face in (e.g front or rear)
 status = "active" # status of the device. default: active
-airflow = "Front to rear" # Direction of airflow
+airflow = "front-to-rear" # Direction of airflow
 
 # Optional data of your device.
 # This section may be empty
@@ -30,15 +30,14 @@ airflow = "Front to rear" # Direction of airflow
 # position = 0 # Position of the device within the rack if any
 platform = "x86_64"
 
-# TODO
-
 # Custom parameters about the system, which fall under the "custom_fields" section.
 # Basically anything can go here, these are example values Nazara collects.
-[[system.custom]]
-cpu_count = 1 # overriden by collector
-config_template = 0
+[system.custom]
+# cpu_count = 1 # overriden by collector
+# config_template = 0
 ##  ...
 # TODO: Does this make sense if this information is collected anyway?
 # TODO: Maybe something like this would be better?
-collect_cpu_information = true
-collect_network_information = true
+# collect_cpu_information = true
+#
+# collect_network_information = true
