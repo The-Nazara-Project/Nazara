@@ -15,6 +15,29 @@ use thanix_client::{types::WritableDeviceWithConfigContextRequest, util::ThanixC
 
 use crate::{configuration::config_parser::ConfigData, Machine};
 
+/// Validate the system information found in the config file.
+///
+/// Checks that parameters such as IDs and other system parameters entered in the config file
+/// correspond to an existing NetBox object.
+/// Otherwise, return an Error.
+///
+/// # Parameters
+///
+/// * state: `&ThanixClient` - The API client instance to use for communication.
+/// * config_data: `&ConfigData` - The configuration file contents.
+///
+/// # Returns
+///
+/// Returns `Ok(())` when all relevant config parameters correspond to existing objects. Otherwise
+/// return `Error`.
+///
+/// # Panics
+///
+/// This function panics if connection to NetBox fails.
+// pub fn validate_config_data(state: &ThanixClient, config_data: &ConfigData) -> Result<(), Error> {
+//     Ok(())
+// }
+
 /// Validate the `Device` Payload.
 ///
 /// # Parameters
@@ -30,26 +53,3 @@ fn validate_device_payload(payload: WritableDeviceWithConfigContextRequest) -> b
 
     false
 }
-
-pub fn get_ip_adresses(state: &ThanixClient, config_data: &ConfigData) {
-    todo!("getting ip adresses is still todo");
-}
-
-// Create a new IP-Adress object in NetBox if the collected IP Adresses for the preferred interface
-// do not exist yet.
-//
-// # Parameters
-//
-// * state: `&ThanixClient` - The `ThanixClient` object used for API connection.
-// * config_data: `&ConfigData` - The config information which identifies the preferred network
-// interface.
-// * sys_info: `&Machine` - Collected system information which contains the IP Adresses to create.
-//
-// # Returns
-//
-// * Ok()
-//
-// # Panics
-//
-// This function panics if the creation if the IP Adresses return an error code other than "Ok".
-fn create_ip_adresses(state: &ThanixClient, config_data: &ConfigData, sys_info: &Machine) {}
