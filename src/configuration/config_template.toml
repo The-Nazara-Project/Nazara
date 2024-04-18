@@ -35,7 +35,7 @@ platform = "x86_64"
 
 # Custom parameters about the system, which fall under the "custom_fields" section.
 # Basically anything can go here, these are example values Nazara collects.
-[system.custom]
+[system.custom_fields]
 # cpu_count = 1 # overriden by collector
 # config_template = 0
 ##  ...
