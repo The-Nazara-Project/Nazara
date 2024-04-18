@@ -5,9 +5,11 @@
 //! TODO:
 //! - Identify primary IPv4 or IPv6 using the primary_network_interface field from `ConfigData`.
 use std::process;
-use thanix_client::paths::{self, DcimPlatformsListQuery, IpamIpAddressesListQuery};
+use thanix_client::paths::{
+    self, DcimPlatformsListQuery, DcimSitesListQuery, IpamIpAddressesListQuery,
+};
 use thanix_client::types::{
-    IPAddress, Platform, WritableDeviceWithConfigContextRequest,
+    IPAddress, Platform, Site, WritableDeviceWithConfigContextRequest,
     WritableVirtualMachineWithConfigContextRequest,
 };
 use thanix_client::util::ThanixClient;
@@ -246,10 +248,37 @@ fn get_site_id(state: &ThanixClient, config_data: &ConfigData) -> i64 {
                 );
                 process::exit(1);
             }
-        }
+        };
     } else {
-        return 0; // Search for site using site_name
+        println!("\x1b[36m[info]\x1b[0m No 'site_id' specified. Searching by name...");
+        let site_list: Vec<Site>;
+        match paths::dcim_sites_list(state, DcimSitesListQuery::default()) {
+            Ok(response) => match response {
+                paths::DcimSitesListResponse::Http200(sites) => site_list = sites.results,
+                paths::DcimSitesListResponse::Other(response) => {
+                    eprintln!("\x1b[31[error] Error while retrieving site list.\n--- Unexpected response: {} ---",
+                    response.text().unwrap()
+                    );
+                    process::exit(1);
+                }
+            },
+            Err(e) => {
+                eprintln!(
+                    "\x1b[31m[error]\x1b[0m Error while performing site list query.\n{}",
+                    e
+                );
+                process::exit(1);
+            }
+        }
+        let target: String = config_data.system.site_name.clone().unwrap();
+
+        return site_list
+            .iter()
+            .find(|site| &site.name == &target)
+            .unwrap()
+            .id;
     }
+    0
 }
 
 // Create a new IP-Adress object in NetBox if the collected IP Adresses for the preferred interface

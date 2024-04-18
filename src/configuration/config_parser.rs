@@ -376,7 +376,7 @@ impl ConfigData {
         if config_data.system.tenant_group.is_none()
             || config_data.system.tenant_group_name.is_none()
         {
-            println!("x1b[36m[info]\x1b[0m One of the config parameters 'tenant_group' or 'tenant_group_name' or both not set.");
+            println!("\x1b[36m[info]\x1b[0m One of the config parameters 'tenant_group' or 'tenant_group_name' or both not set.");
         }
 
         if config_data.system.site_id.is_some() && config_data.system.site_name.is_some() {
