@@ -97,7 +97,8 @@ pub struct NetboxConfig {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SystemConfig {
     pub name: String,
-    pub site_id: i64,
+    pub site_id: Option<i64>,
+    pub site_name: Option<String>,
     pub description: String,
     pub comments: String,
     pub device_type: i64,
@@ -110,7 +111,9 @@ pub struct SystemConfig {
     pub platform_name: Option<String>,
     // optional System information
     pub tenant_group: Option<i64>,
+    pub tenant_group_name: Option<String>,
     pub tenant: Option<i64>,
+    pub tenant_name: Option<i64>,
     pub location: Option<i64>,
     pub rack: Option<i64>,
     pub position: Option<i64>,
@@ -359,6 +362,45 @@ impl ConfigData {
             );
         }
 
+        if config_data.system.site_id.is_none() && config_data.system.site_name.is_none() {
+            return Err(
+                "\x1b[31m[error]\x1b[0m Validation Error: Config parameters 'site_id' and 'site_name' empty. One of these is mandatory!"
+                .to_string(),
+            );
+        }
+
+        if config_data.system.tenant.is_none() || config_data.system.tenant_name.is_none() {
+            println!("\x1b[36m[info]\x1b[0m One of the parameters 'tenant' or 'tenant_name' or both not set.");
+        }
+
+        if config_data.system.tenant_group.is_none()
+            || config_data.system.tenant_group_name.is_none()
+        {
+            println!("x1b[36m[info]\x1b[0m One of the config parameters 'tenant_group' or 'tenant_group_name' or both not set.");
+        }
+
+        if config_data.system.site_id.is_some() && config_data.system.site_name.is_some() {
+            return Err(
+                "\x1b[31m[error]\x1b[0m Validation Error: Parameters 'site_id' and 'site_name' are exclusive."
+                .to_string(),
+            );
+        }
+
+        if config_data.system.tenant_group.is_some()
+            && config_data.system.tenant_group_name.is_some()
+        {
+            return Err(
+                "\x1b[31m[error]\x1b[0m Validation Error: Parameters 'tenant_group' and 'tenant_group_name' are exclusive."
+                .to_string(),
+            );
+        }
+
+        if config_data.system.tenant.is_some() && config_data.system.tenant_name.is_some() {
+            return Err(
+                "\x1b[31m[error]\x1b[0m Validation Error: Parameters 'tenant' and 'tenant_name' are exclusive."
+                .to_string(),
+            );
+        }
         Ok(())
     }
 
