@@ -4,7 +4,6 @@
 //!
 //! TODO:
 //! - Identify primary IPv4 or IPv6 using the primary_network_interface field from `ConfigData`.
-use std::collections::HashMap;
 use std::process;
 use thanix_client::paths::{self, DcimPlatformsListQuery, IpamIpAddressesListQuery};
 use thanix_client::types::{
@@ -13,7 +12,10 @@ use thanix_client::types::{
 };
 use thanix_client::util::ThanixClient;
 
+use crate::collectors::network_collector::NetworkInformation;
 use crate::{configuration::config_parser::ConfigData, Machine};
+
+use super::publisher_exceptions::NetBoxApiError;
 
 /// Translate the machine information to a `WritableDeviceWithConfigContextRequest` required by
 /// NetBox's API.
@@ -30,22 +32,28 @@ use crate::{configuration::config_parser::ConfigData, Machine};
 ///
 /// # Returns
 ///
-/// - `device: WritableDeviceWithConfigContextRequest` - Payload for machine creation request
+/// - device: `WritableDeviceWithConfigContextRequest` - Payload for machine creation request
 pub fn information_to_device(
     state: &ThanixClient,
     machine: &Machine,
     config_data: ConfigData,
 ) -> WritableDeviceWithConfigContextRequest {
+    println!("Creating Device object...");
+
     let wanted_platform: Option<String> = if let Some(arch) =
         machine.dmi_information.cpu_information.arch.as_ref()
     {
-        println!("[info] CPU architecture was collected. Used by default, overriding possible config options...");
+        println!("\x1b[36m[info]\x1b[0m CPU architecture was collected. Used by default, overriding possible config options...");
         Some(arch.clone())
     } else if let Some(config_value) = config_data.system.platform_name.as_ref() {
-        println!("[info] Architecture was not collected. Using config specifications...");
+        println!(
+            "\x1b[36m[info]\x1b[0m Architecture was not collected. Using config specifications..."
+        );
         Some(config_value.clone())
     } else {
-        println!("[warning] No cpu architecture specified. Proceeding with 'none'...");
+        println!(
+            "[\x1b[33m[warning]\x1b[0m No cpu architecture specified. Proceeding with 'none'..."
+        );
         None
     };
 
@@ -62,7 +70,7 @@ pub fn information_to_device(
     };
     payload.serial = machine.dmi_information.system_information.serial.clone();
     // payload.asset_tag = todo!();
-    payload.site = config_data.system.site_id; // TODO: Check if this exists.
+    payload.site = config_data.system.site_id.unwrap(); // TODO: Check if this exists.
     payload.rack = config_data.system.rack;
     payload.face = config_data.system.face;
     // payload.position = todo!();
@@ -129,7 +137,7 @@ fn get_platform_id(state: &ThanixClient, platform_name: String) -> Option<i64> {
         }
         Err(e) => {
             eprintln!(
-                "\x1b[31m[error]\x1b[0m Failure while receiving list of platforms.\n{}",
+                "[\x1b[31m[error]\x1b[0m Failure while receiving list of platforms.\n{}",
                 e
             );
             process::exit(1);
@@ -157,26 +165,42 @@ fn get_platform_id(state: &ThanixClient, platform_name: String) -> Option<i64> {
 ///
 /// * state: `&ThanixClient` - The client required for making API requests.
 /// * machine: `&Machine` - The collected machine information.
-fn get_primary_ip4(state: &ThanixClient, machine: &Machine, preferred_nwi: String) -> i64 {
+fn get_primary_addresses(state: &ThanixClient, machine: &Machine, preferred_nwi: String) -> i64 {
     println!("Retrieving list of IPv4 adresses...");
     let ip4_list: Vec<IPAddress>;
+    let key_nwi: &NetworkInformation;
+
+    if let Some(nwi_match) = machine
+        .network_information
+        .iter()
+        .find(|nwi| nwi.name == preferred_nwi)
+    {
+        key_nwi = nwi_match;
+    } else {
+        eprintln!(
+            "\x1b[31m[error] Specified Network Interface '{}' not found!",
+            preferred_nwi
+        );
+        process::exit(1);
+    };
 
     match paths::ipam_ip_addresses_list(&state, IpamIpAddressesListQuery::default()) {
         Ok(response) => {
-            println!("List received. Analyzing...");
+            println!("IPAddress list received. Analyzing...");
 
             ip4_list = match response {
                 paths::IpamIpAddressesListResponse::Http200(adresses) => adresses.results,
-                _ => {
-                    todo!(
-                        "Handling of non 200 Response code for Ipv4 retrieval not yet implemented."
-                    )
+                paths::IpamIpAddressesListResponse::Other(response) => {
+                    eprintln!("\x1b[31m[error]\x1b[0m Failure while trying to retrieve list of IPAddresses. \n --- Unexpected response: {}",
+                    response.text().unwrap()
+                    );
+                    process::exit(1);
                 }
             };
         }
         Err(e) => {
             eprintln!(
-                "\x1b[31m[error]\x1b[0m Failure while retrieving list of IPv4 Adresses.\n{}",
+                "\x1b[31m[error]\x1b[0m Failure while retrieving list of IPv4 Adresses.\n --- Unexpected response: {} ---",
                 e
             );
             process::exit(1);
@@ -184,7 +208,7 @@ fn get_primary_ip4(state: &ThanixClient, machine: &Machine, preferred_nwi: Strin
     }
 
     for address in ip4_list {
-        // TODO search for fitting IP Adress
+        // TODO search for IP Address(es) in List.
     }
     return 0;
 }
@@ -197,4 +221,59 @@ fn get_primary_ip4(state: &ThanixClient, machine: &Machine, preferred_nwi: Strin
 /// * location_id: `i64` - The id of the location the system is located at.
 fn get_location_id(state: &ThanixClient, location_id: i64) -> Option<i64> {
     todo!("Getting device location not implemented yet.")
+}
+
+/// Search for the site specified in the config file by ID or by name.
+fn get_site_id(state: &ThanixClient, config_data: &ConfigData) -> i64 {
+    println!("Searching for site...");
+    if config_data.system.site_id.is_some() {
+        // Check if site with given ID exists.
+        match paths::dcim_sites_retrieve(state, config_data.system.site_id.unwrap()) {
+            Ok(response) => match response {
+                paths::DcimSitesRetrieveResponse::Http200(site) => site.id,
+                paths::DcimSitesRetrieveResponse::Other(response) => {
+                    eprintln!(
+                        "\x1b[31m[error]\x1b[0m Error while searching for site by site_id.\n--- Unexpected response: {} ---",
+                            response.text().unwrap()
+                    );
+                    process::exit(1);
+                }
+            },
+            Err(e) => {
+                eprintln!(
+                    "\x1b[31m[error]\x1b[0m Error while searching for site.\n{}",
+                    e
+                );
+                process::exit(1);
+            }
+        }
+    } else {
+        return 0; // Search for site using site_name
+    }
+}
+
+// Create a new IP-Adress object in NetBox if the collected IP Adresses for the preferred interface
+// do not exist yet.
+//
+// # Parameters
+//
+// * state: `&ThanixClient` - The `ThanixClient` object used for API connection.
+// * config_data: `&ConfigData` - The config information which identifies the preferred network
+// interface.
+// * sys_info: `&Machine` - Collected system information which contains the IP Adresses to create.
+//
+// # Returns
+//
+// Return `Ok(i64)` containing the ID of the created IP Adress entry if the creation was
+// successful. Otherwise, return `NetBoxApiError`.
+//
+// # Panics
+//
+// This function panics if the connection to NetBox fails.
+fn create_ip_adresses(
+    state: &ThanixClient,
+    config_data: &ConfigData,
+    sys_info: &Machine,
+) -> Result<i64, NetBoxApiError> {
+    todo!();
 }

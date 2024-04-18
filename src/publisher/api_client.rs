@@ -59,7 +59,7 @@ pub fn create_device(client: &ThanixClient, payload: &WritableDeviceWithConfigCo
                 DcimDevicesCreateResponse::Http201(created_device) => {
                     // TODO
                     println!(
-                    "[success] Device creation successful!\nYour machine can be found under the ID {}.", created_device.id
+                    "\x1b[32m[success] Device creation successful!\x1b[0m \n+++ Your machine can be found under the ID {}. +++", created_device.id
                 );
                 }
                 DcimDevicesCreateResponse::Other(other_response) => {
