@@ -4,7 +4,10 @@
 //!
 //! TODO:
 //! - Identify primary IPv4 or IPv6 using the primary_network_interface field from `ConfigData`.
+use core::net::IpAddr;
+use std::net::Ipv4Addr;
 use std::process;
+use std::str::FromStr;
 use thanix_client::paths::{
     self, DcimPlatformsListQuery, DcimSitesListQuery, IpamIpAddressesListQuery,
 };
@@ -62,7 +65,7 @@ pub fn information_to_device(
     let mut payload: WritableDeviceWithConfigContextRequest =
         WritableDeviceWithConfigContextRequest::default();
 
-    payload.name = Some(config_data.system.name);
+    payload.name = Some(config_data.system.name.clone());
     payload.device_type = config_data.system.device_type;
     payload.role = config_data.system.device_role;
     payload.tenant = config_data.system.tenant;
@@ -72,7 +75,15 @@ pub fn information_to_device(
     };
     payload.serial = machine.dmi_information.system_information.serial.clone();
     // payload.asset_tag = todo!();
-    payload.site = config_data.system.site_id.unwrap(); // TODO: Check if this exists.
+    payload.site = match get_site_id(state, &config_data) {
+        Some(site_id) => site_id,
+        None => {
+            eprintln!(
+                "\x1b[31m[error]\x1b[0m An Error occured while validating the site ID or name."
+            );
+            process::exit(1);
+        }
+    };
     payload.rack = config_data.system.rack;
     payload.face = config_data.system.face;
     // payload.position = todo!();
@@ -86,13 +97,25 @@ pub fn information_to_device(
     // payload.description = todo!();
     // payload.local_context_data = todo!();
     // payload.oob_ip = todo!();
-    // TODO payload.primary_ip4 = todo!();
-    // TODO payload.primary_ip6 = todo!();
+    payload.primary_ip4 = get_primary_addresses(
+        state,
+        machine,
+        config_data
+            .system
+            .primary_network_interface
+            .clone()
+            .unwrap(),
+    );
+    payload.primary_ip6 = get_primary_addresses(
+        state,
+        machine,
+        config_data.system.primary_network_interface.unwrap(),
+    );
     // payload.tags = todo!();
     // payload.virtual_chassis = todo!();
     // payload.vc_position = todo!();
     // payload.vc_priority = todo!();
-    // payload.tenant = todo!();
+    payload.location = config_data.system.location;
 
     payload
 }
@@ -148,6 +171,7 @@ fn get_platform_id(state: &ThanixClient, platform_name: String) -> Option<i64> {
 
     for platform in platform_list {
         if platform.name == platform_name {
+            println!("\x1b[32m[success]\x1b[0m Platform ID found. Proceeding...");
             return Some(platform.id);
         }
     }
@@ -167,9 +191,13 @@ fn get_platform_id(state: &ThanixClient, platform_name: String) -> Option<i64> {
 ///
 /// * state: `&ThanixClient` - The client required for making API requests.
 /// * machine: `&Machine` - The collected machine information.
-fn get_primary_addresses(state: &ThanixClient, machine: &Machine, preferred_nwi: String) -> i64 {
-    println!("Retrieving list of IPv4 adresses...");
-    let ip4_list: Vec<IPAddress>;
+fn get_primary_addresses(
+    state: &ThanixClient,
+    machine: &Machine,
+    preferred_nwi: String,
+) -> Option<i64> {
+    println!("Retrieving list of Addresses...");
+    let ip_list: Vec<IPAddress>;
     let key_nwi: &NetworkInformation;
 
     if let Some(nwi_match) = machine
@@ -186,14 +214,15 @@ fn get_primary_addresses(state: &ThanixClient, machine: &Machine, preferred_nwi:
         process::exit(1);
     };
 
+    // TODO: Split this API call off so it is only done once.
     match paths::ipam_ip_addresses_list(&state, IpamIpAddressesListQuery::default()) {
         Ok(response) => {
             println!("IPAddress list received. Analyzing...");
 
-            ip4_list = match response {
+            ip_list = match response {
                 paths::IpamIpAddressesListResponse::Http200(adresses) => adresses.results,
                 paths::IpamIpAddressesListResponse::Other(response) => {
-                    eprintln!("\x1b[31m[error]\x1b[0m Failure while trying to retrieve list of IPAddresses. \n --- Unexpected response: {}",
+                    eprintln!("\x1b[31m[error]\x1b[0m Failure while trying to retrieve list of IPAddresses. \n --- Unexpected response: {} ---",
                     response.text().unwrap()
                     );
                     process::exit(1);
@@ -209,28 +238,53 @@ fn get_primary_addresses(state: &ThanixClient, machine: &Machine, preferred_nwi:
         }
     }
 
-    for address in ip4_list {
-        // TODO search for IP Address(es) in List.
-    }
-    return 0;
-}
+    let mut result: Option<i64> = None;
 
-/// Get the id of the location provided by the config file.
-///
-/// Parameters
-///
-/// * state: `&ThanixClient` - The client required for searching for the location.
-/// * location_id: `i64` - The id of the location the system is located at.
-fn get_location_id(state: &ThanixClient, location_id: i64) -> Option<i64> {
-    todo!("Getting device location not implemented yet.")
+    for (idx, addr) in ip_list.iter().enumerate() {
+        print! {"Searching for matching IP Adress... ({:?}/{:?})\r", idx+1, ip_list.len()};
+        let ip = IpAddr::from_str(addr.address.clone().split("/").next().unwrap()).unwrap(); // TODO: Errorhandling
+        match ip {
+            IpAddr::V4(x) => match key_nwi.v4ip {
+                Some(y) => {
+                    if x == y {
+                        result = Some(addr.id);
+                    }
+                }
+                None => todo!(),
+            },
+            IpAddr::V6(x) => match key_nwi.v6ip {
+                Some(y) => {
+                    if x == y {
+                        result = Some(addr.id);
+                    }
+                }
+                None => todo!(),
+            },
+        }
+    }
+    println!();
+    result
 }
 
 /// Search for the site specified in the config file by ID or by name.
-fn get_site_id(state: &ThanixClient, config_data: &ConfigData) -> i64 {
+///
+/// # Parameters
+///
+/// * state: `&ThanixClient` - The client required for performing API requests.
+/// * config_data: `&ConfigData` - The configuration data found in the config file.
+///
+/// # Returns
+///
+/// * site_id: `i64` - The ID of the site if found. If not found, returns 0.
+///
+/// # Aborts
+///
+/// Unexpected API responses may terminate the process.
+fn get_site_id(state: &ThanixClient, config_data: &ConfigData) -> Option<i64> {
     println!("Searching for site...");
     if config_data.system.site_id.is_some() {
         // Check if site with given ID exists.
-        match paths::dcim_sites_retrieve(state, config_data.system.site_id.unwrap()) {
+        let target = match paths::dcim_sites_retrieve(state, config_data.system.site_id.unwrap()) {
             Ok(response) => match response {
                 paths::DcimSitesRetrieveResponse::Http200(site) => site.id,
                 paths::DcimSitesRetrieveResponse::Other(response) => {
@@ -249,6 +303,8 @@ fn get_site_id(state: &ThanixClient, config_data: &ConfigData) -> i64 {
                 process::exit(1);
             }
         };
+        println!("\x1b[32m[success]\x1b[0m Valid site ID. Proceeding...");
+        return Some(target);
     } else {
         println!("\x1b[36m[info]\x1b[0m No 'site_id' specified. Searching by name...");
         let site_list: Vec<Site>;
@@ -272,13 +328,15 @@ fn get_site_id(state: &ThanixClient, config_data: &ConfigData) -> i64 {
         }
         let target: String = config_data.system.site_name.clone().unwrap();
 
-        return site_list
-            .iter()
-            .find(|site| &site.name == &target)
-            .unwrap()
-            .id;
+        return Some(
+            site_list
+                .iter()
+                .find(|site| &site.name == &target)
+                .unwrap()
+                .id,
+        );
     }
-    0
+    None
 }
 
 // Create a new IP-Adress object in NetBox if the collected IP Adresses for the preferred interface
