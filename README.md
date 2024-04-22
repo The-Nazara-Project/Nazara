@@ -77,7 +77,7 @@ system_location = "$SYSTEM_LOCATION"
 An example file would look like this:
 
 ```toml
-[n# Template nazara-config.toml file for v0.1.0
+# Template nazara-config.toml file for v0.1.0
 
 # Configuration parameters for the NetBox connection
 [netbox]
@@ -118,8 +118,6 @@ platform = "x86_64"
 # cpu_count = 1 # overriden by collector
 # config_template = 0
 ##  ...etbox]
-netbox_api_token = "fj453534898235jg8tg24g43hgh9438489453h4kgi3gksd483uggmn"
-netbox_uri = "http://netbox.organization.com/api/"
 
 [system]
 system_location = "Nuremberg"
