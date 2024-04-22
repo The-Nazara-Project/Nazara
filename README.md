@@ -117,10 +117,7 @@ platform = "x86_64"
 [system.custom_fields]
 # cpu_count = 1 # overriden by collector
 # config_template = 0
-##  ...etbox]
-
-[system]
-system_location = "Nuremberg"
+##  ...
 ```
 
 *Please note that this section is still a work in progress and all information is subject to change.*
