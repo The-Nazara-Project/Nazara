@@ -77,9 +77,47 @@ system_location = "$SYSTEM_LOCATION"
 An example file would look like this:
 
 ```toml
+# Template nazara-config.toml file for v0.1.0
+
+# Configuration parameters for the NetBox connection
 [netbox]
-netbox_api_token = "fj453534898235jg8tg24g43hgh9438489453h4kgi3gksd483uggmn"
-netbox_uri = "http://netbox.organization.com/api/"
+netbox_api_token = "{NETBOX_TOKEN}"
+netbox_uri = "{NETBOX_URI}"
+
+# Mandatory information about the system
+[system]
+name = "{SYSTEM_NAME}" # Name of the machine or VM. **Required** when device is a VM
+site_id = 0 # The id of the site this device is located at. (Stored in NetBox)
+# site_name = "" # Name of the site this device is located at. (May take longer to search for) (Mutually exclusive with ID!)
+description = ""
+comments = "Automatically registered by Nazara."
+device_type = 0 # ID of the type of the Device Type in NetBox
+device_role = 0 # ID of the device role in NetBox
+# Name of the network interface to set. (e.g eth0, etc)
+# If not set, the first active interface will be selected.
+primary_network_interface = "eth0"
+face = "" # Direction this device may face in (e.g front or rear)
+status = "active" # status of the device. default: active
+airflow = "front-to-rear" # Direction of airflow
+
+# Optional data of your device.
+# This section may be empty
+[[system.optional]]
+# tenant_group = 0 # ID of the department this device belongs to
+# tenant_group_name = "" # Name of the department this device belongs to (mutually exclusive with ID!)
+# tenant = 0 # ID of the team or individual this device belongs to
+# tenant_name = "" # Name of the individual or team this device belongs to (mutually exclusive with ID!)
+# location = 0 # ID of the location of the device
+# rack = 0 # ID of the rack the device is mounted in if any
+# position = 0 # Position of the device within the rack if any
+platform = "x86_64"
+
+# Custom parameters about the system, which fall under the "custom_fields" section.
+# Basically anything can go here, these are example values Nazara collects.
+[system.custom_fields]
+# cpu_count = 1 # overriden by collector
+# config_template = 0
+##  ...etbox]
 
 [system]
 system_location = "Nuremberg"
