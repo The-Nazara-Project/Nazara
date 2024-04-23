@@ -5,14 +5,13 @@
 //! TODO:
 //! - Identify primary IPv4 or IPv6 using the primary_network_interface field from `ConfigData`.
 use core::net::IpAddr;
-use std::net::Ipv4Addr;
 use std::process;
 use std::str::FromStr;
 use thanix_client::paths::{
     self, DcimPlatformsListQuery, DcimSitesListQuery, IpamIpAddressesListQuery,
 };
 use thanix_client::types::{
-    IPAddress, Platform, Site, WritableDeviceWithConfigContextRequest,
+    IPAddress, Platform, Site, WritableDeviceWithConfigContextRequest, WritableInterfaceRequest,
     WritableVirtualMachineWithConfigContextRequest,
 };
 use thanix_client::util::ThanixClient;
@@ -115,6 +114,7 @@ pub fn information_to_device(
     // payload.virtual_chassis = todo!();
     // payload.vc_position = todo!();
     // payload.vc_priority = todo!();
+    payload.tenant = config_data.system.tenant;
     payload.location = config_data.system.location;
 
     payload
@@ -135,9 +135,36 @@ pub fn information_to_device(
 pub fn information_to_vm(
     state: &ThanixClient,
     machine: &Machine,
-    config_data: &ConfigData,
+    config_data: ConfigData,
 ) -> WritableVirtualMachineWithConfigContextRequest {
     todo!("Translation of collected information to VM not implemented yet!")
+}
+
+/// Translate gathered information into a `WritableInterfaceRequest` payload.
+///
+/// # Parameters
+///
+/// * state: `&ThanixClient` - The client instance to be used for communication.
+/// * machine: `&Machine` - The collectedd information about the device or machine.
+/// * config_data: `ConfigData` - The configuration data.
+/// * device_id: `&i64` - The ID of the device that this interface belongs to.
+///
+/// # Returns
+///
+/// * payload: `WritableInterfaceRequest` - Payload for creating an interface.
+pub fn information_to_interface(
+    state: &ThanixClient,
+    machine: &Machine,
+    config_data: ConfigData,
+    device_id: &i64,
+) -> WritableInterfaceRequest {
+    println!("Creating Network Interface...");
+
+    let mut payload: WritableInterfaceRequest = WritableInterfaceRequest::default();
+
+    payload.device = device_id.to_owned();
+
+    payload
 }
 
 /// Returns the ID of the platform this machine uses.
