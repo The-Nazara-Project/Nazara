@@ -14,7 +14,10 @@ use thanix_client::{
     util::ThanixClient,
 };
 
-use super::{publisher, publisher_exceptions};
+use super::{
+    publisher,
+    publisher_exceptions::{self, NetBoxApiError},
+};
 
 /// Tests connection to the NetBox API.
 ///
@@ -50,7 +53,18 @@ pub fn test_connection(client: &ThanixClient) -> Result<(), publisher_exceptions
     }
 }
 
-pub fn create_device(client: &ThanixClient, payload: &WritableDeviceWithConfigContextRequest) {
+/// Send request to create a new device in NetBox.
+///
+/// # Parameters
+///
+/// * client: `&ThanixClient` - The `ThanixClient` instance to use for communication.
+/// * payload: `&WritableDeviceWithConfigContextRequest` - The information about the device serving
+/// as a request body.
+///
+pub fn create_device(
+    client: &ThanixClient,
+    payload: &WritableDeviceWithConfigContextRequest,
+) -> Result<i64, NetBoxApiError> {
     println!("Creating Device in NetBox...");
 
     match dcim_devices_create(client, payload.clone()) {
@@ -59,8 +73,10 @@ pub fn create_device(client: &ThanixClient, payload: &WritableDeviceWithConfigCo
                 DcimDevicesCreateResponse::Http201(created_device) => {
                     // TODO
                     println!(
-                    "\x1b[32m[success] Device creation successful!\x1b[0m \n+++ Your machine can be found under the ID {}. +++", created_device.id
-                );
+                        "\x1b[32m[success]\x1b[0m Device creation successful! New Device-ID {}.",
+                        created_device.id
+                    );
+                    return Ok(created_device.id);
                 }
                 DcimDevicesCreateResponse::Other(other_response) => {
                     // TODO
