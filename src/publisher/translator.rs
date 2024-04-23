@@ -163,6 +163,26 @@ pub fn information_to_interface(
     let mut payload: WritableInterfaceRequest = WritableInterfaceRequest::default();
 
     payload.device = device_id.to_owned();
+    // payload.vdcs = todo!();
+    // payload.module = todo!();
+    payload.name = match config_data.system.primary_network_interface {
+        Some(interface_name) => interface_name,
+        None => String::from("Nazara Generic Network Interface"),
+    };
+    // payload.label = todo!();
+    // payload.r#type = todo!();
+    // payload.parent = todo!();
+    // payload.bridge = todo!();
+    // payload.lag = todo!();
+    // payload.mtu = todo!();
+    payload.mac_address = todo!("Search for nwi specified as primary, get mac address.");
+    payload.speed = todo!();
+    payload.description = String::from("This interface was automatically created by Nazara.");
+    payload.mode = todo!();
+    payload.rf_role = todo!();
+    payload.rf_channel = todo!();
+    payload.poe_mode = todo!();
+    payload.poe_type = todo!();
 
     payload
 }
@@ -366,24 +386,24 @@ fn get_site_id(state: &ThanixClient, config_data: &ConfigData) -> Option<i64> {
     None
 }
 
-// Create a new IP-Adress object in NetBox if the collected IP Adresses for the preferred interface
-// do not exist yet.
-//
-// # Parameters
-//
-// * state: `&ThanixClient` - The `ThanixClient` object used for API connection.
-// * config_data: `&ConfigData` - The config information which identifies the preferred network
-// interface.
-// * sys_info: `&Machine` - Collected system information which contains the IP Adresses to create.
-//
-// # Returns
-//
-// Return `Ok(i64)` containing the ID of the created IP Adress entry if the creation was
-// successful. Otherwise, return `NetBoxApiError`.
-//
-// # Panics
-//
-// This function panics if the connection to NetBox fails.
+/// Create a new IP-Adress object in NetBox if the collected IP Adresses for the preferred interface
+/// do not exist yet.
+///
+/// # Parameters
+///
+/// * state: `&ThanixClient` - The `ThanixClient` object used for API connection.
+/// * config_data: `&ConfigData` - The config information which identifies the preferred network
+/// interface.
+/// * sys_info: `&Machine` - Collected system information which contains the IP Adresses to create.
+///
+/// # Returns
+///
+/// Return `Ok(i64)` containing the ID of the created IP Adress entry if the creation was
+/// successful. Otherwise, return `NetBoxApiError`.
+///
+/// # Panics
+///
+/// This function panics if the connection to NetBox fails.
 fn create_ip_adresses(
     state: &ThanixClient,
     config_data: &ConfigData,
