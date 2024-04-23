@@ -23,7 +23,7 @@ use thanix_client::{
 use crate::{
     configuration::config_parser::ConfigData,
     publisher::{
-        api_client::{create_device, test_connection},
+        api_client::{create_device, create_interface, test_connection},
         translator,
     },
     Machine,
@@ -88,6 +88,7 @@ pub fn register_machine(
                 todo!("Device update not yet implemented.") // TODO Implement machine update
             }
             None => {
+                // Creates Device. Will need to be updated after IP Adress creation.
                 let device_id = match create_device(client, &device_payload) {
                     Ok(id) => id,
                     Err(e) => {
@@ -95,6 +96,7 @@ pub fn register_machine(
                         process::exit(1);
                     }
                 };
+
                 let interface_payload: WritableInterfaceRequest =
                     translator::information_to_interface(
                         &client,
@@ -102,6 +104,14 @@ pub fn register_machine(
                         config_data.clone(),
                         &device_id,
                     );
+
+                let interface_id = match create_interface(client, interface_payload) {
+                    Ok(id) => id,
+                    Err(e) => {
+                        println!("{}", e);
+                        process::exit(1);
+                    }
+                };
             }
         }
     }
