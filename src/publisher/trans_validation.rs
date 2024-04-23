@@ -8,12 +8,11 @@
 //! * Confirming certain API objects (like IP Adresses) are in fact present in NetBox.
 //! * Validating that the Names of certain API objects are valid and correspond to an ID.
 //!
-//! > Also, given the filename here is room for a statement:
-//! > Trans rights are human rights!
-
 use thanix_client::{types::WritableDeviceWithConfigContextRequest, util::ThanixClient};
 
 use crate::{configuration::config_parser::ConfigData, Machine};
+
+use super::publisher_exceptions::PayloadValidationError;
 
 /// Validate the system information found in the config file.
 ///
@@ -41,15 +40,19 @@ use crate::{configuration::config_parser::ConfigData, Machine};
 /// Validate the `Device` Payload.
 ///
 /// # Parameters
-/// * payload: `WritableDeviceWithConfigContextRequest` - The struct to validate.
+///
+/// * payload: `&WritableDeviceWithConfigContextRequest` - The struct to validate.
 ///
 /// # Returns
 ///
 /// - Ok(())
-fn validate_device_payload(payload: WritableDeviceWithConfigContextRequest) -> bool {
+///
+/// # Panics
+///
+/// This function panics if the connection to NetBox fails.
+pub fn validate_device_payload(state: &ThanixClient, payload: &WritableDeviceWithConfigContextRequest) -> Result<(), PayloadValidationError> {
     println!("Validating device payload...");
-
-    todo!("Device payload validation not implemented yet!");
-
-    false
+    
+    todo!("Device Payload validation not yet implemented!")
 }
+
