@@ -10,12 +10,12 @@ use std::process;
 /// TODO: 1. Implement Creation/update logic 2. Denest by splitting query logic off 3. Do not panic upon request fail
 use thanix_client::{
     paths::{
-        self, DcimDevicesCreateResponse, DcimDevicesListQuery, DcimDevicesListResponse,
+        self, DcimDevicesListQuery, DcimDevicesListResponse,
         VirtualizationVirtualMachinesListQuery, VirtualizationVirtualMachinesListResponse,
     },
     types::{
-        DeviceWithConfigContext, VirtualMachineWithConfigContext,
-        WritableDeviceWithConfigContextRequest,
+        self, DeviceWithConfigContext, VirtualMachineWithConfigContext,
+        WritableDeviceWithConfigContextRequest, WritableInterfaceRequest,
     },
     util::ThanixClient,
 };
@@ -80,15 +80,28 @@ pub fn register_machine(
     if machine.dmi_information.system_information.is_virtual {
         todo!("Virtual machine creation not yet implemented!") // TODO: VM Creation / Update
     } else {
-        let payload: WritableDeviceWithConfigContextRequest =
-            translator::information_to_device(&client, &machine, config_data);
+        let device_payload: WritableDeviceWithConfigContextRequest =
+            translator::information_to_device(&client, &machine, config_data.clone());
 
         match search_for_matches(&machine, &nb_devices) {
             Some(device_id) => {
                 todo!("Device update not yet implemented.") // TODO Implement machine update
             }
             None => {
-                create_device(client, &payload);
+                let device_id = match create_device(client, &device_payload) {
+                    Ok(id) => id,
+                    Err(e) => {
+                        println!("{}", e);
+                        process::exit(1);
+                    }
+                };
+                let interface_payload: WritableInterfaceRequest =
+                    translator::information_to_interface(
+                        &client,
+                        &machine,
+                        config_data.clone(),
+                        &device_id,
+                    );
             }
         }
     }

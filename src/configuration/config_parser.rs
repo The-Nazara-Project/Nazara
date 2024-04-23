@@ -59,13 +59,13 @@ use super::config_exceptions::{self, *};
 /// # Members
 /// - netbox: `NetBoxConfig` - Configuration parameters for the NetBox connection.
 /// - system: `SystemConfig` - Parameters abouth the system.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ConfigData {
     pub netbox: NetboxConfig,
     pub system: SystemConfig,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct NetboxConfig {
     pub netbox_api_token: String,
     pub netbox_uri: String,
@@ -94,7 +94,7 @@ pub struct NetboxConfig {
 /// * tenant: `Option<i64>` - ID of tenant this device belongs to. (e.g: team or individual)
 /// * rack: `Option<i64>` - ID of the rack this device is located in.
 /// * position: `Option<i64>` - Position of the device within a rack if any.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct SystemConfig {
     pub name: String,
     pub site_id: Option<i64>,
