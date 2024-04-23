@@ -63,7 +63,7 @@ impl fmt::Display for PayloadValidationError {
     }
 }
 
-/// Imlement `abort` function to exit the program in an orderly manner, printing the error message
+/// Implement `abort` function to exit the program in an orderly manner, printing the error message
 /// in the process.
 impl PayloadValidationError {
     pub fn abort(&self, exit_code: i32) -> ! {
