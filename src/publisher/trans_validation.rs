@@ -7,49 +7,57 @@
 //!
 //! * Confirming certain API objects (like IP Adresses) are in fact present in NetBox.
 //! * Validating that the Names of certain API objects are valid and correspond to an ID.
-//!
-//! > Also, given the filename here is room for a statement:
-//! > Trans rights are human rights!
+use thanix_client::{
+    types::{
+        WritableDeviceWithConfigContextRequest, WritableVirtualMachineWithConfigContextRequest,
+    },
+    util::ThanixClient,
+};
 
-use thanix_client::{types::WritableDeviceWithConfigContextRequest, util::ThanixClient};
-
-use crate::{configuration::config_parser::ConfigData, Machine};
-
-/// Validate the system information found in the config file.
-///
-/// Checks that parameters such as IDs and other system parameters entered in the config file
-/// correspond to an existing NetBox object.
-/// Otherwise, return an Error.
-///
-/// # Parameters
-///
-/// * state: `&ThanixClient` - The API client instance to use for communication.
-/// * config_data: `&ConfigData` - The configuration file contents.
-///
-/// # Returns
-///
-/// Returns `Ok(())` when all relevant config parameters correspond to existing objects. Otherwise
-/// return `Error`.
-///
-/// # Panics
-///
-/// This function panics if connection to NetBox fails.
-// pub fn validate_config_data(state: &ThanixClient, config_data: &ConfigData) -> Result<(), Error> {
-//     Ok(())
-// }
+use super::publisher_exceptions::PayloadValidationError;
 
 /// Validate the `Device` Payload.
 ///
 /// # Parameters
-/// * payload: `WritableDeviceWithConfigContextRequest` - The struct to validate.
+///
+/// * payload: `&WritableDeviceWithConfigContextRequest` - The struct to validate.
 ///
 /// # Returns
 ///
 /// - Ok(())
-fn validate_device_payload(payload: WritableDeviceWithConfigContextRequest) -> bool {
+///
+/// # Panics
+///
+/// This function panics if the connection to NetBox fails.
+pub fn validate_device_payload(
+    state: &ThanixClient,
+    payload: &WritableDeviceWithConfigContextRequest,
+) -> Result<(), PayloadValidationError> {
     println!("Validating device payload...");
 
-    todo!("Device payload validation not implemented yet!");
+    todo!("Device Payload validation not yet implemented!")
+}
 
-    false
+/// Validate the `VM` Payload.
+///
+/// # Parameters
+///
+/// * state: `&ThanixClient` - The ThanixClient instance to use for communication with NetBox.
+/// * payload: `&WritableVirtualMachineWithConfigContextRequest` - The payload to validate.
+///
+/// # Returns
+///
+/// Returns `Ok(())` when all relevant fields of the request payload are valid. Otherwise
+/// return `Err(PayloadValidationError)`.
+///
+/// # Panics
+///
+/// This function panics if the connection to NetBox fails.
+pub fn validate_vm_payload(
+    state: &ThanixClient,
+    payload: &WritableVirtualMachineWithConfigContextRequest,
+) -> Result<(), PayloadValidationError> {
+    println!("Validating VM payload...");
+
+    todo!("Virtual Machine payload validation not yet implemented!");
 }
