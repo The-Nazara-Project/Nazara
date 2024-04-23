@@ -22,9 +22,7 @@
 
 use reqwest::Error as ReqwestError;
 
-use std::{error::Error, fmt};
-
-use crate::configuration;
+use std::{error::Error, fmt, process};
 
 #[derive(Debug)]
 pub enum NetBoxApiError {
@@ -46,5 +44,30 @@ impl Error for NetBoxApiError {}
 impl From<ReqwestError> for NetBoxApiError {
     fn from(err: ReqwestError) -> Self {
         NetBoxApiError::Reqwest(err)
+    }
+}
+
+/// Error to be thrown when the validation of an API request payload fails.
+///
+/// # Members
+///
+/// * message: `String` - The error message containing the reason for the failure.
+pub struct PayloadValidationError {
+    message: String,
+}
+
+/// Implements the `Format` trait for `PayloadValidationError` for easy printing.
+impl fmt::Display for PayloadValidationError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "[FATAL] PayloadValidationError: {}", self.message)
+    }
+}
+
+/// Imlement `abort` function to exit the program in an orderly manner, printing the error message
+/// in the process.
+impl PayloadValidationError {
+    pub fn abort(&self, exit_code: i32) -> ! {
+        println!("{} (Error code: {})", self, exit_code);
+        process::exit(exit_code);
     }
 }
