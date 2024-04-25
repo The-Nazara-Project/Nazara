@@ -9,7 +9,10 @@ extern crate thanix_client;
 
 use reqwest::{blocking::Client, Error as ReqwestError};
 use thanix_client::{
-    paths::{dcim_devices_create, dcim_interfaces_create, DcimDevicesCreateResponse},
+    paths::{
+        dcim_devices_create, dcim_interfaces_create, DcimDevicesCreateResponse,
+        DcimInterfacesCreateResponse,
+    },
     types::{WritableDeviceWithConfigContextRequest, WritableInterfaceRequest},
     util::ThanixClient,
 };
@@ -65,7 +68,7 @@ pub fn create_device(
     client: &ThanixClient,
     payload: &WritableDeviceWithConfigContextRequest,
 ) -> Result<i64, NetBoxApiError> {
-    println!("Creating Device in NetBox...");
+    println!("Creating device in NetBox...");
 
     match dcim_devices_create(client, payload.clone()) {
         Ok(response) => {
@@ -111,7 +114,7 @@ pub fn create_interface(
     client: &ThanixClient,
     payload: WritableInterfaceRequest,
 ) -> Result<i64, NetBoxApiError> {
-    println!("Creating interface in NetBox...");
+    println!("Creating network interface in NetBox...");
 
     match dcim_interfaces_create(client, payload) {
         Ok(response) => {
@@ -127,7 +130,9 @@ pub fn create_interface(
             }
         }
         Err(e) => {
-            panic!("[FATAL] NetBox connection failed. {}", e);
+            eprintln!("\x1b[33m[warning]\x1b[0m Error while decoding NetBox Response. This is probably still fine and a problem with NetBox.\nError: {}", e);
+            let exc = NetBoxApiError::Other(e.to_string());
+            Err(exc)
         }
     }
 }
