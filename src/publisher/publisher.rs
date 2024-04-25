@@ -108,7 +108,7 @@ pub fn register_machine(
                 let interface_id = match create_interface(client, interface_payload) {
                     Ok(id) => id,
                     Err(e) => {
-                        println!("{}", e);
+                        eprintln!("{}", e);
                         process::exit(1);
                     }
                 };

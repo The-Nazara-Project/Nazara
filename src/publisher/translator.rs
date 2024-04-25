@@ -5,6 +5,7 @@
 //! TODO:
 //! - Identify primary IPv4 or IPv6 using the primary_network_interface field from `ConfigData`.
 use core::net::IpAddr;
+use std::collections::HashMap;
 use std::process;
 use std::str::FromStr;
 use thanix_client::paths::{
@@ -165,24 +166,48 @@ pub fn information_to_interface(
     payload.device = device_id.to_owned();
     // payload.vdcs = todo!();
     // payload.module = todo!();
-    payload.name = match config_data.system.primary_network_interface {
-        Some(interface_name) => interface_name,
+    payload.name = match &config_data.system.primary_network_interface {
+        Some(interface_name) => interface_name.to_owned(),
         None => String::from("Nazara Generic Network Interface"),
     };
     // payload.label = todo!();
-    // payload.r#type = todo!();
+    // FIXME:
+    payload.r#type = String::from("bridge");
     // payload.parent = todo!();
     // payload.bridge = todo!();
     // payload.lag = todo!();
     // payload.mtu = todo!();
-    payload.mac_address = todo!("Search for nwi specified as primary, get mac address.");
-    payload.speed = todo!();
+
+    // Get the interfce we are looking for as primary, then get its parameters.
+    // These filter statements can probably be split off into their own function.
+    payload.mac_address = match &config_data.system.primary_network_interface {
+        Some(nwi_name) => {
+            let interface = machine
+                .network_information
+                .iter()
+                .find(|nwi| nwi.name == nwi_name.to_owned());
+            interface.map(|nwi| nwi.mac_addr.clone()).flatten()
+        }
+        None => None,
+    };
+    payload.speed = match config_data.system.primary_network_interface {
+        Some(nwi_name) => {
+            let interface = machine
+                .network_information
+                .iter()
+                .find(|nwi| nwi.name == nwi_name);
+            interface.map(|nwi| nwi.interface_speed.clone()).flatten()
+        }
+        None => None,
+    };
     payload.description = String::from("This interface was automatically created by Nazara.");
-    payload.mode = todo!();
-    payload.rf_role = todo!();
-    payload.rf_channel = todo!();
-    payload.poe_mode = todo!();
-    payload.poe_type = todo!();
+    // payload.mode = todo!();
+    // payload.rf_role = todo!();
+    // payload.rf_channel = todo!();
+    // payload.poe_mode = todo!();
+    // payload.poe_type = todo!();
+    // FIXME:
+    payload.custom_fields = Some(HashMap::new());
 
     payload
 }
@@ -192,6 +217,14 @@ pub fn information_to_interface(
 /// # Parameters
 ///
 /// * state: `&ThanixClient` - The client required for searching for the platform.
+///
+/// # Returns
+///
+/// Returns `Some(i64)` if the specified platform exists, else returns `None`.
+///
+/// # Aborts
+///
+/// If the netBox connection fails, this may terimnate the process.
 fn get_platform_id(state: &ThanixClient, platform_name: String) -> Option<i64> {
     println!("Searching for id of platform '{}' ... ", platform_name);
     let platform_list: Vec<Platform>;
@@ -231,13 +264,18 @@ fn get_platform_id(state: &ThanixClient, platform_name: String) -> Option<i64> {
 /// The function will retrieve a list of IPv4 Adresses from NetBox,
 /// then search this list for the IP Adress Nazara collected.
 ///
-/// The "primary_network_interface" paramter specified in the `nazara_config.toml`
+/// The `primary_network_interface` paramter specified in the `nazara_config.toml`
 /// will be used to specify which adress to search for.
 ///
 /// # Parameters
 ///
 /// * state: `&ThanixClient` - The client required for making API requests.
 /// * machine: `&Machine` - The collected machine information.
+///
+/// # Returns
+///
+/// Returns the ID of the IP address object `i64` if a match has been found.
+/// Else returns `None`.
 fn get_primary_addresses(
     state: &ThanixClient,
     machine: &Machine,
