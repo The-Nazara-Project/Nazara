@@ -10,10 +10,9 @@ extern crate thanix_client;
 use reqwest::{blocking::Client, Error as ReqwestError};
 use thanix_client::{
     paths::{
-        dcim_devices_create, dcim_interfaces_create, DcimDevicesCreateResponse,
-        DcimInterfacesCreateResponse,
+        dcim_devices_create, dcim_interfaces_create, ipam_ip_addresses_create, DcimDevicesCreateResponse, DcimInterfacesCreateResponse
     },
-    types::{WritableDeviceWithConfigContextRequest, WritableInterfaceRequest},
+    types::{WritableDeviceWithConfigContextRequest, WritableIPAddressRequest, WritableInterfaceRequest},
     util::ThanixClient,
 };
 
@@ -120,7 +119,7 @@ pub fn create_interface(
         Ok(response) => {
             match response {
                 thanix_client::paths::DcimInterfacesCreateResponse::Http201(result) => {
-                    println!("\x1b[32m[success]\x1b[0m Interface created successfully. New Interface ID: {}", result.id);
+                    println!("\x1b[32m[success]\x1b[0m Interface created successfully. New Interface ID: '{}'", result.id);
                     Ok(result.id)
                 }
                 thanix_client::paths::DcimInterfacesCreateResponse::Other(other_response) => {
@@ -130,7 +129,37 @@ pub fn create_interface(
             }
         }
         Err(e) => {
-            eprintln!("\x1b[33m[warning]\x1b[0m Error while decoding NetBox Response. This is probably still fine and a problem with NetBox.\nError: {}", e);
+            eprintln!("\x1b[33m[warning]\x1b[0m Error while decoding NetBox Response while creating network interface. This is probably still fine and a problem with NetBox.\nError: {}", e);
+            let exc = NetBoxApiError::Other(e.to_string());
+            Err(exc)
+        }
+    }
+}
+
+/// Create new IP adress object.
+///
+/// # Parameters
+///
+/// * client: `&ThanixClient` - The client instance necessary for communication.
+/// * payload: `&`
+pub fn create_ip(client: &ThanixClient, payload: WritableIPAddressRequest) -> Result<i64, NetBoxApiError> {
+    println!("Creating new IP address object...");
+
+    match ipam_ip_addresses_create(client, payload) {
+        Ok(response) => {
+            match response {
+                thanix_client::paths::IpamIpAddressesCreateResponse::Http201(result) => {
+                    println!("\x1b[32m[success]\x1b[0m IP Address created successfully. New IP ID: '{}'", result.id);
+                    Ok(result.id)
+                }
+                thanix_client::paths::IpamIpAddressesCreateResponse::Other(other_response) => {
+                    let exc: NetBoxApiError = NetBoxApiError::Other(other_response.text().unwrap());
+                    Err(exc)
+                }
+            }
+        },
+        Err(e) => {
+            eprintln!("\x1b[33m[warning]\x1b[0m Error while decoding NetBox response while creating IP address. This probably is still fine and a problem with NetBox.\nError: {}", e);
             let exc = NetBoxApiError::Other(e.to_string());
             Err(exc)
         }
