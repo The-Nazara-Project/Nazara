@@ -12,8 +12,7 @@ use thanix_client::paths::{
     self, DcimPlatformsListQuery, DcimSitesListQuery, IpamIpAddressesListQuery,
 };
 use thanix_client::types::{
-    IPAddress, Platform, Site, WritableDeviceWithConfigContextRequest, WritableInterfaceRequest,
-    WritableVirtualMachineWithConfigContextRequest,
+    IPAddress, Platform, Site, WritableDeviceWithConfigContextRequest, WritableIPAddressRequest, WritableInterfaceRequest, WritableVirtualMachineWithConfigContextRequest
 };
 use thanix_client::util::ThanixClient;
 
@@ -209,6 +208,36 @@ pub fn information_to_interface(
     payload.custom_fields = config_data.nwi.custom_fields;
     payload.mark_connected = config_data.nwi.mark_connected;
     payload.enabled = config_data.nwi.enabled;
+
+    payload
+}
+
+/// Returns the payload necessary to create a new IP address.
+///
+/// # Parameters
+///
+/// * state: `&ThanixClient` - The client instance necessary for communication.
+/// * machine: `&Machine` - Collected machine information.
+/// * config_data: `&ConfigData` - Data read from the config file.
+/// * interface_id: `i64` - ID of the network interface this IP belongs to.
+pub fn information_to_ip(state: &ThanixClient, machine: &Machine, config_data: &ConfigData, interface_id: i64) -> WritableIPAddressRequest {
+    println!("Creating IP Address payload...");
+
+    let mut payload: WritableIPAddressRequest = WritableIPAddressRequest::default();
+
+    // payload.address = todo!();
+    // payload.vrf = todo!();
+    // payload.tenant = todo!();
+    // payload.status = todo!();
+    // payload.role = todo!();
+    // payload.assigned_object_type = todo!();
+    // payload.assigned_object_id = todo!();
+    // payload.nat_inside = todo!();
+    // payload.dns_name = todo!();
+    payload.description = String::from("This Address was automatically created by Nazara.");
+    payload.comments = String::from("Automatically created by Nazara. Dummy only.");
+    // payload.tags = todo!();
+    payload.custom_fields = Some(HashMap::new());
 
     payload
 }
