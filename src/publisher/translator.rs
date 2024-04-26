@@ -172,11 +172,11 @@ pub fn information_to_interface(
     };
     // payload.label = todo!();
     // FIXME:
-    payload.r#type = String::from("bridge");
-    // payload.parent = todo!();
-    // payload.bridge = todo!();
-    // payload.lag = todo!();
-    // payload.mtu = todo!();
+    payload.r#type = config_data.nwi.r#type;
+    payload.parent = config_data.nwi.parent;
+    payload.bridge = config_data.nwi.bridge;
+    payload.lag = config_data.nwi.lag;
+    payload.mtu = config_data.nwi.mtu;
 
     // Get the interfce we are looking for as primary, then get its parameters.
     // These filter statements can probably be split off into their own function.
@@ -201,13 +201,14 @@ pub fn information_to_interface(
         None => None,
     };
     payload.description = String::from("This interface was automatically created by Nazara.");
-    // payload.mode = todo!();
-    // payload.rf_role = todo!();
-    // payload.rf_channel = todo!();
-    // payload.poe_mode = todo!();
-    // payload.poe_type = todo!();
-    // FIXME:
-    payload.custom_fields = Some(HashMap::new());
+    payload.mode = config_data.nwi.mode.unwrap_or(String::from(""));
+    payload.rf_role = config_data.nwi.rf_role.unwrap_or(String::from(""));
+    payload.rf_channel = config_data.nwi.rf_channel.unwrap_or(String::from(""));
+    payload.poe_mode = config_data.nwi.poe_mode.unwrap_or(String::from(""));
+    payload.poe_type = config_data.nwi.poe_type.unwrap_or(String::from(""));
+    payload.custom_fields = config_data.nwi.custom_fields;
+    payload.mark_connected = config_data.nwi.mark_connected;
+    payload.enabled = config_data.nwi.enabled;
 
     payload
 }
