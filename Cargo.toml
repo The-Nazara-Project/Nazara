@@ -25,7 +25,7 @@ toml = "0.7.6"
 # This may not work in your environment. You can get your schema by visiting
 # https://your.netbox-instance.com/api/schema.
 # The yaml file will be downloaded and you can generate your client by using https://github.com/The-Nazara-Project/Thanix.
-thanix_client = "1.0.0"
+thanix_client = "1.1.0"
 # Uncomment this line if you are using a custom thanix client implementation.
 # Change the path to be relative to this Cargo.toml file.
 # The package parameter is the name of your client package. This is needed if you assigned a custom name upon creation.
