@@ -14,7 +14,8 @@ use thanix_client::{
         VirtualizationVirtualMachinesListQuery, VirtualizationVirtualMachinesListResponse,
     },
     types::{
-        self, DeviceWithConfigContext, VirtualMachineWithConfigContext, WritableDeviceWithConfigContextRequest, WritableIPAddressRequest, WritableInterfaceRequest
+        self, DeviceWithConfigContext, VirtualMachineWithConfigContext,
+        WritableDeviceWithConfigContextRequest, WritableIPAddressRequest, WritableInterfaceRequest,
     },
     util::ThanixClient,
 };
@@ -117,7 +118,8 @@ pub fn register_machine(
                     interface_id = config_data.nwi.id.unwrap();
                 }
 
-                let ip_payload: WritableIPAddressRequest = translator::information_to_ip(client, &machine, &config_data, interface_id);
+                let ip_payload: WritableIPAddressRequest =
+                    translator::information_to_ip(client, &machine, &config_data, interface_id);
 
                 let ip_id = match create_ip(client, ip_payload) {
                     Ok(id) => id,
@@ -126,7 +128,7 @@ pub fn register_machine(
                         process::exit(1);
                     }
                 };
-           }
+            }
         }
     }
     Ok(())
@@ -151,7 +153,7 @@ fn create_machine(client: &ThanixClient, machine: &Machine) -> Result<(), NetBox
 ///
 /// True/False depending on whether the interface exists.
 fn interface_exists(state: &ThanixClient, id: &Option<i64>) -> bool {
-   todo!("check if interface exists must be implemented!"); 
+    todo!("check if interface exists must be implemented!");
 }
 
 /// Get list of machines.

@@ -191,7 +191,7 @@ pub struct NwiConfig {
     pub mark_connected: bool,
     pub wireless_lans: Option<Vec<i64>>,
     pub vrf: Option<i64>,
-    pub custom_fields: Option<HashMap<String, Value, RandomState>>
+    pub custom_fields: Option<HashMap<String, Value, RandomState>>,
 }
 
 /// Set up configuration
@@ -487,7 +487,7 @@ impl ConfigData {
     /// * `config: ConfigData` - A `ConfigData` object.
     ///
     /// # Aborts
-    /// 
+    ///
     /// This function pay terminate the process if it cannot read the cofnig file.
     fn read_config_file() -> ConfigData {
         let mut file = match File::open(get_config_dir()) {

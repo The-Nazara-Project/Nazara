@@ -12,7 +12,8 @@ use thanix_client::paths::{
     self, DcimPlatformsListQuery, DcimSitesListQuery, IpamIpAddressesListQuery,
 };
 use thanix_client::types::{
-    IPAddress, Platform, Site, WritableDeviceWithConfigContextRequest, WritableIPAddressRequest, WritableInterfaceRequest, WritableVirtualMachineWithConfigContextRequest
+    IPAddress, Platform, Site, WritableDeviceWithConfigContextRequest, WritableIPAddressRequest,
+    WritableInterfaceRequest, WritableVirtualMachineWithConfigContextRequest,
 };
 use thanix_client::util::ThanixClient;
 
@@ -220,7 +221,12 @@ pub fn information_to_interface(
 /// * machine: `&Machine` - Collected machine information.
 /// * config_data: `&ConfigData` - Data read from the config file.
 /// * interface_id: `i64` - ID of the network interface this IP belongs to.
-pub fn information_to_ip(state: &ThanixClient, machine: &Machine, config_data: &ConfigData, interface_id: i64) -> WritableIPAddressRequest {
+pub fn information_to_ip(
+    state: &ThanixClient,
+    machine: &Machine,
+    config_data: &ConfigData,
+    interface_id: i64,
+) -> WritableIPAddressRequest {
     println!("Creating IP Address payload...");
 
     let mut payload: WritableIPAddressRequest = WritableIPAddressRequest::default();
