@@ -7,22 +7,21 @@
 //! deserialize our data.
 extern crate thanix_client;
 
-use reqwest::{blocking::Client, Error as ReqwestError};
+use reqwest::Error as ReqwestError;
 use thanix_client::{
     paths::{
-        dcim_devices_create, dcim_interfaces_create, ipam_ip_addresses_create,
-        DcimDevicesCreateResponse, DcimInterfacesCreateResponse,
+        dcim_devices_create, dcim_interfaces_create, dcim_interfaces_list,
+        ipam_ip_addresses_create, DcimDevicesCreateResponse, DcimInterfacesCreateResponse,
+        DcimInterfacesListQuery,
     },
     types::{
-        WritableDeviceWithConfigContextRequest, WritableIPAddressRequest, WritableInterfaceRequest,
+        Interface, WritableDeviceWithConfigContextRequest, WritableIPAddressRequest,
+        WritableInterfaceRequest,
     },
     util::ThanixClient,
 };
 
-use super::{
-    publisher,
-    publisher_exceptions::{self, NetBoxApiError},
-};
+use super::publisher_exceptions::{self, NetBoxApiError};
 
 /// Tests connection to the NetBox API.
 ///
@@ -167,6 +166,41 @@ pub fn create_ip(
             eprintln!("\x1b[33m[warning]\x1b[0m Error while decoding NetBox response while creating IP address. This probably is still fine and a problem with NetBox.\nError: {}", e);
             let exc = NetBoxApiError::Other(e.to_string());
             Err(exc)
+        }
+    }
+}
+
+pub fn get_interface_by_name(
+    state: &ThanixClient,
+    payload: &WritableInterfaceRequest,
+) -> Result<Interface, NetBoxApiError> {
+    println!("Trying to retrieve interface by name '{}'...", payload.name);
+
+    match dcim_interfaces_list(state, DcimInterfacesListQuery::default()) {
+        Ok(response) => {
+            let interface_list: Vec<Interface> = match response {
+                thanix_client::paths::DcimInterfacesListResponse::Http200(interfaces) => {
+                    interfaces.results
+                }
+                thanix_client::paths::DcimInterfacesListResponse::Other(response) => {
+                    let err: NetBoxApiError = NetBoxApiError::Other(response.text().unwrap());
+                    return Err(err);
+                }
+            };
+
+            for interface in interface_list {
+                if interface.name == payload.name {
+                    return Ok(interface);
+                }
+            }
+            Err(NetBoxApiError::Other(format!(
+                "No Inteface '{}' with name found. Creation possibly failed.",
+                payload.name
+            )))
+        }
+        Err(e) => {
+            let err: NetBoxApiError = NetBoxApiError::Reqwest(e);
+            Err(err)
         }
     }
 }
