@@ -23,7 +23,9 @@ use thanix_client::{
 use crate::{
     configuration::config_parser::ConfigData,
     publisher::{
-        api_client::{create_device, create_interface, create_ip, test_connection},
+        api_client::{
+            create_device, create_interface, create_ip, get_interface_by_name, test_connection,
+        },
         translator,
     },
     Machine,
@@ -107,11 +109,20 @@ pub fn register_machine(
                             &device_id,
                         );
 
-                    interface_id = match create_interface(client, interface_payload) {
+                    interface_id = match create_interface(client, interface_payload.clone()) {
                         Ok(id) => id,
                         Err(e) => {
                             eprintln!("{}", e);
-                            process::exit(1);
+                            match cont_search_nwi(client, &interface_payload) {
+                                Ok(id) => {
+                                    println!("\x1b[32m[success]\x1b[0m Interface found using name. Continuing...");
+                                    id
+                                }
+                                Err(e) => {
+                                    eprintln!("\x1b[31m[error]\x1b[0m {}. Aborting...", e);
+                                    process::exit(1);
+                                }
+                            }
                         }
                     };
                 } else {
@@ -154,6 +165,23 @@ fn create_machine(client: &ThanixClient, machine: &Machine) -> Result<(), NetBox
 /// True/False depending on whether the interface exists.
 fn interface_exists(state: &ThanixClient, id: &Option<i64>) -> bool {
     todo!("check if interface exists must be implemented!");
+}
+
+fn cont_search_nwi(
+    state: &ThanixClient,
+    payload: &WritableInterfaceRequest,
+) -> Result<i64, NetBoxApiError> {
+    println!(
+        "\x1b[36m[warning]\x1b[0m Error while creating interface. Contingency search started..."
+    );
+
+    match get_interface_by_name(state, payload) {
+        Ok(interface) => Ok(interface.id),
+        Err(e) => {
+            eprintln!("\x1b[31m[error]\x1b[0m {}", e);
+            process::exit(1);
+        }
+    }
 }
 
 /// Get list of machines.
