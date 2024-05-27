@@ -28,7 +28,8 @@ toml = "0.7.6"
 thanix_client = "1.0.0"
 # Uncomment this line if you are using a custom thanix client implementation.
 # Change the path to be relative to this Cargo.toml file.
-# thanix_client = { path = "path/to/your/client/crate" }
+# The package parameter is the name of your client package. This is needed if you assigned a custom name upon creation.
+# thanix_client = { package = "your_package_name", path = "path/to/your/client/crate" }
 
 [dev-dependencies]
 mockall = "0.11.4"
