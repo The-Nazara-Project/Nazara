@@ -6,7 +6,6 @@
 //!
 //! The actual request logic will be provided by the `thanix_client` crate.
 use std::process;
-
 /// TODO: 1. Implement Creation/update logic 2. Denest by splitting query logic off 3. Do not panic upon request fail
 use thanix_client::{
     paths::{
