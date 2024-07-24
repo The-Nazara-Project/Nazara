@@ -1,0 +1,42 @@
+# SPDX-FileCopyrightText: Christopher Hock and the Nazara Team <byteotter@gmail.com>
+# SPDX-LicenseIdentifier: GPL-3.0-only
+---
+name: Documentation Change
+description: Suggest a change in Nazara's documentation
+labels: ["documentation", "pending"]
+body:
+  - type: dropdown
+    attributes:
+      label: Type of Change
+      description: What kind of change are you proposing?
+      multiple: false
+      options:
+        - Addition
+        - Correction
+        - Deprecation
+        - Maintenance (formatting, typos, grammar, etc.)
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Section
+      description: What section do you want to change?
+      multiple: false
+      options:
+        - Installation/Update
+        - Usage
+        - Configuration
+        - API Connection
+        - Code documentation
+        - Contribution Guide
+        - Security Policy
+        - License
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Proposed Change
+      description: Describe your desired change.
+    validations:
+      required: true

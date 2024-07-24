@@ -1,0 +1,27 @@
+# SPDX-FileCopyrightText: Christopher Hock and the Nazara Team <byteotter@gmail.com>
+# SPDX-LicenseIdentifier: GPL-3.0-only
+---
+name: Deprecation
+description: Suggest removing a feature or functionality from Nazara.
+labels: ["pending", "deprecation"]
+body:
+  - type: textarea
+    attributes:
+      label: Proposed Changes
+      description: >
+        Describe in detail what changes you ahve in mind.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Justification
+      description: >
+        Why do you want this change?
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Impact
+      description: List all areas of Nazara, which will be impacted by this change.
+    validations:
+      required: true

@@ -1,0 +1,72 @@
+# SPDX-FileCopyrightText: Christopher Hock and the Nazara Team <byteotter@gmail.com>
+# SPDX-License-Identifier: LGPL-3.0-only
+---
+name: Bug Report
+description: Found a bug? Let us know!
+title: "[BUG]"
+labels: ["bug", "pending"]
+body:
+  - type: markdown
+    attributes:
+      value: >
+        **NOTE**: Please only use this form to report _reproducible bugs_ in Nazara.
+        If you have any questions or are looking for assistance,
+        please refer to our [discussion section](https://github.com/orgs/The-Nazara-Project/discussions).
+  - type: input
+    attributes:
+      label: Nazara Version
+      description: >
+        Which version of Nazara does this bug affect?
+      placeholder: master
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: NetBox Version
+      description: >
+        Which version of NetBox are you running?
+      placeholder: v4.0.0
+  - type: dropdown
+    attributes:
+      label: NetBox Deployment Type
+      description: How are you running NetBox?
+      multiple: false
+      options:
+        - NetBox Cloud
+        - NetBox Enterprise
+        - Self-Hosted
+        - Docker
+  - type: dropdown
+    attributes:
+      label: Affected Module
+      description: >
+        Which module or area of Nazara does this affect?
+      multiple: true
+      options:
+        - Data Collection
+        - API Connection
+        - Configuration
+        - Dependencies
+        - Performance
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Bug Description
+      description: >
+        Please describe in detail what issue you face.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Expected Behaviour
+      description: >
+        Please describe what you exepected to happen.
+  - type: textarea
+    attributes:
+      label: Steps to Reproduce
+      description: >
+        Please describe what steps we need to take to reproduce this issue.
+        Please also include any relevant details about your environment (Host system, NetBox Version, etc.)
+    validations:
+      required: true

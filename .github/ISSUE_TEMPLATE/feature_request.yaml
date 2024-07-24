@@ -1,0 +1,58 @@
+# SPDX-FileCopryightText: Christopher Hock and the Nazara Team <byteotter@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-only
+---
+name: Feature Request
+description: Propose a new functionality or feature
+title: "[FR]"
+labels: ["proposal", "pending"]
+body:
+  - type: markdown
+    attributes:
+      value: >
+        **NOTE**: Please only use this form for submitting _well-formed_ proposals
+        to extend or enhance Nazara in some form. If you are trying to solve a problem,
+        or need help bringing your idea inot an actionable form, please use our [discussion section](https://github.com/orgs/The-Nazara-Project/discussions).
+  - type: input
+    attributes:
+      label: Nazara Version
+      description: What version of Nazara are you working with?
+      placeholder: master
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Feature Type
+      multiple: false
+      options:
+        - New Core Feature
+        - Change of Behaviour
+        - Performance Enhancement
+        - Maintenance Enhancement
+        - Usability Enhancement
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Affected Module
+      description: Which module of Nazara will be affected?
+      multiple: true
+      options:
+        - API Connection
+        - Automation Integration
+        - Configurations
+        - CLI Frontend
+        - Data Collection
+        - Payload Translation
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Proposal
+      description: >
+        Describe your idea in detail. Include any specific requirements
+        for your plan to work as well as the supposed benefit your feature will bring.
+        Also include an rough actionplan - if possible.
+        Feature requests with unclear or missing action plan may take longer to process.
+    validations:
+      required: true
