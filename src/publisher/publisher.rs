@@ -13,7 +13,7 @@ use thanix_client::{
         VirtualizationVirtualMachinesListQuery, VirtualizationVirtualMachinesListResponse,
     },
     types::{
-        self, DeviceWithConfigContext, VirtualMachineWithConfigContext,
+        DeviceWithConfigContext, VirtualMachineWithConfigContext,
         WritableDeviceWithConfigContextRequest, WritableIPAddressRequest, WritableInterfaceRequest,
     },
     util::ThanixClient,
@@ -144,14 +144,6 @@ pub fn register_machine(
     Ok(())
 }
 
-/// Creates a new machine in NetBox by calling the `translator` module to translate the `machine` parameter
-/// struct into the correct data type required by the API.
-fn create_machine(client: &ThanixClient, machine: &Machine) -> Result<(), NetBoxApiError> {
-    println!("Creating new machine in NetBox...");
-    // let payload = translator::information_to_device(machine);
-    Ok(())
-}
-
 /// Checks if a given network interface ID corresponds to a interface which already exsists.
 ///
 /// # Parameter
@@ -166,6 +158,13 @@ fn interface_exists(state: &ThanixClient, id: &Option<i64>) -> bool {
     todo!("check if interface exists must be implemented!");
 }
 
+// HACK
+/// Contingency function to search for the previously created Network Interface, when the response
+/// given my NetBox cannot be serialized correctly therefore no Interface ID is returned.
+///
+/// # Parameters
+/// * `state: &ThanixClient` - The client to communicate with the API.
+/// * `payload: &WritableInterfaceRequest` - The API request payload.
 fn cont_search_nwi(
     state: &ThanixClient,
     payload: &WritableInterfaceRequest,
