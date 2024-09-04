@@ -8,7 +8,8 @@ trim_trailing_whitespace = true
 
 [*.rs]
 charset = utf-8
-indent_style = 2
+indent_style = tab
+indent_size = 4
 
 [*.toml]
 indent_style = space
