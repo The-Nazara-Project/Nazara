@@ -67,11 +67,11 @@ pub fn collect_network_information(
     match network_interfaces_result {
         Ok(network_interfaces) => {
             if network_interfaces.is_empty() {
-                return Err(collector_exceptions::NoNetworkInterfacesException {
+                Err(collector_exceptions::NoNetworkInterfacesException {
                     message: "\x1b[31m[error]\x1b[0m No network interfaces found!".to_string(),
-                });
+                })
             } else {
-                return Ok(network_interfaces);
+                Ok(network_interfaces)
             }
         }
         Err(_) => {
@@ -114,6 +114,10 @@ pub fn construct_network_information(
     let mut network_information: NetworkInformation;
 
     for network_interface in raw_information {
+        // Skip loopback device.
+        if network_interface.name == "lo" {
+            continue;
+        }
         match Some(&network_interface.addr) {
             Some(_v) => {
                 // Cases where only one set of addresses exist.

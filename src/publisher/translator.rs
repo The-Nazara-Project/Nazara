@@ -2,25 +2,20 @@
 //!
 //! This module handles the translation and processing of the data sent to or received from NetBox.
 //!
-//! TODO:
-//! - Identify primary IPv4 or IPv6 using the primary_network_interface field from `ConfigData`.
 use core::net::IpAddr;
-use std::net::Ipv4Addr;
 use std::process;
 use std::str::FromStr;
 use thanix_client::paths::{
     self, DcimPlatformsListQuery, DcimSitesListQuery, IpamIpAddressesListQuery,
 };
 use thanix_client::types::{
-    IPAddress, Platform, Site, WritableDeviceWithConfigContextRequest,
-    WritableVirtualMachineWithConfigContextRequest,
+    IPAddress, Platform, Site, WritableDeviceWithConfigContextRequest, WritableIPAddressRequest,
+    WritableInterfaceRequest, WritableVirtualMachineWithConfigContextRequest,
 };
 use thanix_client::util::ThanixClient;
 
 use crate::collectors::network_collector::NetworkInformation;
 use crate::{configuration::config_parser::ConfigData, Machine};
-
-use super::publisher_exceptions::NetBoxApiError;
 
 /// Translate the machine information to a `WritableDeviceWithConfigContextRequest` required by
 /// NetBox's API.
@@ -94,7 +89,7 @@ pub fn information_to_device(
     payload.comments = config_data.system.comments;
     // payload.config_template = todo!();
     payload.custom_fields = config_data.system.custom_fields;
-    // payload.description = todo!();
+    payload.description = config_data.system.description;
     // payload.local_context_data = todo!();
     // payload.oob_ip = todo!();
     payload.primary_ip4 = get_primary_addresses(
@@ -115,6 +110,7 @@ pub fn information_to_device(
     // payload.virtual_chassis = todo!();
     // payload.vc_position = todo!();
     // payload.vc_priority = todo!();
+    payload.tenant = config_data.system.tenant;
     payload.location = config_data.system.location;
 
     payload
@@ -135,9 +131,128 @@ pub fn information_to_device(
 pub fn information_to_vm(
     state: &ThanixClient,
     machine: &Machine,
-    config_data: &ConfigData,
+    config_data: ConfigData,
 ) -> WritableVirtualMachineWithConfigContextRequest {
     todo!("Translation of collected information to VM not implemented yet!")
+}
+
+/// Translate gathered information into a `WritableInterfaceRequest` payload.
+///
+/// # Parameters
+///
+/// * state: `&ThanixClient` - The client instance to be used for communication.
+/// * machine: `&Machine` - The collectedd information about the device or machine.
+/// * config_data: `ConfigData` - The configuration data.
+/// * device_id: `&i64` - The ID of the device that this interface belongs to.
+///
+/// # Returns
+///
+/// * payload: `WritableInterfaceRequest` - Payload for creating an interface.
+pub fn information_to_interface(
+    machine: &Machine,
+    config_data: ConfigData,
+    device_id: &i64,
+) -> WritableInterfaceRequest {
+    println!("Creating Network Interface...");
+
+    let mut payload: WritableInterfaceRequest = WritableInterfaceRequest::default();
+
+    payload.device = Some(device_id.to_owned());
+    payload.name = config_data.system.primary_network_interface.clone();
+
+    // FIXME:
+    payload.r#type = Some(config_data.nwi.r#type);
+    payload.parent = config_data.nwi.parent;
+    payload.bridge = config_data.nwi.bridge;
+    payload.lag = config_data.nwi.lag;
+    payload.mtu = config_data.nwi.mtu;
+
+    // Get the interface we are looking for as primary, then get its parameters.
+    // These filter statements can probably be split off into their own function.
+    payload.mac_address = match &config_data.system.primary_network_interface {
+        Some(nwi_name) => {
+            let interface = machine
+                .network_information
+                .iter()
+                .find(|nwi| nwi.name == nwi_name.to_owned());
+            interface.map(|nwi| nwi.mac_addr.clone()).flatten()
+        }
+        None => None,
+    };
+    payload.speed = match config_data.system.primary_network_interface {
+        Some(nwi_name) => {
+            let interface = machine
+                .network_information
+                .iter()
+                .find(|nwi| nwi.name == nwi_name);
+            interface.map(|nwi| nwi.interface_speed.clone()).flatten()
+        }
+        None => None,
+    };
+    payload.description = Some(String::from(
+        "This interface was automatically created by Nazara.",
+    ));
+    payload.mode = Some(config_data.nwi.mode.unwrap_or(String::from("")));
+    payload.rf_role = Some(config_data.nwi.rf_role.unwrap_or(String::from("")));
+    payload.rf_channel = Some(config_data.nwi.rf_channel.unwrap_or(String::from("")));
+    payload.poe_mode = Some(config_data.nwi.poe_mode.unwrap_or(String::from("")));
+    payload.poe_type = Some(config_data.nwi.poe_type.unwrap_or(String::from("")));
+    payload.custom_fields = config_data.nwi.custom_fields;
+    payload.mark_connected = Some(config_data.nwi.mark_connected);
+    payload.enabled = Some(config_data.nwi.enabled);
+    payload.vdcs = Some(config_data.nwi.vdcs.unwrap_or_default());
+    payload.label = Some(config_data.nwi.label.unwrap_or_default());
+    payload.mgmt_only = Some(config_data.nwi.mgmt_only);
+    payload.tagged_vlans = Some(config_data.nwi.tagged_vlans.unwrap_or_default());
+    payload.wireless_lans = Some(config_data.nwi.wireless_lans.unwrap_or_default());
+    payload.tags = Some(Vec::new());
+
+    payload
+}
+
+/// Returns the payload necessary to create a new IP address.
+///
+/// # Parameters
+///
+/// * state: `&ThanixClient` - The client instance necessary for communication.
+/// * machine: `&Machine` - Collected machine information.
+/// * config_data: `&ConfigData` - Data read from the config file.
+/// * interface_id: `i64` - ID of the network interface this IP belongs to.
+pub fn information_to_ip(
+    machine: &Machine,
+    config_data: &ConfigData,
+    interface_id: i64,
+) -> WritableIPAddressRequest {
+    println!("Creating IP Address payload...");
+
+    let mut payload: WritableIPAddressRequest = WritableIPAddressRequest::default();
+
+    let local_interface: &NetworkInformation = machine
+        .network_information
+        .iter()
+        .find(|s| {
+            s.name
+                == <std::option::Option<std::string::String> as Clone>::clone(
+                    &config_data.system.primary_network_interface,
+                )
+                .unwrap()
+        })
+        .unwrap();
+    payload.address = format!("{}", local_interface.v4ip.unwrap());
+    // payload.vrf = todo!();
+    // payload.tenant = todo!();
+    payload.status = String::from("active");
+    // payload.role = todo!();
+    payload.assigned_object_type = Some(String::from("dcim.interface"));
+    payload.assigned_object_id = Some(interface_id as u64);
+    // payload.nat_inside = todo!();
+    // payload.dns_name = todo!();
+    payload.description = String::from("This Address was automatically created by Nazara.");
+    payload.comments = String::from("Automatically created by Nazara. Dummy only.");
+    // payload.tags = todo!();
+    payload.custom_fields = config_data.nwi.custom_fields.clone();
+
+    payload
 }
 
 /// Returns the ID of the platform this machine uses.
@@ -145,6 +260,14 @@ pub fn information_to_vm(
 /// # Parameters
 ///
 /// * state: `&ThanixClient` - The client required for searching for the platform.
+///
+/// # Returns
+///
+/// Returns `Some(i64)` if the specified platform exists, else returns `None`.
+///
+/// # Aborts
+///
+/// If the netBox connection fails, this may terimnate the process.
 fn get_platform_id(state: &ThanixClient, platform_name: String) -> Option<i64> {
     println!("Searching for id of platform '{}' ... ", platform_name);
     let platform_list: Vec<Platform>;
@@ -184,13 +307,18 @@ fn get_platform_id(state: &ThanixClient, platform_name: String) -> Option<i64> {
 /// The function will retrieve a list of IPv4 Adresses from NetBox,
 /// then search this list for the IP Adress Nazara collected.
 ///
-/// The "primary_network_interface" paramter specified in the `nazara_config.toml`
+/// The `primary_network_interface` paramter specified in the `nazara_config.toml`
 /// will be used to specify which adress to search for.
 ///
 /// # Parameters
 ///
 /// * state: `&ThanixClient` - The client required for making API requests.
 /// * machine: `&Machine` - The collected machine information.
+///
+/// # Returns
+///
+/// Returns the ID of the IP address object `i64` if a match has been found.
+/// Else returns `None`.
 fn get_primary_addresses(
     state: &ThanixClient,
     machine: &Machine,
@@ -262,7 +390,6 @@ fn get_primary_addresses(
             },
         }
     }
-    println!();
     result
 }
 
@@ -337,30 +464,4 @@ fn get_site_id(state: &ThanixClient, config_data: &ConfigData) -> Option<i64> {
         );
     }
     None
-}
-
-// Create a new IP-Adress object in NetBox if the collected IP Adresses for the preferred interface
-// do not exist yet.
-//
-// # Parameters
-//
-// * state: `&ThanixClient` - The `ThanixClient` object used for API connection.
-// * config_data: `&ConfigData` - The config information which identifies the preferred network
-// interface.
-// * sys_info: `&Machine` - Collected system information which contains the IP Adresses to create.
-//
-// # Returns
-//
-// Return `Ok(i64)` containing the ID of the created IP Adress entry if the creation was
-// successful. Otherwise, return `NetBoxApiError`.
-//
-// # Panics
-//
-// This function panics if the connection to NetBox fails.
-fn create_ip_adresses(
-    state: &ThanixClient,
-    config_data: &ConfigData,
-    sys_info: &Machine,
-) -> Result<i64, NetBoxApiError> {
-    todo!();
 }

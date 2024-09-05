@@ -44,3 +44,38 @@ platform = "x86_64"
 # collect_cpu_information = true
 #
 # collect_network_information = true
+
+[nwi]
+# name = "" # The name of your interface. Must correspond to an interface name present on this device.
+# id = 0 # The ID of the desired interface, if it already exists. (Mutually exclusive with name)
+# vdcs = []
+# module = 0
+# label = "" # The physical label on the interface or device, if applicable.
+# r#type = "" # The type of the interface (e.g "bridge")
+enabled = true # Whether this interface is enabled or not. Default: True.
+# parent = 0 # ID of the parent interface if applicable.
+# bridge = 0 # ID of the bridge device associated with this interface if applicable.
+# lag = 0
+# mtu = 0 # 32-bit unsigned interger!
+# duplex = ""
+# wwn = ""
+mgmt_only = false # Whether this interface shall be used for management only. (Default: False)
+# description = "" # Optional description of this interface.
+# mode = "" # Mode this interface operates in.
+# rf_role = ""
+# rf_channel = ""
+# poe_mode = ""
+# poe_type = ""
+# rf_channel_frequency = 0.0 # f64 value.
+# rf_channel_width = 0.0 # f64 value.
+# tx_power = 0 # u8 value
+# untagged_vlans = [] # List of IDs of the untagged VLANs associated to this interface.
+# tagged_vlans = [] # List of IDs of the tagged VLANs associated to this interfacce.
+mark_connected = true # Whether this interface is currently connected or not.
+# wireless_lans = [] # List of IDs of the wireless lans associated with this interface.
+# vrf = 0
+
+[nwi.custom_fields]
+# Custom fields of the interface go here.
+
+

@@ -7,14 +7,20 @@
 //! deserialize our data.
 extern crate thanix_client;
 
-use reqwest::{blocking::Client, Error as ReqwestError};
+use reqwest::Error as ReqwestError;
 use thanix_client::{
-    paths::{dcim_devices_create, DcimDevicesCreateResponse},
-    types::WritableDeviceWithConfigContextRequest,
+    paths::{
+        dcim_devices_create, dcim_interfaces_create, dcim_interfaces_list,
+        ipam_ip_addresses_create, DcimDevicesCreateResponse, DcimInterfacesListQuery,
+    },
+    types::{
+        Interface, WritableDeviceWithConfigContextRequest, WritableIPAddressRequest,
+        WritableInterfaceRequest,
+    },
     util::ThanixClient,
 };
 
-use super::{publisher, publisher_exceptions};
+use super::publisher_exceptions::{self, NetBoxApiError};
 
 /// Tests connection to the NetBox API.
 ///
@@ -50,17 +56,29 @@ pub fn test_connection(client: &ThanixClient) -> Result<(), publisher_exceptions
     }
 }
 
-pub fn create_device(client: &ThanixClient, payload: &WritableDeviceWithConfigContextRequest) {
-    println!("Creating Device in NetBox...");
+/// Send request to create a new device in NetBox.
+///
+/// # Parameters
+///
+/// * client: `&ThanixClient` - The `ThanixClient` instance to use for communication.
+/// * payload: `&WritableDeviceWithConfigContextRequest` - The information about the device serving
+/// as a request body.
+///
+pub fn create_device(
+    client: &ThanixClient,
+    payload: &WritableDeviceWithConfigContextRequest,
+) -> Result<i64, NetBoxApiError> {
+    println!("Creating device in NetBox...");
 
     match dcim_devices_create(client, payload.clone()) {
         Ok(response) => {
             match response {
                 DcimDevicesCreateResponse::Http201(created_device) => {
-                    // TODO
                     println!(
-                    "\x1b[32m[success] Device creation successful!\x1b[0m \n+++ Your machine can be found under the ID {}. +++", created_device.id
-                );
+                        "\x1b[32m[success]\x1b[0m Device creation successful! New Device-ID: '{}'.",
+                        created_device.id
+                    );
+                    Ok(created_device.id)
                 }
                 DcimDevicesCreateResponse::Other(other_response) => {
                     // TODO
@@ -73,6 +91,118 @@ pub fn create_device(client: &ThanixClient, payload: &WritableDeviceWithConfigCo
         }
         Err(err) => {
             panic!("{}", err); // Handle this better
+        }
+    }
+}
+
+/// Create an interface object in NetBox.
+///
+/// # Parameters
+///
+/// * client: `&ThanixClient` - The client instance necessary for communication.
+/// * payload: `&WritableInterfaceRequest` - The payload for the API request.
+///
+/// # Returns
+///
+/// * `Ok(i64)` - The ID of the interface object.
+/// * `Err(NetBoxApiError)` - Error will be passed back to `publisher`.
+///
+/// # Panics
+///
+/// Panics if NetBox become unreachable.
+pub fn create_interface(
+    client: &ThanixClient,
+    payload: WritableInterfaceRequest,
+) -> Result<i64, NetBoxApiError> {
+    println!("Creating network interface in NetBox...");
+
+    match dcim_interfaces_create(client, payload) {
+        Ok(response) => match response {
+            thanix_client::paths::DcimInterfacesCreateResponse::Http201(result) => {
+                println!("\x1b[32m[success]\x1b[0m Interface created successfully. New Interface-ID: '{}'", result.id);
+                Ok(result.id)
+            }
+            thanix_client::paths::DcimInterfacesCreateResponse::Other(other_response) => {
+                let exc: NetBoxApiError = NetBoxApiError::Other(other_response.text().unwrap());
+                Err(exc)
+            }
+        },
+        Err(e) => {
+            eprintln!("\x1b[33m[warning]\x1b[0m Error while decoding NetBox Response while creating network interface. This is probably still fine and a problem with NetBox.\nError: {}", e);
+            let exc = NetBoxApiError::Other(e.to_string());
+            Err(exc)
+        }
+    }
+}
+
+/// Create new IP adress object.
+///
+/// # Parameters
+///
+/// * client: `&ThanixClient` - The client instance necessary for communication.
+/// * payload: `&`
+pub fn create_ip(
+    client: &ThanixClient,
+    payload: WritableIPAddressRequest,
+) -> Result<i64, NetBoxApiError> {
+    println!("Creating new IP address object...");
+
+    match ipam_ip_addresses_create(client, payload) {
+        Ok(response) => match response {
+            thanix_client::paths::IpamIpAddressesCreateResponse::Http201(result) => {
+                println!(
+                    "\x1b[32m[success]\x1b[0m IP Address created successfully. New IP-ID: '{}'",
+                    result.id
+                );
+                Ok(result.id)
+            }
+            thanix_client::paths::IpamIpAddressesCreateResponse::Other(other_response) => {
+                let exc: NetBoxApiError = NetBoxApiError::Other(other_response.text().unwrap());
+                Err(exc)
+            }
+        },
+        Err(e) => {
+            eprintln!("\x1b[33m[warning]\x1b[0m Error while decoding NetBox response while creating IP address. This probably is still fine and a problem with NetBox.\nError: {}", e);
+            let exc = NetBoxApiError::Other(e.to_string());
+            Err(exc)
+        }
+    }
+}
+
+pub fn get_interface_by_name(
+    state: &ThanixClient,
+    payload: &WritableInterfaceRequest,
+) -> Result<Interface, NetBoxApiError> {
+    println!(
+        "Trying to retrieve interface by name '{}'...",
+        payload.name.as_ref().unwrap()
+    );
+
+    match dcim_interfaces_list(state, DcimInterfacesListQuery::default()) {
+        Ok(response) => {
+            let interface_list: Vec<Interface> = match response {
+                thanix_client::paths::DcimInterfacesListResponse::Http200(interfaces) => {
+                    interfaces.results.unwrap()
+                }
+                thanix_client::paths::DcimInterfacesListResponse::Other(response) => {
+                    let err: NetBoxApiError = NetBoxApiError::Other(response.text().unwrap());
+                    return Err(err);
+                }
+            };
+
+            for interface in interface_list {
+                if interface.name == payload.name {
+                    return Ok(interface);
+                }
+            }
+            Err(NetBoxApiError::Other(format!(
+                "No Inteface '{}' with name found. Creation possibly failed.",
+                payload.name.as_ref().unwrap()
+            )))
+        }
+        Err(e) => {
+            let err: NetBoxApiError = NetBoxApiError::Reqwest(e);
+            Err(err)
         }
     }
 }

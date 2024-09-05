@@ -59,13 +59,14 @@ use super::config_exceptions::{self, *};
 /// # Members
 /// - netbox: `NetBoxConfig` - Configuration parameters for the NetBox connection.
 /// - system: `SystemConfig` - Parameters abouth the system.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ConfigData {
     pub netbox: NetboxConfig,
     pub system: SystemConfig,
+    pub nwi: NwiConfig,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct NetboxConfig {
     pub netbox_api_token: String,
     pub netbox_uri: String,
@@ -94,7 +95,7 @@ pub struct NetboxConfig {
 /// * tenant: `Option<i64>` - ID of tenant this device belongs to. (e.g: team or individual)
 /// * rack: `Option<i64>` - ID of the rack this device is located in.
 /// * position: `Option<i64>` - Position of the device within a rack if any.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct SystemConfig {
     pub name: String,
     pub site_id: Option<i64>,
@@ -117,6 +118,80 @@ pub struct SystemConfig {
     pub location: Option<i64>,
     pub rack: Option<i64>,
     pub position: Option<i64>,
+}
+
+/// Information about the system's interface.
+///
+/// # Members
+///
+/// * name: `String` - The name of the interface.
+/// * id: `Option<i64>` - The ID of the interface, if it already exists. Mutually exclusive with
+/// name.
+/// * vdcs: `Option<Vec<i64>>`
+/// * module: `Option<i64>` - The module assigned to this interface.
+/// * label: `Option<String>` - The phyiscal label of this device if any.
+/// * r#type: `String` - The type of the interface (e.g. "bridge")
+/// * enabled: `bool` - Whether this device is enabled or not. Default: `True`.
+/// * parent: `Option<i64>` - ID of the parent interface if applicable.
+/// * bridge: `Option<i64>` - ID of the bridge device for this interface if applicable.
+/// * lag: `Option<i64>`
+/// * mtu: `Option<u32>`
+/// * duplex: `Option<String>`
+/// * wwn: `Option<String>`
+/// * mgmt_only: `bool` - Whether this interface may only be used for management. Default: `False`.
+/// * description: `Option<String>` - Optional description of the device.
+/// * mode: `Option<String>` - The mode this interface operates in.
+/// * rf_role: `Option<String>`
+/// * rf_channel: `Option<String>`
+/// * poe_mode: `Option<String>`
+/// * poe_type: `Option<String>`
+/// * rf_channel_frequency: `Option<f64>`
+/// * rf_channel_width: `Option<f64>`
+/// * poe_mode: `Option<String>` - The PoE mode of the interface.
+/// * poe_type: `Option<String>`
+/// * rf_channel_frequency: `Option<f64>`
+/// * rf_channel_width: `Option<f64>`
+/// * tx_power: `Option<u8>`
+/// * untagged_vlans: `Option<Vec<i64>>` - List of IDs of untagged VLANs assigned to this
+/// interface.
+/// * tagged_vlans: `Option<Vec<i64>>` - List of IDs of tagged VLANs assigned to this interface.
+/// * mark_connected: `bool` - Whether this interface is connected. Default: `True`.
+/// * wireless_lans: `Option<Vec<i64>>`
+/// * vrf: `Option<i64>`
+/// * custom_fields: `Option<Hashmap<String, Value, RandomState>>` - Any Custom fields you wish to
+/// add in form a of a Key-Value list.
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct NwiConfig {
+    pub name: Option<String>,
+    pub id: Option<i64>,
+    pub vdcs: Option<Vec<i64>>,
+    pub module: Option<i64>,
+    pub label: Option<String>,
+    #[serde(rename = "rtype")]
+    pub r#type: String, // I hate this field name, but that's what the openAPI schema said.
+    pub enabled: bool,
+    pub parent: Option<i64>,
+    pub bridge: Option<i64>,
+    pub lag: Option<i64>,
+    pub mtu: Option<u32>,
+    pub duplex: Option<String>,
+    pub wwn: Option<String>,
+    pub mgmt_only: bool,
+    pub description: Option<String>,
+    pub mode: Option<String>,
+    pub rf_role: Option<String>,
+    pub rf_channel: Option<String>,
+    pub poe_mode: Option<String>,
+    pub poe_type: Option<String>,
+    pub rf_channel_frequency: Option<f64>,
+    pub rf_channel_width: Option<f64>,
+    pub tx_power: Option<u8>,
+    pub untagged_vlans: Option<Vec<i64>>,
+    pub tagged_vlans: Option<Vec<i64>>,
+    pub mark_connected: bool,
+    pub wireless_lans: Option<Vec<i64>>,
+    pub vrf: Option<i64>,
+    pub custom_fields: Option<HashMap<String, Value, RandomState>>,
 }
 
 /// Set up configuration
@@ -410,6 +485,10 @@ impl ConfigData {
     /// # Returns
     ///
     /// * `config: ConfigData` - A `ConfigData` object.
+    ///
+    /// # Aborts
+    ///
+    /// This function pay terminate the process if it cannot read the cofnig file.
     fn read_config_file() -> ConfigData {
         let mut file = match File::open(get_config_dir()) {
             Ok(file) => file,

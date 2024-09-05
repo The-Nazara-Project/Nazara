@@ -6,16 +6,15 @@
 //!
 //! The actual request logic will be provided by the `thanix_client` crate.
 use std::process;
-
 /// TODO: 1. Implement Creation/update logic 2. Denest by splitting query logic off 3. Do not panic upon request fail
 use thanix_client::{
     paths::{
-        self, DcimDevicesCreateResponse, DcimDevicesListQuery, DcimDevicesListResponse,
+        self, DcimDevicesListQuery, DcimDevicesListResponse,
         VirtualizationVirtualMachinesListQuery, VirtualizationVirtualMachinesListResponse,
     },
     types::{
         DeviceWithConfigContext, VirtualMachineWithConfigContext,
-        WritableDeviceWithConfigContextRequest,
+        WritableDeviceWithConfigContextRequest, WritableIPAddressRequest, WritableInterfaceRequest,
     },
     util::ThanixClient,
 };
@@ -23,7 +22,9 @@ use thanix_client::{
 use crate::{
     configuration::config_parser::ConfigData,
     publisher::{
-        api_client::{create_device, test_connection},
+        api_client::{
+            create_device, create_interface, create_ip, get_interface_by_name, test_connection,
+        },
         translator,
     },
     Machine,
@@ -63,7 +64,9 @@ pub fn probe(client: &ThanixClient) -> Result<(), NetBoxApiError> {
 ///
 /// # Parameters
 ///
-/// - `client: &ThanixClient` - Reference to a `thanix_client` instance
+/// - `client: &ThanixClient` - Reference to a `thanix_client` instance.
+/// - `machine: Machine` - Information about the host machine collected by the `collector` module.
+/// - `config_data: ConfigData` - Nazara's configuration.
 ///
 /// # Returns
 ///
@@ -80,83 +83,106 @@ pub fn register_machine(
     if machine.dmi_information.system_information.is_virtual {
         todo!("Virtual machine creation not yet implemented!") // TODO: VM Creation / Update
     } else {
-        let payload: WritableDeviceWithConfigContextRequest =
-            translator::information_to_device(&client, &machine, config_data);
+        let device_payload: WritableDeviceWithConfigContextRequest =
+            translator::information_to_device(&client, &machine, config_data.clone());
 
         match search_for_matches(&machine, &nb_devices) {
             Some(device_id) => {
                 todo!("Device update not yet implemented.") // TODO Implement machine update
             }
             None => {
-                create_device(client, &payload);
+                // Creates Device. Will need to be updated after IP Adress creation.
+                let device_id = match create_device(client, &device_payload) {
+                    Ok(id) => id,
+                    Err(e) => {
+                        println!("{}", e);
+                        process::exit(1);
+                    }
+                };
+                let interface_id: i64;
+                // TODO: Check if interface ID is valid, if not, create new interface.
+                // Create new interface object if no interface ID is given, or the given ID does
+                // not exist.
+                if config_data.nwi.id.is_none() || !interface_exists(client, &config_data.nwi.id) {
+                    let interface_payload: WritableInterfaceRequest =
+                        translator::information_to_interface(
+                            &machine,
+                            config_data.clone(),
+                            &device_id,
+                        );
+
+                    interface_id = match create_interface(client, interface_payload.clone()) {
+                        Ok(id) => id,
+                        Err(e) => {
+                            eprintln!("{}", e);
+                            match cont_search_nwi(client, &interface_payload) {
+                                Ok(id) => {
+                                    println!("\x1b[32m[success]\x1b[0m Interface found using name. Continuing...");
+                                    id
+                                }
+                                Err(e) => {
+                                    eprintln!("\x1b[31m[error]\x1b[0m {}. Aborting...", e);
+                                    process::exit(1);
+                                }
+                            }
+                        }
+                    };
+                } else {
+                    interface_id = config_data.nwi.id.unwrap();
+                }
+
+                let ip_payload: WritableIPAddressRequest =
+                    translator::information_to_ip(&machine, &config_data, interface_id);
+
+                let _ = match create_ip(client, ip_payload) {
+                    Ok(id) => id,
+                    Err(e) => {
+                        eprintln!("{}", e);
+                        process::exit(1);
+                    }
+                };
             }
         }
     }
-
-    // check if virtual machine, create or update virtual machine.
-    // if machine.dmi_information.system_information.is_virtual {
-    //     match search_for_matches(&machine, &nb_devices) {
-    //         Some(vm_id) => {
-    //             match paths::virtualization_virtual_machines_update(
-    //                 &client,
-    //                 VirtualizationVirtualMachinesUpdateQuery::default(),
-    //                 vm_id,
-    //             ) {
-    //                 Ok(response) => {
-    //                     todo!()
-    //                 }
-    //                 Err(err) => {
-    //                     panic!("{}", err)
-    //                 }
-    //             }
-    //         }
-    //         None => {
-    //             match paths::virtualization_virtual_machines_create(
-    //                 &client,
-    //                 VirtualizationVirtualMachinesCreateQuery::default(),
-    //             ) {
-    //                 Ok(response) => {
-    //                     todo!()
-    //                 }
-    //                 Err(err) => {
-    //                     panic!("{}", err)
-    //                 }
-    //             }
-    //         }
-    //     }
-    // } else {
-    //     // proper physical machines
-    //     match search_for_matches(&machine, &nb_devices) {
-    //         Some(id) => {
-    //             match paths::dcim_devices_update(&client, DcimDevicesUpdateQuery::default(), id) {
-    //                 Ok(response) => {
-    //                     todo!()
-    //                 }
-    //                 Err(err) => {
-    //                     panic!("{}", err)
-    //                 }
-    //             }
-    //         }
-    //         None => match paths::dcim_devices_create(&client, DcimDevicesCreateQuery::default()) {
-    //             Ok(response) => {
-    //                 todo!()
-    //             }
-    //             Err(err) => {
-    //                 panic!("{}", err)
-    //             }
-    //         },
-    //     }
-    // }
-
     Ok(())
 }
 
-/// Creates a new machine in NetBox by calling the `translator` module to translate the `machine` parameter
-/// struct into the correct data type required by the API.
-fn create_machine(client: &ThanixClient, machine: &Machine) -> Result<(), NetBoxApiError> {
-    println!("Creating new machine in NetBox...");
-    // let payload = translator::information_to_device(machine);
-    Ok(())
+/// Checks if a given network interface ID corresponds to a interface which already exsists.
+///
+/// # Parameter
+///
+/// * state: `&ThanixClient` - Client instance to use for communication.
+/// * id: `&Option<i64>` - ID parameter retrieved from the config file.
+///
+/// # Returns
+///
+/// True/False depending on whether the interface exists.
+fn interface_exists(state: &ThanixClient, id: &Option<i64>) -> bool {
+    todo!("check if interface exists must be implemented!");
+}
+
+// HACK
+/// Contingency function to search for the previously created Network Interface, when the response
+/// given my NetBox cannot be serialized correctly therefore no Interface ID is returned.
+///
+/// # Parameters
+/// * `state: &ThanixClient` - The client to communicate with the API.
+/// * `payload: &WritableInterfaceRequest` - The API request payload.
+fn cont_search_nwi(
+    state: &ThanixClient,
+    payload: &WritableInterfaceRequest,
+) -> Result<i64, NetBoxApiError> {
+    println!(
+        "\x1b[36m[warning]\x1b[0m Error while creating interface. Contingency search started..."
+    );
+
+    match get_interface_by_name(state, payload) {
+        Ok(interface) => Ok(interface.id),
+        Err(e) => {
+            eprintln!("\x1b[31m[error]\x1b[0m {}", e);
+            process::exit(1);
+        }
+    }
 }
 
 /// Get list of machines.
