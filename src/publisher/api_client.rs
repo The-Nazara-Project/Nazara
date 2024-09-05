@@ -10,13 +10,10 @@ extern crate thanix_client;
 use reqwest::Error as ReqwestError;
 use thanix_client::{
     paths::{
-        dcim_devices_create, dcim_interfaces_create, dcim_interfaces_list,
-        ipam_ip_addresses_create, DcimDevicesCreateResponse, DcimInterfacesCreateResponse,
-        DcimInterfacesListQuery,
+        dcim_devices_create, dcim_interfaces_create, dcim_interfaces_list, ipam_ip_addresses_create, DcimDevicesCreateResponse, DcimInterfacesListQuery
     },
     types::{
-        Interface, WritableDeviceWithConfigContextRequest, WritableIPAddressRequest,
-        WritableInterfaceRequest,
+        Interface, WritableDeviceWithConfigContextRequest, WritableIPAddressRequest, WritableInterfaceRequest
     },
     util::ThanixClient,
 };
@@ -120,7 +117,7 @@ pub fn create_interface(
     match dcim_interfaces_create(client, payload) {
         Ok(response) => match response {
             thanix_client::paths::DcimInterfacesCreateResponse::Http201(result) => {
-                println!("\x1b[32m[success]\x1b[0m Interface created successfully. New Interface ID: '{}'", result.id);
+                println!("\x1b[32m[success]\x1b[0m Interface created successfully. New Interface-ID: '{}'", result.id);
                 Ok(result.id)
             }
             thanix_client::paths::DcimInterfacesCreateResponse::Other(other_response) => {
@@ -152,7 +149,7 @@ pub fn create_ip(
         Ok(response) => match response {
             thanix_client::paths::IpamIpAddressesCreateResponse::Http201(result) => {
                 println!(
-                    "\x1b[32m[success]\x1b[0m IP Address created successfully. New IP ID: '{}'",
+                    "\x1b[32m[success]\x1b[0m IP Address created successfully. New IP-ID: '{}'",
                     result.id
                 );
                 Ok(result.id)
@@ -174,13 +171,16 @@ pub fn get_interface_by_name(
     state: &ThanixClient,
     payload: &WritableInterfaceRequest,
 ) -> Result<Interface, NetBoxApiError> {
-    println!("Trying to retrieve interface by name '{}'...", payload.name);
+    println!(
+        "Trying to retrieve interface by name '{}'...",
+        payload.name.as_ref().unwrap()
+    );
 
     match dcim_interfaces_list(state, DcimInterfacesListQuery::default()) {
         Ok(response) => {
             let interface_list: Vec<Interface> = match response {
                 thanix_client::paths::DcimInterfacesListResponse::Http200(interfaces) => {
-                    interfaces.results
+                    interfaces.results.unwrap()
                 }
                 thanix_client::paths::DcimInterfacesListResponse::Other(response) => {
                     let err: NetBoxApiError = NetBoxApiError::Other(response.text().unwrap());
@@ -195,7 +195,7 @@ pub fn get_interface_by_name(
             }
             Err(NetBoxApiError::Other(format!(
                 "No Inteface '{}' with name found. Creation possibly failed.",
-                payload.name
+                payload.name.as_ref().unwrap()
             )))
         }
         Err(e) => {
@@ -204,3 +204,4 @@ pub fn get_interface_by_name(
         }
     }
 }
+

@@ -64,7 +64,9 @@ pub fn probe(client: &ThanixClient) -> Result<(), NetBoxApiError> {
 ///
 /// # Parameters
 ///
-/// - `client: &ThanixClient` - Reference to a `thanix_client` instance
+/// - `client: &ThanixClient` - Reference to a `thanix_client` instance.
+/// - `machine: Machine` - Information about the host machine collected by the `collector` module.
+/// - `config_data: ConfigData` - Nazara's configuration.
 ///
 /// # Returns
 ///
@@ -99,10 +101,11 @@ pub fn register_machine(
                 };
                 let interface_id: i64;
                 // TODO: Check if interface ID is valid, if not, create new interface.
+				// Create new interface object if no interface ID is given, or the given ID does
+				// not exist.
                 if config_data.nwi.id.is_none() || !interface_exists(client, &config_data.nwi.id) {
                     let interface_payload: WritableInterfaceRequest =
                         translator::information_to_interface(
-                            &client,
                             &machine,
                             config_data.clone(),
                             &device_id,
@@ -129,9 +132,9 @@ pub fn register_machine(
                 }
 
                 let ip_payload: WritableIPAddressRequest =
-                    translator::information_to_ip(client, &machine, &config_data, interface_id);
+                    translator::information_to_ip(&machine, &config_data, interface_id);
 
-                let ip_id = match create_ip(client, ip_payload) {
+                let _ = match create_ip(client, ip_payload) {
                     Ok(id) => id,
                     Err(e) => {
                         eprintln!("{}", e);
