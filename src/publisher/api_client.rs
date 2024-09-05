@@ -10,10 +10,12 @@ extern crate thanix_client;
 use reqwest::Error as ReqwestError;
 use thanix_client::{
     paths::{
-        dcim_devices_create, dcim_interfaces_create, dcim_interfaces_list, ipam_ip_addresses_create, DcimDevicesCreateResponse, DcimInterfacesListQuery
+        dcim_devices_create, dcim_interfaces_create, dcim_interfaces_list,
+        ipam_ip_addresses_create, DcimDevicesCreateResponse, DcimInterfacesListQuery,
     },
     types::{
-        Interface, WritableDeviceWithConfigContextRequest, WritableIPAddressRequest, WritableInterfaceRequest
+        Interface, WritableDeviceWithConfigContextRequest, WritableIPAddressRequest,
+        WritableInterfaceRequest,
     },
     util::ThanixClient,
 };
@@ -204,4 +206,3 @@ pub fn get_interface_by_name(
         }
     }
 }
-

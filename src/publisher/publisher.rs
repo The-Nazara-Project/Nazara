@@ -101,8 +101,8 @@ pub fn register_machine(
                 };
                 let interface_id: i64;
                 // TODO: Check if interface ID is valid, if not, create new interface.
-				// Create new interface object if no interface ID is given, or the given ID does
-				// not exist.
+                // Create new interface object if no interface ID is given, or the given ID does
+                // not exist.
                 if config_data.nwi.id.is_none() || !interface_exists(client, &config_data.nwi.id) {
                     let interface_payload: WritableInterfaceRequest =
                         translator::information_to_interface(

@@ -157,7 +157,7 @@ pub fn information_to_interface(
 
     let mut payload: WritableInterfaceRequest = WritableInterfaceRequest::default();
 
-	payload.device = Some(device_id.to_owned());
+    payload.device = Some(device_id.to_owned());
     payload.name = config_data.system.primary_network_interface.clone();
 
     // FIXME:
