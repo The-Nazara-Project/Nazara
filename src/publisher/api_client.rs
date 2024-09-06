@@ -8,6 +8,7 @@
 extern crate thanix_client;
 
 use reqwest::Error as ReqwestError;
+use serde_json::Value;
 use thanix_client::{
     paths::{
         dcim_devices_create, dcim_interfaces_create, dcim_interfaces_list,
@@ -31,7 +32,7 @@ use super::publisher_exceptions::{self, NetBoxApiError};
 /// Returns `Ok(())` if the connection to the API is successful.
 /// Returns an `Err` with `publisher_exceptions::NetBoxApiError` if the connection fails.
 pub fn test_connection(client: &ThanixClient) -> Result<(), publisher_exceptions::NetBoxApiError> {
-    let url: String = format!("{}/api/", client.base_url);
+    let url: String = format!("{}/api/status/", client.base_url);
 
     let response: Result<reqwest::blocking::Response, ReqwestError> = client
         .client
@@ -45,7 +46,25 @@ pub fn test_connection(client: &ThanixClient) -> Result<(), publisher_exceptions
     match response {
         Ok(resp) => {
             if resp.status().is_success() {
-                Ok(())
+                let json: Value = resp
+                    .json::<Value>()
+                    .map_err(|e| NetBoxApiError::Reqwest(e))?;
+
+                if let Some(netbox_ver) = json.get("netbox-version").and_then(Value::as_str) {
+                    // Compare netbox version for compatibility
+                    if check_version_compatiblity(netbox_ver, thanix_client::version::VERSION) {
+                        println!("\x1b[32m[success]\x1b[0m API client version compatible with NetBox version.");
+                        Ok(())
+                    } else {
+                        Err(publisher_exceptions::NetBoxApiError::VersionMismatch(String::from("\x1b[31m[error]\x1b[0m Client version incompatible with NetBox version! Use client v1.x for NetBox v3.6.x and above, and v2.x for NetBox 4.x.")))
+                    }
+                } else {
+                    Err(publisher_exceptions::NetBoxApiError::MissingVersion(
+                        String::from(
+                            "\x1b[31m[error]\x1b[0m NetBox version missing from response. Please check your installation.",
+                        ),
+                    ))
+                }
             } else {
                 Err(publisher_exceptions::NetBoxApiError::Reqwest(
                     resp.error_for_status().unwrap_err(),
@@ -54,6 +73,39 @@ pub fn test_connection(client: &ThanixClient) -> Result<(), publisher_exceptions
         }
         Err(e) => Err(publisher_exceptions::NetBoxApiError::Reqwest(e)),
     }
+}
+
+/// Compare the NetBox version with the thanix_client version for compatibility.
+///
+/// Given the drastic differences in NetBox's API between `v3.x` and `v4.x` there are two different
+/// release tracks for these two versions.
+///
+/// Version `v1.x` is compatible for NetBox Version `v3.6.x` and above, while `thanix_client`
+/// version `v2.x` will be compatible with NetBox version `v4.x` and above.
+///
+/// # Parameters
+///
+/// * `netbox_version: &str` - The version of the NetBox instance extracted from the response.
+/// * `thanix_version: &str` - The version of the installed `thanix_client` dependency.
+///
+/// # Returns
+///
+/// `bool` depending if the `thanix_client` dependency is compatible with the running NetBox
+/// version.
+fn check_version_compatiblity(netbox_version: &str, thanix_version: &str) -> bool {
+    println!("Checking API client compatibility with used NetBox version...");
+    let netbox_major = get_major_verison(netbox_version);
+    let thanix_major = get_major_verison(thanix_version);
+
+    match netbox_major {
+        Some(3) => thanix_major == Some(1),
+        Some(4) => thanix_major == Some(2),
+        _ => false, // Unsupported version
+    }
+}
+
+fn get_major_verison(version: &str) -> Option<u32> {
+    version.split('.').next()?.parse().ok()
 }
 
 /// Send request to create a new device in NetBox.

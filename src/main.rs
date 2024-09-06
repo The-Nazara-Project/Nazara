@@ -97,7 +97,7 @@ fn main() {
 
     match probe(&client) {
         Ok(()) => {}
-        Err(err) => println!("{}", err),
+        Err(err) => err.abort(None),
     };
 
     let dmi_information: dmi_collector::DmiInformation = dmi_collector::construct_dmi_information();
