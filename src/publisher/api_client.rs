@@ -56,12 +56,12 @@ pub fn test_connection(client: &ThanixClient) -> Result<(), publisher_exceptions
                         println!("\x1b[32m[success]\x1b[0m API client version compatible with NetBox version.");
                         Ok(())
                     } else {
-                        Err(publisher_exceptions::NetBoxApiError::VersionMismatch(String::from("\x1b[31m[error]\x1b[0m Client version incompatible with NetBox version! Use client v1.x for NetBox v3.6.x and above, and v2.x for NetBox 4.x.")))
+                        Err(publisher_exceptions::NetBoxApiError::VersionMismatch(String::from("Client version incompatible with NetBox version! Use client v1.x for NetBox v3.6.x and above, and v2.x for NetBox 4.x.")))
                     }
                 } else {
                     Err(publisher_exceptions::NetBoxApiError::MissingVersion(
                         String::from(
-                            "\x1b[31m[error]\x1b[0m NetBox version missing from response. Please check your installation.",
+                            "NetBox version missing from response. Please check your installation.",
                         ),
                     ))
                 }

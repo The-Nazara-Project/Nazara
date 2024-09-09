@@ -54,15 +54,27 @@ pub enum NetBoxApiError {
 impl fmt::Display for NetBoxApiError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            NetBoxApiError::Reqwest(ref err) => write!(f, "[error] Request error: {}", err),
+            NetBoxApiError::Reqwest(ref err) => {
+                write!(f, "\x1b[31m[error]\x1b[0m Request error: {}", err)
+            }
             NetBoxApiError::VersionMismatch(ref err) => {
-                write!(f, "[error] API Client version error: {}", err)
+                write!(
+                    f,
+                    "\x1b[31m[error]\x1b[0m API Client version error: {}",
+                    err
+                )
             }
             NetBoxApiError::MissingVersion(ref err) => {
-                write!(f, "[error] API Client missing version error: {}", err)
+                write!(
+                    f,
+                    "\x1b[31m[error]x1b[0m API Client missing version error: {}",
+                    err
+                )
             }
-            NetBoxApiError::JsonParse(ref err) => write!(f, "[error] JSON parsing error: {}", err),
-            NetBoxApiError::Other(ref err) => write!(f, "[Error] {}", err),
+            NetBoxApiError::JsonParse(ref err) => {
+                write!(f, "\x1b[31m[error]\x1b[0m JSON parsing error: {}", err)
+            }
+            NetBoxApiError::Other(ref err) => write!(f, "\x1b[31m[Error]\x1b[0m {}", err),
         }
     }
 }
