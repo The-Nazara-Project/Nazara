@@ -56,7 +56,10 @@ pub fn probe(client: &ThanixClient) -> Result<(), NetBoxApiError> {
             println!("\x1b[32m[success] Connection established!\x1b[0m");
             Ok(())
         }
-        Err(err) => panic!("Client unable to reach NetBox! {}", err),
+        Err(err) => {
+            eprintln!("{}", err);
+            Err(err)
+        }
     }
 }
 
