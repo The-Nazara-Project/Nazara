@@ -23,7 +23,7 @@ use crate::{
     configuration::config_parser::ConfigData,
     publisher::{
         api_client::{
-            create_device, create_interface, create_ip, get_interface_by_name, test_connection,
+            create_device, create_interface, create_ip, get_interface, get_interface_by_name, test_connection
         },
         translator,
     },
@@ -99,37 +99,31 @@ pub fn register_machine(
                         process::exit(1);
                     }
                 };
-                let interface_id: i64;
-                // TODO: Check if interface ID is valid, if not, create new interface.
+
                 // Create new interface object if no interface ID is given, or the given ID does
                 // not exist.
-                if config_data.nwi.id.is_none() || !interface_exists(client, &config_data.nwi.id) {
-                    let interface_payload: WritableInterfaceRequest =
-                        translator::information_to_interface(
-                            &machine,
-                            config_data.clone(),
-                            &device_id,
-                        );
+				let interface_id: i64 = config_data.nwi.id
+					.filter(|id| interface_exists(client, *id))
+					.unwrap_or_else(|| {
+						let interface_payload: WritableInterfaceRequest = translator::information_to_interface(&machine, config_data.clone(), &device_id);
 
-                    interface_id = match create_interface(client, interface_payload.clone()) {
-                        Ok(id) => id,
-                        Err(e) => {
-                            eprintln!("{}", e);
-                            match cont_search_nwi(client, &interface_payload) {
-                                Ok(id) => {
-                                    println!("\x1b[32m[success]\x1b[0m Interface found using name. Continuing...");
-                                    id
-                                }
-                                Err(e) => {
-                                    eprintln!("\x1b[31m[error]\x1b[0m {}. Aborting...", e);
-                                    process::exit(1);
-                                }
-                            }
-                        }
-                    };
-                } else {
-                    interface_id = config_data.nwi.id.unwrap();
-                }
+						match create_interface(client, interface_payload.clone()) {
+							Ok(id) => id,
+							Err(e) => {
+								eprintln!("{}", e);
+								match cont_search_nwi(client, &interface_payload) {
+									Ok(id) => {
+										println!("\x1b[32m[success]\x1b[0m Interface found!");
+										id
+									}
+									Err(e) => {
+										eprintln!("\x1b[31m[error]\x1b[0m {}. Aborting...", e);
+										process::exit(1); // TODO: Change this exit.
+									}
+								}
+							}
+						}
+					});
 
                 let ip_payload: WritableIPAddressRequest =
                     translator::information_to_ip(&machine, &config_data, interface_id);
@@ -157,8 +151,13 @@ pub fn register_machine(
 /// # Returns
 ///
 /// True/False depending on whether the interface exists.
-fn interface_exists(state: &ThanixClient, id: &Option<i64>) -> bool {
-    todo!("check if interface exists must be implemented!");
+fn interface_exists(state: &ThanixClient, id: i64) -> bool {
+	println!("Trying to retrieve Interface '{}'", id);
+
+	if get_interface(state, id).is_ok() {
+		return true
+	}
+	false
 }
 
 // HACK
@@ -223,15 +222,17 @@ fn get_machines(client: &ThanixClient, machine: &Machine) -> DeviceListOrVMList 
                         virtual_machines.results
                     }
                     _ => {
-                        // TODO change the way Nazara exits here
-                        eprintln!("\x1b[31m[error]\x1b[0m Failure while retrieving list of virtual machines. Please make sure your NetBox database is set up correctly.");
-                        process::exit(1);
+						let exc = NetBoxApiError::Other(String::from("\x1b[31m[error]\x1b[0m Failure while retrieving list of virtual machines. Please make sure your NetBox database is set up correctly."));
+						exc.abort(Some(35))
                     }
                 };
 
                 DeviceListOrVMList::VmList(vm_list)
             }
-            Err(e) => panic!("{}", e),
+            Err(e) => {
+				let exc = NetBoxApiError::Reqwest(e);
+				exc.abort(Some(34));
+			},
         }
     } else {
         println!("Retrieving list of machines...");
@@ -243,16 +244,17 @@ fn get_machines(client: &ThanixClient, machine: &Machine) -> DeviceListOrVMList 
                 let device_list: Vec<DeviceWithConfigContext> = match response {
                     DcimDevicesListResponse::Http200(devices) => devices.results,
                     _ => {
-                        todo!("Handling of non 200 Response code when getting machines not implemented yet!");
+						let exc = NetBoxApiError::Other(String::from("\x1b[31m[error]\x1b[0m Failure while retrieving list of machines. Please make sure your NetBox database is set up correctly."));
+						exc.abort(Some(35));
                     }
                 };
 
                 DeviceListOrVMList::DeviceList(device_list)
             }
             Err(e) => {
-                // TODO change the way Nazara exits here
                 eprintln!("\x1b[31m[error]\x1b[0m Failure while retrieving list of devices. Please make sure your NetBox database is set up correctly.\n{}", e);
-                process::exit(1);
+				let exc = NetBoxApiError::Reqwest(e);
+				exc.abort(Some(34));
             }
         }
     }

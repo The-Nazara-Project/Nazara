@@ -12,7 +12,8 @@ use serde_json::Value;
 use thanix_client::{
     paths::{
         dcim_devices_create, dcim_interfaces_create, dcim_interfaces_list,
-        ipam_ip_addresses_create, DcimDevicesCreateResponse, DcimInterfacesListQuery,
+        dcim_interfaces_retrieve, ipam_ip_addresses_create, DcimDevicesCreateResponse,
+        DcimInterfacesListQuery,
     },
     types::{
         Interface, WritableDeviceWithConfigContextRequest, WritableIPAddressRequest,
@@ -121,6 +122,14 @@ fn get_major_verison(version: &str) -> Option<u32> {
 /// * `payload: &WritableDeviceWithConfigContextRequest` - The information about the device serving
 /// as a request body.
 ///
+/// # Returns
+///
+/// * `Ok(i64)` - The ID of the newly created Device object.
+/// * `NetBoxApiError` - When the request returns an error.
+///
+/// # Aborts
+///
+/// This function terminates the process if the response code is not the expected `201`.
 pub fn create_device(
     client: &ThanixClient,
     payload: &WritableDeviceWithConfigContextRequest,
@@ -138,16 +147,14 @@ pub fn create_device(
                     Ok(created_device.id)
                 }
                 DcimDevicesCreateResponse::Other(other_response) => {
-                    // TODO
-                    todo!(
-                        "Other Response codes from creation not yet implemented! {}",
-                        other_response.text().unwrap()
-                    );
+                    let exc: NetBoxApiError = NetBoxApiError::Other(format!("\x1b[0m[error] Unexpected response code '{}' when trying to create a device!", other_response.status()));
+                    exc.abort(Some(35));
                 }
             }
         }
         Err(err) => {
-            panic!("{}", err); // Handle this better
+            let exc: NetBoxApiError = NetBoxApiError::Reqwest(err);
+            Err(exc)
         }
     }
 }
@@ -231,12 +238,46 @@ pub fn create_ip(
     }
 }
 
+/// Get Interface by ID.
+///
+/// # Parameters
+///
+/// * `state: &ThanixClient` - The API client instance to use.
+/// * `payload: &WritableInterfaceRequest` - The payload to use.
+///
+/// # Returns
+///
+/// * `Ok(Interface)` - The Interface we are looking for.
+/// * `Err(NetBoxApiError)` - When the Interface does not exist.
+pub fn get_interface(state: &ThanixClient, id: i64) -> Result<Interface, NetBoxApiError> {
+    println!("Trying to get interface '{}'...", &id);
+
+    match dcim_interfaces_retrieve(state, id) {
+        Ok(response) => {
+            let interface: Interface = match response {
+                thanix_client::paths::DcimInterfacesRetrieveResponse::Http200(interface) => {
+                    interface
+                }
+                thanix_client::paths::DcimInterfacesRetrieveResponse::Other(response) => {
+                    let err: NetBoxApiError = NetBoxApiError::Other(response.text().unwrap());
+                    return Err(err);
+                }
+            };
+            Ok(interface)
+        }
+        Err(e) => {
+            let err: NetBoxApiError = NetBoxApiError::Reqwest(e);
+            Err(err)
+        }
+    }
+}
+
 /// Attempt to retrieve an interface by its name.
 ///
 /// # Parameters
 ///
 /// * `state: &ThanixClient` - The API client instance to use.
-/// * `payload: &WritableInterfaceRequest` - The device to create.
+/// * `payload: &WritableInterfaceRequest` - The payload to send.
 ///
 /// # Returns
 ///

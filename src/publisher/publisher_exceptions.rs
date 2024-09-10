@@ -18,8 +18,8 @@
 //! step.|
 //! |`33`|VersionMismatch|Indicates that the used `thanix_client` version is incompatible with
 //! NetBox.|
-//! |`34`|--TBA--|--TBA--    |
-//! |`35`|--TBA--|--TBA--    |
+//! |`34`|BadResponse|NetBox returned an error on a supposedly valid request.|
+//! |`35`|InvalidResponseCode|The Response code from NetBox differs from what we expected.|
 //! |`36`|--TBA--|--TBA--    |
 //! |`37`|--TBA--|--TBA--    |
 //! |`38`|--TBA--|--TBA--    |
