@@ -23,14 +23,19 @@ use thanix_client::{
 
 use super::publisher_exceptions::{self, NetBoxApiError};
 
-/// Tests connection to the NetBox API.
+/// Tests connection to the NetBox API and verifies if your `thanix_client` version is compatible
+/// with your NetBox version.
 ///
-/// This method attempts to retrieve the API root from the NetBox API to affirm that it is reachable.
+/// # Parameters
+///
+/// * `client: &ThanixClient` - The client instance to be used for communication.
 ///
 /// # Returns
 ///
-/// Returns `Ok(())` if the connection to the API is successful.
-/// Returns an `Err` with `publisher_exceptions::NetBoxApiError` if the connection fails.
+/// Returns `Ok(())` if the connection to the API is successful and the `thanix_client` version is
+/// compatible with the used NetBox version.
+/// Returns an `Err` with `publisher_exceptions::NetBoxApiError` if the connection fails or the
+/// `thanix_client``version is not compatible with your NetBox version.
 pub fn test_connection(client: &ThanixClient) -> Result<(), publisher_exceptions::NetBoxApiError> {
     let url: String = format!("{}/api/status/", client.base_url);
 
@@ -112,8 +117,8 @@ fn get_major_verison(version: &str) -> Option<u32> {
 ///
 /// # Parameters
 ///
-/// * client: `&ThanixClient` - The `ThanixClient` instance to use for communication.
-/// * payload: `&WritableDeviceWithConfigContextRequest` - The information about the device serving
+/// * `client: &ThanixClient` - The `ThanixClient` instance to use for communication.
+/// * `payload: &WritableDeviceWithConfigContextRequest` - The information about the device serving
 /// as a request body.
 ///
 pub fn create_device(
@@ -191,8 +196,13 @@ pub fn create_interface(
 ///
 /// # Parameters
 ///
-/// * client: `&ThanixClient` - The client instance necessary for communication.
-/// * payload: `&`
+/// * `client: &ThanixClient` - The client instance necessary for communication.
+/// * `payload: WritableIPAddressRequest` - The payload to send.
+///
+/// # Returns
+///
+/// * `Ok(i64)` - The ID of the new IPAddress object.
+/// * `Err(NetBoxApiError)` - A variant of `NetBoxAPiError` if the creation fails.
 pub fn create_ip(
     client: &ThanixClient,
     payload: WritableIPAddressRequest,
@@ -221,6 +231,17 @@ pub fn create_ip(
     }
 }
 
+/// Attempt to retrieve an interface by its name.
+///
+/// # Parameters
+///
+/// * `state: &ThanixClient` - The API client instance to use.
+/// * `payload: &WritableInterfaceRequest` - The device to create.
+///
+/// # Returns
+///
+/// * `Ok(Interface)` - Returns the `Interface` if it exists.
+/// * `Err(NetBoxApiError)` - Returns variant of `NetBoxApiError` if the interface does not exist.
 pub fn get_interface_by_name(
     state: &ThanixClient,
     payload: &WritableInterfaceRequest,
