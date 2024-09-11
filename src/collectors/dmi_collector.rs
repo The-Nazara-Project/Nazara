@@ -7,7 +7,6 @@
  * TODO:
  * 1. Implement Error checking.
  * 2. Check netbox api documentation for correct information type.
- * 3. REMOVE DEBUG PRINT STATEMENTS.
  * */
 
 use crate::collectors::collector_exceptions;
@@ -355,7 +354,7 @@ fn dmidecode_cpu<T: DmiDecodeTable>(_param: T) -> CpuInformation {
     println!("Collecting CPU information...");
     let output: String = T::get_dmidecode_table(4);
     let output_split: Split<'_, &str> = output.split("\n");
-    let mut split: Vec<&str> = Vec::new();
+    let mut split: Vec<&str>;
 
     let mut cpu_information: CpuInformation = CpuInformation {
         version: String::new(),

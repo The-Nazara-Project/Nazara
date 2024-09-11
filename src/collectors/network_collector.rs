@@ -4,7 +4,7 @@
 //!
 use network_interface::Addr::{V4, V6};
 use network_interface::{NetworkInterface, NetworkInterfaceConfig};
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use std::fs;
 use std::io::Read;
 use std::net::IpAddr;
@@ -49,11 +49,11 @@ pub struct NetworkInformation {
 ///
 /// ### Returns
 ///
-/// Vec<NetworkInterface> - A list of all NetworkInterfaces that the crate was able to collect.
+/// * `Vec<NetworkInterface>` - A list of all NetworkInterfaces that the crate was able to collect.
 ///
 /// ### Panics
 ///
-/// This function will panic if NetworkInterface::show() returns an Error leading to no interfaces being collected.
+/// This function will panic if `NetworkInterface::show()` returns an Error leading to no interfaces being collected.
 pub fn collect_network_information(
 ) -> Result<Vec<NetworkInterface>, collector_exceptions::NoNetworkInterfacesException> {
     /*
@@ -86,6 +86,8 @@ pub fn collect_network_information(
 }
 
 /// Constructs instances of the NetworkInformation struct.
+///
+/// Loopback device collected by `collect_network_information` is skipped.
 ///
 /// ### Returns
 ///
@@ -254,12 +256,12 @@ fn validate_network_speed(interface_name: &str) -> Option<u32> {
         Ok(file) => match collect_interface_speed(interface_name, file) {
             Ok(speed) => Some(speed),
             Err(err) => {
-                println!("{}", err);
+                eprintln!("{}", err);
                 None
             }
         },
         Err(err) => {
-            println!("{}", err);
+            eprintln!("{}", err);
             None
         }
     }
