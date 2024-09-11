@@ -9,9 +9,7 @@
  * 2. Check netbox api documentation for correct information type.
  * */
 
-use crate::collectors::collector_exceptions;
-
-use super::collector_exceptions::UnableToCollectDataError;
+use super::collector_exceptions::CollectorError;
 use super::util::{find_table, split_output};
 use serde::{Deserialize, Serialize};
 use std::{
@@ -174,14 +172,9 @@ impl DmiDecodeTable for DefaultDmiDecodeTable {
             .output()
         {
             Ok(output) => output,
-            Err(_) => {
-                let error: UnableToCollectDataError = UnableToCollectDataError {
-                    message: format!(
-                        "\x1b[31m[FATAL]\x1b[0m Unable to get dmidecode table '{}'!",
-                        dmidecode_table
-                    ),
-                };
-                error.abort(2);
+            Err(e) => {
+                let err = CollectorError::DmiError(e.to_string());
+                err.abort(None);
             }
         };
 
@@ -229,14 +222,9 @@ impl DmiDecodeInformation for DefaultDmiDecodeInformation {
             .output()
         {
             Ok(output) => output,
-            Err(_) => {
-                let error: UnableToCollectDataError = UnableToCollectDataError {
-                    message: format!(
-                        "\x1b[31m[FATAL]\x1b[0m Unable to collect system information for '{}'!",
-                        parameter
-                    ),
-                };
-                error.abort(2);
+            Err(e) => {
+                let err = CollectorError::DmiError(e.to_string());
+                err.abort(None);
             }
         };
         return String::from_utf8_lossy(&output.stdout).trim().to_string();
@@ -426,10 +414,7 @@ fn dmidecode_cpu<T: DmiDecodeTable>(_param: T) -> CpuInformation {
     cpu_information.arch = match get_architecture() {
         Ok(arch) => Some(arch),
         Err(e) => {
-            eprintln!(
-                "\x1b[31m[error]\x1b[0m Failure to get cpu information via `uname`!\n{}",
-                e
-            );
+            eprintln!("{}", e);
             None
         }
     };
@@ -444,15 +429,15 @@ fn dmidecode_cpu<T: DmiDecodeTable>(_param: T) -> CpuInformation {
 /// # Returns
 /// - Ok(arch_name): `string` - Name of the CPU architecture.
 /// - Err(UnableToCollectDataError)
-fn get_architecture() -> Result<String, UnableToCollectDataError> {
+fn get_architecture() -> Result<String, CollectorError> {
     println!("Running uname to collect CPU architecture...");
     let output = match Command::new("uname").arg("-p").output() {
         Ok(output) => output,
         Err(e) => {
-            let exc: UnableToCollectDataError = UnableToCollectDataError {
-                message: String::from(format!("\x1b[31m[error]\x1b[0m An error occured while attempting to execute `uname -p`! {}", e))
-            };
-            return Err(exc);
+            let err = CollectorError::UnableToCollectDataError (
+                String::from(format!("\x1b[31m[error]\x1b[0m An error occured while attempting to execute `uname -p`! {}", e))
+			);
+            return Err(err);
         }
     };
 
