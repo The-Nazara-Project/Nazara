@@ -9,7 +9,7 @@ use std::fs;
 use std::io::Read;
 use std::net::IpAddr;
 
-use super::collector_exceptions;
+use super::collector_exceptions::CollectorError;
 
 /// ## Network Information
 ///
@@ -54,8 +54,7 @@ pub struct NetworkInformation {
 /// ### Panics
 ///
 /// This function will panic if `NetworkInterface::show()` returns an Error leading to no interfaces being collected.
-pub fn collect_network_information(
-) -> Result<Vec<NetworkInterface>, collector_exceptions::NoNetworkInterfacesException> {
+pub fn collect_network_information() -> Result<Vec<NetworkInterface>, CollectorError> {
     /*
      * Collect information about all available network interfaces.
      *
@@ -67,20 +66,16 @@ pub fn collect_network_information(
     match network_interfaces_result {
         Ok(network_interfaces) => {
             if network_interfaces.is_empty() {
-                Err(collector_exceptions::NoNetworkInterfacesException {
-                    message: "\x1b[31m[error]\x1b[0m No network interfaces found!".to_string(),
-                })
+                Err(CollectorError::NoNetworkInterfacesError(
+                    "\x1b[31m[error]\x1b[0m No network interfaces found!".to_string(),
+                ))
             } else {
                 Ok(network_interfaces)
             }
         }
-        Err(_) => {
-            let exc: collector_exceptions::UnableToCollectDataError =
-                collector_exceptions::UnableToCollectDataError {
-                    message: "\x1b[31m[FATAL]\x1b[0m Unable to collect information about network interfaces!"
-                        .to_string(),
-                };
-            exc.abort(20);
+        Err(e) => {
+            let exc: CollectorError = CollectorError::UnableToCollectDataError(e.to_string());
+            exc.abort(None);
         }
     }
 }
@@ -96,8 +91,7 @@ pub fn collect_network_information(
 /// ### Panics
 ///
 /// This function will panic if a network interface, for some reason, lacks an address block.
-pub fn construct_network_information(
-) -> Result<Vec<NetworkInformation>, collector_exceptions::NoNetworkInterfacesException> {
+pub fn construct_network_information() -> Result<Vec<NetworkInformation>, CollectorError> {
     /*
      * Deconstruct NetworkInterface vector and construct NetworkInformation objects from it.
      */
@@ -105,11 +99,7 @@ pub fn construct_network_information(
 
     let raw_information: Vec<NetworkInterface> = match collect_network_information() {
         Ok(information) => information,
-        Err(_) => {
-            return Err(collector_exceptions::NoNetworkInterfacesException {
-                message: "\x1b[31m[error]\x1b[0m No network interfaces to process".to_string(),
-            });
-        }
+        Err(e) => return Err(CollectorError::NoNetworkInterfacesError(e.to_string())),
     };
 
     let mut interfaces: Vec<NetworkInformation> = Vec::new();
@@ -193,12 +183,12 @@ pub fn construct_network_information(
             }
             None => {
                 // If a Network interface is completely missing an address block, it is assumed that it is invalid.
-                // This will raise a custom exception and cause the program to panic.
-                let exc = collector_exceptions::InvalidNetworkInterfaceError {
-                    message: "\x1b[31m[FATAL]\x1b[0m A Network interface cannot be recognized!"
-                        .to_string(),
-                };
-                exc.abort(25);
+                // This will raise a custom exception and cause the program to abort.
+                let err: CollectorError =
+                    CollectorError::InvalidNetworkInterfaceError(String::from(
+                        "\x1b[31m[FATAL]\x1b[0m A Network interface cannot be recognized!",
+                    ));
+                err.abort(None);
             }
         }
         if !check_for_physical_nw(&network_information.name) {
@@ -356,11 +346,14 @@ mod network_collector_tests {
                 );
             }
             Err(e) => match e {
-                collector_exceptions::NoNetworkInterfacesException { message } => {
+                CollectorError::NoNetworkInterfacesError(message) => {
                     assert_eq!(
                         message,
                         "\x1b[31m[error]\x1b[0m No network interfaces found!".to_string()
                     );
+                }
+                _ => {
+                    assert!(false)
                 }
             },
         }
@@ -420,11 +413,14 @@ mod network_collector_tests {
                 }
             }
             Err(e) => match e {
-                collector_exceptions::NoNetworkInterfacesException { message } => {
+                CollectorError::NoNetworkInterfacesError(message) => {
                     assert_eq!(
                         message,
-                        "\x1b[31m[error]\x1b[0m No network interfaces to process".to_string()
+                        "\x1b[31m[error]\x1b[0m No network interfaces found!".to_string()
                     );
+                }
+                _ => {
+                    assert!(false)
                 }
             },
         }

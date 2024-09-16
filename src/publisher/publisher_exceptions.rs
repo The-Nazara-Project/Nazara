@@ -79,6 +79,9 @@ impl fmt::Display for NetBoxApiError {
     }
 }
 
+/// Needed for `NetBoxApiError::Reqwest` and `NetBoxApiError::JsonParse` as these contain other
+/// error types from dependencies.
+/// Others are ignored as they originate in Nazara.
 impl Error for NetBoxApiError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match *self {
