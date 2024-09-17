@@ -119,16 +119,7 @@ pub fn register_machine(
                             Ok(id) => id,
                             Err(e) => {
                                 eprintln!("{}", e);
-                                match cont_search_nwi(client, &interface_payload) {
-                                    Ok(id) => {
-                                        println!("\x1b[32m[success]\x1b[0m Interface found!");
-                                        id
-                                    }
-                                    Err(e) => {
-                                        eprintln!("\x1b[31m[error]\x1b[0m {}. Aborting...", e);
-                                        process::exit(1); // TODO: Change this exit.
-                                    }
-                                }
+                                e.abort(None);
                             }
                         }
                     });
@@ -166,30 +157,6 @@ fn interface_exists(state: &ThanixClient, id: i64) -> bool {
         return true;
     }
     false
-}
-
-// HACK
-/// Contingency function to search for the previously created Network Interface, when the response
-/// given my NetBox cannot be serialized correctly therefore no Interface ID is returned.
-///
-/// # Parameters
-/// * `state: &ThanixClient` - The client to communicate with the API.
-/// * `payload: &WritableInterfaceRequest` - The API request payload.
-fn cont_search_nwi(
-    state: &ThanixClient,
-    payload: &WritableInterfaceRequest,
-) -> Result<i64, NetBoxApiError> {
-    println!(
-        "\x1b[36m[warning]\x1b[0m Error while creating interface. Contingency search started..."
-    );
-
-    match get_interface_by_name(state, payload) {
-        Ok(interface) => Ok(interface.id),
-        Err(e) => {
-            eprintln!("\x1b[31m[error]\x1b[0m {}", e);
-            process::exit(1);
-        }
-    }
 }
 
 /// Get list of machines.
