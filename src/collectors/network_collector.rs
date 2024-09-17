@@ -51,9 +51,9 @@ pub struct NetworkInformation {
 ///
 /// * `Vec<NetworkInterface>` - A list of all NetworkInterfaces that the crate was able to collect.
 ///
-/// ### Panics
+/// ### Aborts
 ///
-/// This function will panic if `NetworkInterface::show()` returns an Error leading to no interfaces being collected.
+/// This function aborts the program, if `NetworkInterface::show()` returns an Error leading to no interfaces being collected.
 pub fn collect_network_information() -> Result<Vec<NetworkInterface>, CollectorError> {
     /*
      * Collect information about all available network interfaces.
@@ -88,9 +88,9 @@ pub fn collect_network_information() -> Result<Vec<NetworkInterface>, CollectorE
 ///
 /// A list of NetworkInformation objects including information about whether a network is virtual or physical.
 ///
-/// ### Panics
+/// ### Aborts
 ///
-/// This function will panic if a network interface, for some reason, lacks an address block.
+/// This function aborts the program if a network interface lacks an address block.
 pub fn construct_network_information() -> Result<Vec<NetworkInformation>, CollectorError> {
     /*
      * Deconstruct NetworkInterface vector and construct NetworkInformation objects from it.
@@ -209,7 +209,7 @@ pub fn construct_network_information() -> Result<Vec<NetworkInformation>, Collec
 /// This function constructs a path to the interface's virtfn0 directory.<br>
 /// This directory only exists for physical network devices, not virtual ones or non-SR-IOV devices.
 ///
-/// ### Arguments
+/// ### Parameters
 ///
 /// * `interface_name` - A string slice that holds the name of the network interface.
 ///
@@ -233,14 +233,14 @@ fn check_for_physical_nw(interface_name: &str) -> bool {
 
 /// Validates if the speed of a network can be actually read and will print the error messages if it cannot.
 ///
-/// ## Arguments
+/// # Parameters
 ///
 /// * `interface_name: &str` - The name of the interface to check.
 ///
-/// ## Returns
+/// # Returns
 ///
-/// - `u32` - Returns `u32` if the speed finding process succeeds.
-/// - `None` - Returns `None` when the collection process fails.
+/// * `u32` - Returns `u32` if the speed finding process succeeds.
+/// * `None` - Returns `None` when the collection process fails.
 fn validate_network_speed(interface_name: &str) -> Option<u32> {
     match build_interface_file_from_name(interface_name) {
         Ok(file) => match collect_interface_speed(interface_name, file) {
@@ -287,12 +287,12 @@ fn build_interface_file_from_name(interface_name: &str) -> Result<std::fs::File,
 ///
 /// If the content of the file is `-1`, the device is disabled and the interface speed is later set to None.
 ///
-/// ## Arguments
+/// # Parameters
 ///
 /// * `interface_name: &str` - The name of the interface to investigate.
 /// * `mut input: impl Read` - Any Argument which implements the `Read` trait. In this case it is a `fs::File` object.
 ///
-/// ## Returns
+/// # Returns
 ///
 /// * `Ok(u32)` - If the entry for interface speed, in *`Mbps`*, can be read.
 /// * `Err(String)` - If the file cannot be read, indicating loopback or wireless devices, or the content is `-1`, if the interface is disabled, an Err is returned.
