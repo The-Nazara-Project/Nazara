@@ -8,20 +8,122 @@
 //!
 //! The config module uses error codes in the range of 10 - 19.
 //!
-//! |Code  |Name              |Explanation                                                |
-//! |------|------------------|-----------------------------------------------------------|
-//! |`10`  |PermissionDenied  |Unable to create config file on system.                    |
-//! |`11`  |EmptyConfigFile   |Default config file was created but not parameters set.    |
-//! |`12`  |UnableToInitConfig|An error occurred while trying to initialize config file.  |
-//! |`13`  |ConfigWriteError  |An error occurred while trying to write to the config file.|
-//! |`14`  |ConfigReadError   |Unable to read configuration file.                         |
-//! |`15`  |TomlSyntaxError   |Your TOML is not valid. Please check for syntax errors.    |
-//! |`16`  |--Undefined--     |--Undefined--|
-//! |`17`  |--Undefined--     |--Undefined--|
-//! |`18`  |--Undefined--     |--Undefined--|
-//! |`19`  |--Undefined--     |--Undefined--|
+//! |Code  |Name                  |Explanation                                                |
+//! |------|----------------------|-----------------------------------------------------------|
+//! |`10`  |ConfigFileError       |Indicates errors with operating on the config file.        |
+//! |`11`  |NoConfigFileErrror    |Configuration file could not be found.                     |
+//! |`12`  |InvalidConfigFileError|Contains a TOML-Deserialize error.                         |
+//! |`13`  |SerializationError    |Constains a TOML-Serialization error.                      |
+//! |`14`  |--Undefined--         |--Undefined--                                              |
+//! |`15`  |--Undefined--         |--Undefined--                                              |
+//! |`16`  |--Undefined--         |--Undefined--|
+//! |`17`  |--Undefined--         |--Undefined--|
+//! |`18`  |--Undefined--         |--Undefined--|
+//! |`19`  |Other                 |Undefined Error type, more info in the error message.      |
 //!
-use std::{fmt, process};
+use std::io::Error as IoError;
+use std::{error::Error, fmt, process};
+
+use toml::{de::Error as TomlDeError, ser::Error as TomlSeError};
+
+#[derive(Debug)]
+pub enum ConfigError {
+    ConfigFileError(IoError),
+    NoConfigFileError(String),
+    InvalidConfigFileError(TomlDeError),
+    SerializationError(TomlSeError),
+    Other(String),
+}
+
+impl fmt::Display for ConfigError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            ConfigError::ConfigFileError(ref err) => {
+                write!(f, "\x1b[31m[error]\x1b[0m File operation failed: {}", err)
+            }
+            ConfigError::NoConfigFileError(ref err) => {
+                write!(f, "\x1b[31m[error]\x1b[0m No config file found: {}", err)
+            }
+            ConfigError::InvalidConfigFileError(ref err) => {
+                write!(f, "\x1b[31m[error]\x1b[0m Invalid config file: {}", err)
+            }
+            ConfigError::SerializationError(ref err) => {
+                write!(f, "\x1b[31m[error]\x1b[0m Serialization error: {}", err)
+            }
+            ConfigError::Other(ref err) => {
+                write!(f, "\x1b[31m[error]\x1b[0m Config Parser error: {}", err)
+            }
+        }
+    }
+}
+
+impl Error for ConfigError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match *self {
+            ConfigError::ConfigFileError(ref err) => Some(err),
+            ConfigError::NoConfigFileError(_) => None,
+            ConfigError::InvalidConfigFileError(ref err) => Some(err),
+            ConfigError::SerializationError(ref err) => Some(err),
+            ConfigError::Other(_) => None,
+        }
+    }
+}
+
+impl From<IoError> for ConfigError {
+    fn from(err: IoError) -> Self {
+        ConfigError::ConfigFileError(err)
+    }
+}
+
+impl From<TomlDeError> for ConfigError {
+    fn from(err: TomlDeError) -> Self {
+        ConfigError::InvalidConfigFileError(err)
+    }
+}
+
+impl From<TomlSeError> for ConfigError {
+    fn from(err: TomlSeError) -> Self {
+        ConfigError::SerializationError(err)
+    }
+}
+
+impl ConfigError {
+    /// Abort the process, if necessary.
+    ///
+    /// If no `exit_code` is given, will try to detect one depending on the Error variant used.
+    ///
+    /// # parameters
+    ///
+    /// * `&self`
+    /// * `exit_code: Option<i32>` - The code which the application should output when exiting. If
+    /// none will try to detect it depending on the error variant.
+    ///
+    /// # Returns
+    ///
+    /// This function does not return.
+    pub fn abort(&self, exit_code: Option<i32>) -> ! {
+        let code: i32;
+        if exit_code.is_none() {
+            code = self.figure_exit_code();
+        } else {
+            code = exit_code.unwrap();
+        }
+
+        eprintln!("{} (Error code: {})", self, code);
+        process::exit(code);
+    }
+
+    /// Detect exit code depending on the error type, if none is given to `abort()`.
+    fn figure_exit_code(&self) -> i32 {
+        match &self {
+            ConfigError::ConfigFileError(_) => 10,
+            ConfigError::NoConfigFileError(_) => 11,
+            ConfigError::InvalidConfigFileError(_) => 12,
+            ConfigError::SerializationError(_) => 13,
+            ConfigError::Other(_) => 19,
+        }
+    }
+}
 
 /// This error is raised when the program cannot create a config file.
 ///
