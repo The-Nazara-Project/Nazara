@@ -3,6 +3,7 @@
 //! This module handles the translation and processing of the data sent to or received from NetBox.
 //!
 use core::net::IpAddr;
+use std::collections::HashMap;
 use std::process;
 use std::str::FromStr;
 use thanix_client::paths::{
@@ -140,8 +141,7 @@ pub fn information_to_vm(
 ///
 /// # Parameters
 ///
-/// * state: `&ThanixClient` - The client instance to be used for communication.
-/// * machine: `&Machine` - The collectedd information about the device or machine.
+/// * interface: `&NetworkInformation` - The interface to be translated into a payload.
 /// * config_data: `ConfigData` - The configuration data.
 /// * device_id: `&i64` - The ID of the device that this interface belongs to.
 ///
@@ -149,63 +149,128 @@ pub fn information_to_vm(
 ///
 /// * payload: `WritableInterfaceRequest` - Payload for creating an interface.
 pub fn information_to_interface(
-    machine: &Machine,
     config_data: ConfigData,
+    interface: &NetworkInformation,
     device_id: &i64,
 ) -> WritableInterfaceRequest {
-    println!("Creating Network Interface...");
+    println!(
+        "Creating Network Interface payload for '{}'...",
+        &interface.name
+    );
 
     let mut payload: WritableInterfaceRequest = WritableInterfaceRequest::default();
 
     payload.device = Some(device_id.to_owned());
-    payload.name = config_data.system.primary_network_interface.clone();
+    payload.name = Some(interface.name.clone());
 
-    // FIXME:
-    payload.r#type = Some(config_data.nwi.r#type);
-    payload.parent = config_data.nwi.parent;
-    payload.bridge = config_data.nwi.bridge;
-    payload.lag = config_data.nwi.lag;
-    payload.mtu = config_data.nwi.mtu;
+    // Get NwiConfig for the given interface
+    let nwi_config = config_data.nwi.as_ref().and_then(|nwi_list| {
+        nwi_list
+            .iter()
+            .find(|nwi| nwi.name.as_deref() == Some(&interface.name))
+    });
 
-    // Get the interface we are looking for as primary, then get its parameters.
-    // These filter statements can probably be split off into their own function.
-    payload.mac_address = match &config_data.system.primary_network_interface {
-        Some(nwi_name) => {
-            let interface = machine
-                .network_information
-                .iter()
-                .find(|nwi| nwi.name == nwi_name.to_owned());
-            interface.map(|nwi| nwi.mac_addr.clone()).flatten()
-        }
-        None => None,
-    };
-    payload.speed = match config_data.system.primary_network_interface {
-        Some(nwi_name) => {
-            let interface = machine
-                .network_information
-                .iter()
-                .find(|nwi| nwi.name == nwi_name);
-            interface.map(|nwi| nwi.interface_speed.clone()).flatten()
-        }
-        None => None,
-    };
-    payload.description = Some(String::from(
-        "This interface was automatically created by Nazara.",
-    ));
-    payload.mode = Some(config_data.nwi.mode.unwrap_or(String::from("")));
-    payload.rf_role = Some(config_data.nwi.rf_role.unwrap_or(String::from("")));
-    payload.rf_channel = Some(config_data.nwi.rf_channel.unwrap_or(String::from("")));
-    payload.poe_mode = Some(config_data.nwi.poe_mode.unwrap_or(String::from("")));
-    payload.poe_type = Some(config_data.nwi.poe_type.unwrap_or(String::from("")));
-    payload.custom_fields = config_data.nwi.custom_fields;
-    payload.mark_connected = Some(config_data.nwi.mark_connected);
-    payload.enabled = Some(config_data.nwi.enabled);
-    payload.vdcs = Some(config_data.nwi.vdcs.unwrap_or_default());
-    payload.label = Some(config_data.nwi.label.unwrap_or_default());
-    payload.mgmt_only = Some(config_data.nwi.mgmt_only);
-    payload.tagged_vlans = Some(config_data.nwi.tagged_vlans.unwrap_or_default());
-    payload.wireless_lans = Some(config_data.nwi.wireless_lans.unwrap_or_default());
-    payload.tags = Some(Vec::new());
+    // This looks as horrible as it does, because at least for NetBox v3.6.9, we have to implement a
+    // workaround on the API client side, making all Interface fields Options because we sometimes
+    // get data back that does not comply with the api schema, failing serialization.
+    payload.r#type = Some(
+        nwi_config
+            .as_ref()
+            .and_then(|nwi| nwi.r#type.clone())
+            .unwrap_or(String::from("other")),
+    );
+    payload.parent = nwi_config.as_ref().and_then(|nwi| nwi.parent);
+    payload.bridge = nwi_config.as_ref().and_then(|nwi| nwi.bridge);
+    payload.lag = nwi_config.as_ref().and_then(|nwi| nwi.lag);
+    payload.mtu = nwi_config.as_ref().and_then(|nwi| nwi.mtu);
+
+    payload.mac_address = Some(interface.mac_addr.clone().unwrap_or_default());
+    payload.speed = Some(interface.interface_speed.clone().unwrap_or_default());
+    payload.description = Some(
+        nwi_config
+            .as_ref()
+            .and_then(|nwi| nwi.description.clone())
+            .unwrap_or_else(|| String::from("This interface was automatically created by Nazara.")),
+    );
+    payload.mode = Some(
+        nwi_config
+            .as_ref()
+            .and_then(|nwi| nwi.mode.clone())
+            .unwrap_or_default(),
+    );
+    payload.rf_role = Some(
+        nwi_config
+            .as_ref()
+            .and_then(|nwi| nwi.rf_role.clone())
+            .unwrap_or_default(),
+    );
+    payload.rf_channel = Some(
+        nwi_config
+            .as_ref()
+            .and_then(|nwi| nwi.rf_channel.clone())
+            .unwrap_or_default(),
+    );
+    payload.poe_mode = Some(
+        nwi_config
+            .as_ref()
+            .and_then(|nwi| nwi.poe_mode.clone())
+            .unwrap_or_default(),
+    );
+    payload.poe_type = Some(
+        nwi_config
+            .as_ref()
+            .and_then(|nwi| nwi.poe_type.clone())
+            .unwrap_or_default(),
+    );
+    payload.custom_fields = Some(
+        nwi_config
+            .as_ref()
+            .and_then(|nwi| nwi.custom_fields.clone())
+            .unwrap_or_default(),
+    );
+    payload.mark_connected = Some(
+        nwi_config
+            .as_ref()
+            .and_then(|nwi| nwi.mark_connected)
+            .unwrap_or(true),
+    );
+    payload.enabled = Some(
+        nwi_config
+            .as_ref()
+            .and_then(|nwi| nwi.enabled)
+            .unwrap_or(interface.is_connected),
+    );
+    payload.vdcs = Some(
+        nwi_config
+            .as_ref()
+            .and_then(|nwi| nwi.vdcs.clone())
+            .unwrap_or_default(),
+    );
+    payload.label = Some(
+        nwi_config
+            .as_ref()
+            .and_then(|nwi| nwi.label.clone())
+            .unwrap_or_default(),
+    );
+    payload.mgmt_only = Some(
+        nwi_config
+            .as_ref()
+            .and_then(|nwi| nwi.mgmt_only)
+            .unwrap_or(false),
+    );
+    payload.tagged_vlans = Some(
+        nwi_config
+            .as_ref()
+            .and_then(|nwi| nwi.tagged_vlans.clone())
+            .unwrap_or_default(),
+    );
+    payload.wireless_lans = Some(
+        nwi_config
+            .as_ref()
+            .and_then(|nwi| nwi.wireless_lans.clone())
+            .unwrap_or_default(),
+    );
+    payload.tags = Some(Vec::new()); // FIXME: Currently not support tags, because they are hard.
 
     payload
 }
@@ -214,31 +279,18 @@ pub fn information_to_interface(
 ///
 /// # Parameters
 ///
-/// * state: `&ThanixClient` - The client instance necessary for communication.
-/// * machine: `&Machine` - Collected machine information.
-/// * config_data: `&ConfigData` - Data read from the config file.
-/// * interface_id: `i64` - ID of the network interface this IP belongs to.
-pub fn information_to_ip(
-    machine: &Machine,
-    config_data: &ConfigData,
-    interface_id: i64,
-) -> WritableIPAddressRequest {
+///	* `interface_address: IpAddr` - The IpAddress of the interface to register.
+/// * `interface_id: i64` - ID of the network interface this IP belongs to.
+///
+/// # Returns
+///
+/// * `WritableIpAddressRequest` - The payload for the API call.
+pub fn information_to_ip(interface_address: IpAddr, interface_id: i64) -> WritableIPAddressRequest {
     println!("Creating IP Address payload...");
 
     let mut payload: WritableIPAddressRequest = WritableIPAddressRequest::default();
 
-    let local_interface: &NetworkInformation = machine
-        .network_information
-        .iter()
-        .find(|s| {
-            s.name
-                == <std::option::Option<std::string::String> as Clone>::clone(
-                    &config_data.system.primary_network_interface,
-                )
-                .unwrap()
-        })
-        .unwrap();
-    payload.address = format!("{}", local_interface.v4ip.unwrap());
+    payload.address = format!("{}", interface_address);
     // payload.vrf = todo!();
     // payload.tenant = todo!();
     payload.status = String::from("active");
@@ -250,7 +302,7 @@ pub fn information_to_ip(
     payload.description = String::from("This Address was automatically created by Nazara.");
     payload.comments = String::from("Automatically created by Nazara. Dummy only.");
     // payload.tags = todo!();
-    payload.custom_fields = config_data.nwi.custom_fields.clone();
+    payload.custom_fields = Some(HashMap::new());
 
     payload
 }
@@ -432,36 +484,34 @@ fn get_site_id(state: &ThanixClient, config_data: &ConfigData) -> Option<i64> {
         };
         println!("\x1b[32m[success]\x1b[0m Valid site ID. Proceeding...");
         return Some(target);
-    } else {
-        println!("\x1b[36m[info]\x1b[0m No 'site_id' specified. Searching by name...");
-        let site_list: Vec<Site>;
-        match paths::dcim_sites_list(state, DcimSitesListQuery::default()) {
-            Ok(response) => match response {
-                paths::DcimSitesListResponse::Http200(sites) => site_list = sites.results,
-                paths::DcimSitesListResponse::Other(response) => {
-                    eprintln!("\x1b[31[error] Error while retrieving site list.\n--- Unexpected response: {} ---",
+    }
+    println!("\x1b[36m[info]\x1b[0m No 'site_id' specified. Searching by name...");
+    let site_list: Vec<Site>;
+    match paths::dcim_sites_list(state, DcimSitesListQuery::default()) {
+        Ok(response) => match response {
+            paths::DcimSitesListResponse::Http200(sites) => site_list = sites.results,
+            paths::DcimSitesListResponse::Other(response) => {
+                eprintln!("\x1b[31[error] Error while retrieving site list.\n--- Unexpected response: {} ---",
                     response.text().unwrap()
                     );
-                    process::exit(1);
-                }
-            },
-            Err(e) => {
-                eprintln!(
-                    "\x1b[31m[error]\x1b[0m Error while performing site list query.\n{}",
-                    e
-                );
                 process::exit(1);
             }
+        },
+        Err(e) => {
+            eprintln!(
+                "\x1b[31m[error]\x1b[0m Error while performing site list query.\n{}",
+                e
+            );
+            process::exit(1);
         }
-        let target: String = config_data.system.site_name.clone().unwrap();
-
-        return Some(
-            site_list
-                .iter()
-                .find(|site| &site.name == &target)
-                .unwrap()
-                .id,
-        );
     }
-    None
+    let target: String = config_data.system.site_name.clone().unwrap();
+
+    return Some(
+        site_list
+            .iter()
+            .find(|site| &site.name == &target)
+            .unwrap()
+            .id,
+    );
 }

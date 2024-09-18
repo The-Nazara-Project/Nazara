@@ -37,8 +37,36 @@
 //!
 //! # These values are purely exemplary.
 //! [system.custom_fields]
-//! # cpu_count = 1
-//! # config_template = 0
+//!
+//! # Network Interfaces Configuration (optional)
+//! #[[nwi]]
+//! #name = "" # Required. Must match interface that exists on the machine.
+//! #enabled = true
+//! #rtype = "type1"
+//! #parent = 1
+//! #bridge = 1
+//! #lag = 1
+//! #mtu = 1500
+//! #duplex = "full"
+//! #wwn = "wwn12345"
+//! #mgmt_only = false
+//! #description = "Automatically created by Nazara."
+//! #mode = ""
+//! #rf_role = ""
+//! #rf_channel = ""
+//! #poe_role = ""
+//! #poe_channel = ""
+//! #rf_channel_frequency = 2400.0
+//! #rf_channel_width = 20.0
+//! #tx_power = 20
+//! #untagged_vlans = [10, 20]
+//! #tagged_vlans = [30, 40]
+//! #mark_connected = true
+//! #wireless_lans = [50, 60]
+//! #vrf = 1
+//! # Custom fields specific for this interface
+//! #[nwi.custom_fields]
+//! # ...
 //! ```
 //!
 //! It will be created at ` ~/.nazara-config.toml`.
@@ -63,7 +91,7 @@ use super::config_exceptions::{self, *};
 pub struct ConfigData {
     pub netbox: NetboxConfig,
     pub system: SystemConfig,
-    pub nwi: NwiConfig,
+    pub nwi: Option<Vec<NwiConfig>>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -168,15 +196,15 @@ pub struct NwiConfig {
     pub module: Option<i64>,
     pub label: Option<String>,
     #[serde(rename = "rtype")]
-    pub r#type: String, // I hate this field name, but that's what the openAPI schema said.
-    pub enabled: bool,
+    pub r#type: Option<String>, // I hate this field name, but that's what the openAPI schema said.
+    pub enabled: Option<bool>,
     pub parent: Option<i64>,
     pub bridge: Option<i64>,
     pub lag: Option<i64>,
     pub mtu: Option<u32>,
     pub duplex: Option<String>,
     pub wwn: Option<String>,
-    pub mgmt_only: bool,
+    pub mgmt_only: Option<bool>,
     pub description: Option<String>,
     pub mode: Option<String>,
     pub rf_role: Option<String>,
@@ -188,7 +216,7 @@ pub struct NwiConfig {
     pub tx_power: Option<u8>,
     pub untagged_vlans: Option<Vec<i64>>,
     pub tagged_vlans: Option<Vec<i64>>,
-    pub mark_connected: bool,
+    pub mark_connected: Option<bool>,
     pub wireless_lans: Option<Vec<i64>>,
     pub vrf: Option<i64>,
     pub custom_fields: Option<HashMap<String, Value, RandomState>>,
@@ -408,74 +436,53 @@ impl ConfigData {
     /// * the config file does not have valid TOML syntax.
     fn validate_config_file() -> Result<(), String> {
         let mut file = File::open(get_config_dir())
-            .map_err(|e| format!("[error] Failed to open config file! {}", e))?;
+            .map_err(|e| format!("\x1b[31m[error]\x1b[0m Failed to open config file! {}", e))?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)
-            .map_err(|e| format!("[error] Failed to read config file! {}", e))?;
+            .map_err(|e| format!("\x1b[31m[error]\x1b[0m Failed to read config file! {}", e))?;
 
-        let config_data: ConfigData = toml::from_str(&contents)
-            .map_err(|e| format!("[error] Failed to deserialize toml parameters! {}", e))?;
+        let config_data: ConfigData = toml::from_str(&contents).map_err(|e| {
+            format!(
+                "\x1b[31m[error]\x1b[31m Failed to deserialize toml parameters! {}",
+                e
+            )
+        })?;
 
         if config_data.netbox.netbox_uri.is_empty() {
             return Err(
-                "\x1b[31m[error]\x1b[0m Validation Error: Config parameter 'netbox_uri' is empty! This parameter is mandatory."
-                    .to_string(),
-            );
+            "\x1b[31m[error]\x1b[0m Validation Error: Config parameter 'netbox_uri' is empty! This parameter is mandatory."
+                .to_string(),
+        );
         }
 
         if config_data.netbox.netbox_api_token.is_empty() {
             return Err(
-                "\x1b[31m[error]\x1b[0m Validation Error: Config parameter 'netbox_api_token' is empty! This parameter is mandatory."
-                    .to_string(),
-            );
+            "\x1b[31m[error]\x1b[0m Validation Error: Config parameter 'netbox_api_token' is empty! This parameter is mandatory."
+                .to_string(),
+        );
         }
 
         if config_data.system.name.is_empty() {
             return Err(
-                "\x1b[31m[error]\x1b[0m Validation Error: Config parameter 'name' is empty! This parameter is mandatory."
-                    .to_string(),
-            );
-        }
-
-        if config_data.system.site_id.is_none() && config_data.system.site_name.is_none() {
-            return Err(
-                "\x1b[31m[error]\x1b[0m Validation Error: Config parameters 'site_id' and 'site_name' empty. One of these is mandatory!"
+            "\x1b[31m[error]\x1b[0m Validation Error: Config parameter 'name' is empty! This parameter is mandatory."
                 .to_string(),
-            );
+        );
         }
 
-        if config_data.system.tenant.is_none() || config_data.system.tenant_name.is_none() {
-            println!("\x1b[36m[info]\x1b[0m One of the parameters 'tenant' or 'tenant_name' or both not set.");
+        // Optional NWI Section
+        if let Some(nwi_list) = &config_data.nwi {
+            for nwi in nwi_list {
+                if nwi.r#type.is_none() {
+                    return Err(
+                    "\x1b[31m[error]\x1b[0m Validation Error: 'type' is required for every network interface if present."
+                        .to_string(),
+                );
+                }
+            }
+        } else {
+            println!("\x1b[36m[info]\x1b[0m No network interfaces defined in the 'nwi' section. This is allowed.");
         }
 
-        if config_data.system.tenant_group.is_none()
-            || config_data.system.tenant_group_name.is_none()
-        {
-            println!("\x1b[36m[info]\x1b[0m One of the config parameters 'tenant_group' or 'tenant_group_name' or both not set.");
-        }
-
-        if config_data.system.site_id.is_some() && config_data.system.site_name.is_some() {
-            return Err(
-                "\x1b[31m[error]\x1b[0m Validation Error: Parameters 'site_id' and 'site_name' are exclusive."
-                .to_string(),
-            );
-        }
-
-        if config_data.system.tenant_group.is_some()
-            && config_data.system.tenant_group_name.is_some()
-        {
-            return Err(
-                "\x1b[31m[error]\x1b[0m Validation Error: Parameters 'tenant_group' and 'tenant_group_name' are exclusive."
-                .to_string(),
-            );
-        }
-
-        if config_data.system.tenant.is_some() && config_data.system.tenant_name.is_some() {
-            return Err(
-                "\x1b[31m[error]\x1b[0m Validation Error: Parameters 'tenant' and 'tenant_name' are exclusive."
-                .to_string(),
-            );
-        }
         Ok(())
     }
 
@@ -519,7 +526,7 @@ impl ConfigData {
             Err(err) => {
                 let exc = config_exceptions::UnableToCreateConfigError {
                     message: format!(
-                        "[error] An error occured while trying to parse the toml: {}",
+                        "[error] An error occurred while trying to parse the toml: {}",
                         err
                     ),
                 };
