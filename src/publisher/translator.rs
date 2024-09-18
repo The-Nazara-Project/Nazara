@@ -141,8 +141,7 @@ pub fn information_to_vm(
 ///
 /// # Parameters
 ///
-/// * state: `&ThanixClient` - The client instance to be used for communication.
-/// * machine: `&Machine` - The collectedd information about the device or machine.
+/// * interface: `&NetworkInformation` - The interface to be translated into a payload.
 /// * config_data: `ConfigData` - The configuration data.
 /// * device_id: `&i64` - The ID of the device that this interface belongs to.
 ///
@@ -150,7 +149,6 @@ pub fn information_to_vm(
 ///
 /// * payload: `WritableInterfaceRequest` - Payload for creating an interface.
 pub fn information_to_interface(
-    machine: &Machine,
     config_data: ConfigData,
     interface: &NetworkInformation,
     device_id: &i64,
@@ -281,10 +279,12 @@ pub fn information_to_interface(
 ///
 /// # Parameters
 ///
-/// * state: `&ThanixClient` - The client instance necessary for communication.
-/// * machine: `&Machine` - Collected machine information.
-/// * config_data: `&ConfigData` - Data read from the config file.
-/// * interface_id: `i64` - ID of the network interface this IP belongs to.
+///	* `interface_address: IpAddr` - The IpAddress of the interface to register.
+/// * `interface_id: i64` - ID of the network interface this IP belongs to.
+///
+/// # Returns
+///
+/// * `WritableIpAddressRequest` - The payload for the API call.
 pub fn information_to_ip(interface_address: IpAddr, interface_id: i64) -> WritableIPAddressRequest {
     println!("Creating IP Address payload...");
 
@@ -484,36 +484,34 @@ fn get_site_id(state: &ThanixClient, config_data: &ConfigData) -> Option<i64> {
         };
         println!("\x1b[32m[success]\x1b[0m Valid site ID. Proceeding...");
         return Some(target);
-    } else {
-        println!("\x1b[36m[info]\x1b[0m No 'site_id' specified. Searching by name...");
-        let site_list: Vec<Site>;
-        match paths::dcim_sites_list(state, DcimSitesListQuery::default()) {
-            Ok(response) => match response {
-                paths::DcimSitesListResponse::Http200(sites) => site_list = sites.results,
-                paths::DcimSitesListResponse::Other(response) => {
-                    eprintln!("\x1b[31[error] Error while retrieving site list.\n--- Unexpected response: {} ---",
+    }
+    println!("\x1b[36m[info]\x1b[0m No 'site_id' specified. Searching by name...");
+    let site_list: Vec<Site>;
+    match paths::dcim_sites_list(state, DcimSitesListQuery::default()) {
+        Ok(response) => match response {
+            paths::DcimSitesListResponse::Http200(sites) => site_list = sites.results,
+            paths::DcimSitesListResponse::Other(response) => {
+                eprintln!("\x1b[31[error] Error while retrieving site list.\n--- Unexpected response: {} ---",
                     response.text().unwrap()
                     );
-                    process::exit(1);
-                }
-            },
-            Err(e) => {
-                eprintln!(
-                    "\x1b[31m[error]\x1b[0m Error while performing site list query.\n{}",
-                    e
-                );
                 process::exit(1);
             }
+        },
+        Err(e) => {
+            eprintln!(
+                "\x1b[31m[error]\x1b[0m Error while performing site list query.\n{}",
+                e
+            );
+            process::exit(1);
         }
-        let target: String = config_data.system.site_name.clone().unwrap();
-
-        return Some(
-            site_list
-                .iter()
-                .find(|site| &site.name == &target)
-                .unwrap()
-                .id,
-        );
     }
-    None
+    let target: String = config_data.system.site_name.clone().unwrap();
+
+    return Some(
+        site_list
+            .iter()
+            .find(|site| &site.name == &target)
+            .unwrap()
+            .id,
+    );
 }

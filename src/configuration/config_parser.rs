@@ -37,8 +37,36 @@
 //!
 //! # These values are purely exemplary.
 //! [system.custom_fields]
-//! # cpu_count = 1
-//! # config_template = 0
+//!
+//! # Network Interfaces Configuration (optional)
+//! #[[nwi]]
+//! #name = "" # Required. Must match interface that exists on the machine.
+//! #enabled = true
+//! #rtype = "type1"
+//! #parent = 1
+//! #bridge = 1
+//! #lag = 1
+//! #mtu = 1500
+//! #duplex = "full"
+//! #wwn = "wwn12345"
+//! #mgmt_only = false
+//! #description = "Automatically created by Nazara."
+//! #mode = ""
+//! #rf_role = ""
+//! #rf_channel = ""
+//! #poe_role = ""
+//! #poe_channel = ""
+//! #rf_channel_frequency = 2400.0
+//! #rf_channel_width = 20.0
+//! #tx_power = 20
+//! #untagged_vlans = [10, 20]
+//! #tagged_vlans = [30, 40]
+//! #mark_connected = true
+//! #wireless_lans = [50, 60]
+//! #vrf = 1
+//! # Custom fields specific for this interface
+//! #[nwi.custom_fields]
+//! # ...
 //! ```
 //!
 //! It will be created at ` ~/.nazara-config.toml`.
