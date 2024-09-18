@@ -107,7 +107,6 @@ pub fn register_machine(
                     println!("Interace: {}", interface.name);
                     let interface_payload: WritableInterfaceRequest =
                         translator::information_to_interface(
-                            &machine,
                             config_data.clone(),
                             interface,
                             &device_id,
