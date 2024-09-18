@@ -8,18 +8,18 @@
 //!
 //! The config module uses error codes in the range of 10 - 19.
 //!
-//! |Code  |Name                  |Explanation                                                |
-//! |------|----------------------|-----------------------------------------------------------|
-//! |`10`  |ConfigFileError       |Indicates errors with operating on the config file.        |
-//! |`11`  |NoConfigFileErrror    |Configuration file could not be found.                     |
-//! |`12`  |InvalidConfigFileError|Contains a TOML-Deserialize error.                         |
-//! |`13`  |SerializationError    |Constains a TOML-Serialization error.                      |
-//! |`14`  |--Undefined--         |--Undefined--                                              |
-//! |`15`  |--Undefined--         |--Undefined--                                              |
-//! |`16`  |--Undefined--         |--Undefined--|
-//! |`17`  |--Undefined--         |--Undefined--|
-//! |`18`  |--Undefined--         |--Undefined--|
-//! |`19`  |Other                 |Undefined Error type, more info in the error message.      |
+//! |Code  |Name                    |Explanation                                                |
+//! |------|------------------------|-----------------------------------------------------------|
+//! |`10`  |ConfigFileError         |Indicates errors with operating on the config file.        |
+//! |`11`  |NoConfigFileErrror      |Configuration file could not be found.                     |
+//! |`12`  |InvalidConfigFileError  |Contains a TOML-Deserialize error.                         |
+//! |`13`  |SerializationError      |Constains a TOML-Serialization error.                      |
+//! |`14`  |MissingConfigOptionError|A required config option is missing from the config file.|
+//! |`15`  |--Undefined--           |--Undefined--                                              |
+//! |`16`  |--Undefined--           |--Undefined--|
+//! |`17`  |--Undefined--           |--Undefined--|
+//! |`18`  |--Undefined--           |--Undefined--|
+//! |`19`  |Other                   |Undefined Error type, more info in the error message.      |
 //!
 use std::io::Error as IoError;
 use std::{error::Error, fmt, process};
@@ -28,9 +28,10 @@ use toml::{de::Error as TomlDeError, ser::Error as TomlSeError};
 
 #[derive(Debug)]
 pub enum ConfigError {
-    ConfigFileError(IoError),
+    FileOpError(IoError),
     NoConfigFileError(String),
-    InvalidConfigFileError(TomlDeError),
+    MissingConfigOptionError(String),
+    DeserializationError(TomlDeError),
     SerializationError(TomlSeError),
     Other(String),
 }
@@ -38,13 +39,20 @@ pub enum ConfigError {
 impl fmt::Display for ConfigError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            ConfigError::ConfigFileError(ref err) => {
+            ConfigError::FileOpError(ref err) => {
                 write!(f, "\x1b[31m[error]\x1b[0m File operation failed: {}", err)
             }
             ConfigError::NoConfigFileError(ref err) => {
                 write!(f, "\x1b[31m[error]\x1b[0m No config file found: {}", err)
             }
-            ConfigError::InvalidConfigFileError(ref err) => {
+            ConfigError::MissingConfigOptionError(ref err) => {
+                write!(
+                    f,
+                    "\x1b[31m[error]\x1b[0m Missing required config parameter: {}",
+                    err
+                )
+            }
+            ConfigError::DeserializationError(ref err) => {
                 write!(f, "\x1b[31m[error]\x1b[0m Invalid config file: {}", err)
             }
             ConfigError::SerializationError(ref err) => {
@@ -60,9 +68,10 @@ impl fmt::Display for ConfigError {
 impl Error for ConfigError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match *self {
-            ConfigError::ConfigFileError(ref err) => Some(err),
+            ConfigError::FileOpError(ref err) => Some(err),
             ConfigError::NoConfigFileError(_) => None,
-            ConfigError::InvalidConfigFileError(ref err) => Some(err),
+            ConfigError::MissingConfigOptionError(_) => None,
+            ConfigError::DeserializationError(ref err) => Some(err),
             ConfigError::SerializationError(ref err) => Some(err),
             ConfigError::Other(_) => None,
         }
@@ -71,13 +80,13 @@ impl Error for ConfigError {
 
 impl From<IoError> for ConfigError {
     fn from(err: IoError) -> Self {
-        ConfigError::ConfigFileError(err)
+        ConfigError::FileOpError(err)
     }
 }
 
 impl From<TomlDeError> for ConfigError {
     fn from(err: TomlDeError) -> Self {
-        ConfigError::InvalidConfigFileError(err)
+        ConfigError::DeserializationError(err)
     }
 }
 
@@ -116,10 +125,11 @@ impl ConfigError {
     /// Detect exit code depending on the error type, if none is given to `abort()`.
     fn figure_exit_code(&self) -> i32 {
         match &self {
-            ConfigError::ConfigFileError(_) => 10,
+            ConfigError::FileOpError(_) => 10,
             ConfigError::NoConfigFileError(_) => 11,
-            ConfigError::InvalidConfigFileError(_) => 12,
+            ConfigError::DeserializationError(_) => 12,
             ConfigError::SerializationError(_) => 13,
+            ConfigError::MissingConfigOptionError(_) => 14,
             ConfigError::Other(_) => 19,
         }
     }
