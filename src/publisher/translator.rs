@@ -163,65 +163,116 @@ pub fn information_to_interface(
     let mut payload: WritableInterfaceRequest = WritableInterfaceRequest::default();
 
     payload.device = Some(device_id.to_owned());
-    payload.name = Some(interface.name.to_owned());
+    payload.name = Some(interface.name.clone());
 
-    // Default to empty values if no NWI configuration exists
-    if let Some(nwi_configs) = config_data.nwi {
-        // Find the NwiConfig that matches the current interface name
-        if let Some(nwi_config) = nwi_configs
+    // Get NwiConfig for the given interface
+    let nwi_config = config_data.nwi.as_ref().and_then(|nwi_list| {
+        nwi_list
             .iter()
-            .find(|nwi| nwi.name.as_ref() == Some(&interface.name))
-        {
-            payload.r#type = Some(nwi_config.r#type.clone());
-            payload.parent = nwi_config.parent;
-            payload.bridge = nwi_config.bridge;
-            payload.lag = nwi_config.lag;
-            payload.mtu = nwi_config.mtu;
-            payload.mac_address = interface.mac_addr.clone();
-            payload.speed = interface.interface_speed.clone();
-            payload.description = nwi_config.description.clone();
-            payload.mode = Some(nwi_config.mode.clone().unwrap_or_default());
-            payload.rf_role = Some(nwi_config.rf_role.clone().unwrap_or_default());
-            payload.rf_channel = Some(nwi_config.rf_channel.clone().unwrap_or_default());
-            payload.poe_mode = Some(nwi_config.poe_mode.clone().unwrap_or_default());
-            payload.poe_type = Some(nwi_config.poe_type.clone().unwrap_or_default());
-            payload.custom_fields = Some(nwi_config.custom_fields.clone().unwrap_or_default());
-            payload.mark_connected = Some(nwi_config.mark_connected);
-            payload.enabled = Some(nwi_config.enabled);
-            payload.vdcs = Some(nwi_config.vdcs.clone().unwrap_or_default());
-            payload.label = Some(nwi_config.label.clone().unwrap_or_default());
-            payload.mgmt_only = Some(nwi_config.mgmt_only);
-            payload.tagged_vlans = Some(nwi_config.tagged_vlans.clone().unwrap_or_default());
-            payload.wireless_lans = Some(nwi_config.wireless_lans.clone().unwrap_or_default());
-            payload.tags = Some(Vec::new());
-        }
-    } else {
-        // Handle case where `nwi` is None
-        payload.r#type = Some(String::from("other"));
-        payload.parent = None;
-        payload.bridge = None;
-        payload.lag = None;
-        payload.mtu = None;
-        payload.mac_address = interface.mac_addr.clone();
-        payload.speed = interface.interface_speed.clone();
-        payload.description = Some(String::from(
-            "This interface was automatically created by Nazara.",
-        ));
-        payload.mode = Some(String::new());
-        payload.rf_role = Some(String::new());
-        payload.rf_channel = Some(String::new());
-        payload.poe_mode = Some(String::new());
-        payload.poe_type = Some(String::new());
-        payload.custom_fields = Some(HashMap::new());
-        payload.mark_connected = Some(false);
-        payload.enabled = Some(true);
-        payload.vdcs = Some(Vec::new());
-        payload.label = Some(String::new());
-        payload.mgmt_only = Some(false);
-        payload.tagged_vlans = Some(Vec::new());
-        payload.wireless_lans = Some(Vec::new());
-        payload.tags = Some(Vec::new());
-    }
+            .find(|nwi| nwi.name.as_deref() == Some(&interface.name))
+    });
+
+    // This looks as horrible as it does, because at least for NetBox v3.6.9, we have to implement a
+    // workaround on the API client side, making all Interface fields Options because we sometimes
+    // get data back that does not comply with the api schema, failing serialization.
+    payload.r#type = Some(
+        nwi_config
+            .as_ref()
+            .and_then(|nwi| nwi.r#type.clone())
+            .unwrap_or(String::from("other")),
+    );
+    payload.parent = nwi_config.as_ref().and_then(|nwi| nwi.parent);
+    payload.bridge = nwi_config.as_ref().and_then(|nwi| nwi.bridge);
+    payload.lag = nwi_config.as_ref().and_then(|nwi| nwi.lag);
+    payload.mtu = nwi_config.as_ref().and_then(|nwi| nwi.mtu);
+
+    payload.mac_address = Some(interface.mac_addr.clone().unwrap_or_default());
+    payload.speed = Some(interface.interface_speed.clone().unwrap_or_default());
+    payload.description = Some(
+        nwi_config
+            .as_ref()
+            .and_then(|nwi| nwi.description.clone())
+            .unwrap_or_else(|| String::from("This interface was automatically created by Nazara.")),
+    );
+    payload.mode = Some(
+        nwi_config
+            .as_ref()
+            .and_then(|nwi| nwi.mode.clone())
+            .unwrap_or_default(),
+    );
+    payload.rf_role = Some(
+        nwi_config
+            .as_ref()
+            .and_then(|nwi| nwi.rf_role.clone())
+            .unwrap_or_default(),
+    );
+    payload.rf_channel = Some(
+        nwi_config
+            .as_ref()
+            .and_then(|nwi| nwi.rf_channel.clone())
+            .unwrap_or_default(),
+    );
+    payload.poe_mode = Some(
+        nwi_config
+            .as_ref()
+            .and_then(|nwi| nwi.poe_mode.clone())
+            .unwrap_or_default(),
+    );
+    payload.poe_type = Some(
+        nwi_config
+            .as_ref()
+            .and_then(|nwi| nwi.poe_type.clone())
+            .unwrap_or_default(),
+    );
+    payload.custom_fields = Some(
+        nwi_config
+            .as_ref()
+            .and_then(|nwi| nwi.custom_fields.clone())
+            .unwrap_or_default(),
+    );
+    payload.mark_connected = Some(
+        nwi_config
+            .as_ref()
+            .and_then(|nwi| nwi.mark_connected)
+            .unwrap_or(true),
+    );
+    payload.enabled = Some(
+        nwi_config
+            .as_ref()
+            .and_then(|nwi| nwi.enabled)
+            .unwrap_or(interface.is_connected),
+    );
+    payload.vdcs = Some(
+        nwi_config
+            .as_ref()
+            .and_then(|nwi| nwi.vdcs.clone())
+            .unwrap_or_default(),
+    );
+    payload.label = Some(
+        nwi_config
+            .as_ref()
+            .and_then(|nwi| nwi.label.clone())
+            .unwrap_or_default(),
+    );
+    payload.mgmt_only = Some(
+        nwi_config
+            .as_ref()
+            .and_then(|nwi| nwi.mgmt_only)
+            .unwrap_or(false),
+    );
+    payload.tagged_vlans = Some(
+        nwi_config
+            .as_ref()
+            .and_then(|nwi| nwi.tagged_vlans.clone())
+            .unwrap_or_default(),
+    );
+    payload.wireless_lans = Some(
+        nwi_config
+            .as_ref()
+            .and_then(|nwi| nwi.wireless_lans.clone())
+            .unwrap_or_default(),
+    );
+    payload.tags = Some(Vec::new()); // FIXME: Currently not support tags, because they are hard.
 
     payload
 }

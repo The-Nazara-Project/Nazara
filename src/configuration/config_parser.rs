@@ -168,15 +168,15 @@ pub struct NwiConfig {
     pub module: Option<i64>,
     pub label: Option<String>,
     #[serde(rename = "rtype")]
-    pub r#type: String, // I hate this field name, but that's what the openAPI schema said.
-    pub enabled: bool,
+    pub r#type: Option<String>, // I hate this field name, but that's what the openAPI schema said.
+    pub enabled: Option<bool>,
     pub parent: Option<i64>,
     pub bridge: Option<i64>,
     pub lag: Option<i64>,
     pub mtu: Option<u32>,
     pub duplex: Option<String>,
     pub wwn: Option<String>,
-    pub mgmt_only: bool,
+    pub mgmt_only: Option<bool>,
     pub description: Option<String>,
     pub mode: Option<String>,
     pub rf_role: Option<String>,
@@ -188,7 +188,7 @@ pub struct NwiConfig {
     pub tx_power: Option<u8>,
     pub untagged_vlans: Option<Vec<i64>>,
     pub tagged_vlans: Option<Vec<i64>>,
-    pub mark_connected: bool,
+    pub mark_connected: Option<bool>,
     pub wireless_lans: Option<Vec<i64>>,
     pub vrf: Option<i64>,
     pub custom_fields: Option<HashMap<String, Value, RandomState>>,
@@ -408,13 +408,17 @@ impl ConfigData {
     /// * the config file does not have valid TOML syntax.
     fn validate_config_file() -> Result<(), String> {
         let mut file = File::open(get_config_dir())
-            .map_err(|e| format!("[error] Failed to open config file! {}", e))?;
+            .map_err(|e| format!("\x1b[31m[error]\x1b[0m Failed to open config file! {}", e))?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)
-            .map_err(|e| format!("[error] Failed to read config file! {}", e))?;
+            .map_err(|e| format!("\x1b[31m[error]\x1b[0m Failed to read config file! {}", e))?;
 
-        let config_data: ConfigData = toml::from_str(&contents)
-            .map_err(|e| format!("[error] Failed to deserialize toml parameters! {}", e))?;
+        let config_data: ConfigData = toml::from_str(&contents).map_err(|e| {
+            format!(
+                "\x1b[31m[error]\x1b[31m Failed to deserialize toml parameters! {}",
+                e
+            )
+        })?;
 
         if config_data.netbox.netbox_uri.is_empty() {
             return Err(
@@ -440,15 +444,15 @@ impl ConfigData {
         // Optional NWI Section
         if let Some(nwi_list) = &config_data.nwi {
             for nwi in nwi_list {
-                if nwi.r#type.is_empty() {
+                if nwi.r#type.is_none() {
                     return Err(
-                    "\x1b[31m[error]\x1b[0m Validation Error: 'type' is required for every network interface."
+                    "\x1b[31m[error]\x1b[0m Validation Error: 'type' is required for every network interface if present."
                         .to_string(),
                 );
                 }
             }
         } else {
-            println!("[info] No network interfaces defined in the 'nwi' section. This is allowed.");
+            println!("\x1b[36m[info]\x1b[0m No network interfaces defined in the 'nwi' section. This is allowed.");
         }
 
         Ok(())
