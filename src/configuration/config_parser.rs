@@ -63,7 +63,7 @@ use super::config_exceptions::{self, *};
 pub struct ConfigData {
     pub netbox: NetboxConfig,
     pub system: SystemConfig,
-    pub nwi: NwiConfig,
+    pub nwi: Option<Vec<NwiConfig>>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -418,64 +418,39 @@ impl ConfigData {
 
         if config_data.netbox.netbox_uri.is_empty() {
             return Err(
-                "\x1b[31m[error]\x1b[0m Validation Error: Config parameter 'netbox_uri' is empty! This parameter is mandatory."
-                    .to_string(),
-            );
+            "\x1b[31m[error]\x1b[0m Validation Error: Config parameter 'netbox_uri' is empty! This parameter is mandatory."
+                .to_string(),
+        );
         }
 
         if config_data.netbox.netbox_api_token.is_empty() {
             return Err(
-                "\x1b[31m[error]\x1b[0m Validation Error: Config parameter 'netbox_api_token' is empty! This parameter is mandatory."
-                    .to_string(),
-            );
+            "\x1b[31m[error]\x1b[0m Validation Error: Config parameter 'netbox_api_token' is empty! This parameter is mandatory."
+                .to_string(),
+        );
         }
 
         if config_data.system.name.is_empty() {
             return Err(
-                "\x1b[31m[error]\x1b[0m Validation Error: Config parameter 'name' is empty! This parameter is mandatory."
-                    .to_string(),
-            );
-        }
-
-        if config_data.system.site_id.is_none() && config_data.system.site_name.is_none() {
-            return Err(
-                "\x1b[31m[error]\x1b[0m Validation Error: Config parameters 'site_id' and 'site_name' empty. One of these is mandatory!"
+            "\x1b[31m[error]\x1b[0m Validation Error: Config parameter 'name' is empty! This parameter is mandatory."
                 .to_string(),
-            );
+        );
         }
 
-        if config_data.system.tenant.is_none() || config_data.system.tenant_name.is_none() {
-            println!("\x1b[36m[info]\x1b[0m One of the parameters 'tenant' or 'tenant_name' or both not set.");
+        // Optional NWI Section
+        if let Some(nwi_list) = &config_data.nwi {
+            for nwi in nwi_list {
+                if nwi.r#type.is_empty() {
+                    return Err(
+                    "\x1b[31m[error]\x1b[0m Validation Error: 'type' is required for every network interface."
+                        .to_string(),
+                );
+                }
+            }
+        } else {
+            println!("[info] No network interfaces defined in the 'nwi' section. This is allowed.");
         }
 
-        if config_data.system.tenant_group.is_none()
-            || config_data.system.tenant_group_name.is_none()
-        {
-            println!("\x1b[36m[info]\x1b[0m One of the config parameters 'tenant_group' or 'tenant_group_name' or both not set.");
-        }
-
-        if config_data.system.site_id.is_some() && config_data.system.site_name.is_some() {
-            return Err(
-                "\x1b[31m[error]\x1b[0m Validation Error: Parameters 'site_id' and 'site_name' are exclusive."
-                .to_string(),
-            );
-        }
-
-        if config_data.system.tenant_group.is_some()
-            && config_data.system.tenant_group_name.is_some()
-        {
-            return Err(
-                "\x1b[31m[error]\x1b[0m Validation Error: Parameters 'tenant_group' and 'tenant_group_name' are exclusive."
-                .to_string(),
-            );
-        }
-
-        if config_data.system.tenant.is_some() && config_data.system.tenant_name.is_some() {
-            return Err(
-                "\x1b[31m[error]\x1b[0m Validation Error: Parameters 'tenant' and 'tenant_name' are exclusive."
-                .to_string(),
-            );
-        }
         Ok(())
     }
 
@@ -519,7 +494,7 @@ impl ConfigData {
             Err(err) => {
                 let exc = config_exceptions::UnableToCreateConfigError {
                     message: format!(
-                        "[error] An error occured while trying to parse the toml: {}",
+                        "[error] An error occurred while trying to parse the toml: {}",
                         err
                     ),
                 };

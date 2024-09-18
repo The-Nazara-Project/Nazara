@@ -3,6 +3,7 @@
 //! This module handles the translation and processing of the data sent to or received from NetBox.
 //!
 use core::net::IpAddr;
+use std::collections::HashMap;
 use std::process;
 use std::str::FromStr;
 use thanix_client::paths::{
@@ -154,59 +155,65 @@ pub fn information_to_interface(
 	interface: &NetworkInformation,
     device_id: &i64,
 ) -> WritableInterfaceRequest {
-    println!("Creating Network Interface...");
+    println!("Creating Network Interface payload for '{}'...", &interface.name);
 
-    let mut payload: WritableInterfaceRequest = WritableInterfaceRequest::default();
+   let mut payload: WritableInterfaceRequest = WritableInterfaceRequest::default();
 
     payload.device = Some(device_id.to_owned());
     payload.name = Some(interface.name.to_owned());
 
-    // FIXME:
-    payload.r#type = Some(config_data.nwi.r#type);
-    payload.parent = config_data.nwi.parent;
-    payload.bridge = config_data.nwi.bridge;
-    payload.lag = config_data.nwi.lag;
-    payload.mtu = config_data.nwi.mtu;
-
-    // Get the interface we are looking for as primary, then get its parameters.
-    // These filter statements can probably be split off into their own function.
-    payload.mac_address = match &config_data.system.primary_network_interface {
-        Some(nwi_name) => {
-            let interface = machine
-                .network_information
-                .iter()
-                .find(|nwi| nwi.name == nwi_name.to_owned());
-            interface.map(|nwi| nwi.mac_addr.clone()).flatten()
+    // Default to empty values if no NWI configuration exists
+    if let Some(nwi_configs) = config_data.nwi {
+        // Find the NwiConfig that matches the current interface name
+        if let Some(nwi_config) = nwi_configs.iter().find(|nwi| nwi.name.as_ref() == Some(&interface.name)) {
+            payload.r#type = Some(nwi_config.r#type.clone());
+            payload.parent = nwi_config.parent;
+            payload.bridge = nwi_config.bridge;
+            payload.lag = nwi_config.lag;
+            payload.mtu = nwi_config.mtu;
+            payload.mac_address = interface.mac_addr.clone();
+            payload.speed = interface.interface_speed.clone();
+            payload.description = nwi_config.description.clone();
+            payload.mode = Some(nwi_config.mode.clone().unwrap_or_default());
+            payload.rf_role = Some(nwi_config.rf_role.clone().unwrap_or_default());
+            payload.rf_channel = Some(nwi_config.rf_channel.clone().unwrap_or_default());
+            payload.poe_mode = Some(nwi_config.poe_mode.clone().unwrap_or_default());
+            payload.poe_type = Some(nwi_config.poe_type.clone().unwrap_or_default());
+            payload.custom_fields = Some(nwi_config.custom_fields.clone().unwrap_or_default());
+            payload.mark_connected = Some(nwi_config.mark_connected);
+            payload.enabled = Some(nwi_config.enabled);
+            payload.vdcs = Some(nwi_config.vdcs.clone().unwrap_or_default());
+            payload.label = Some(nwi_config.label.clone().unwrap_or_default());
+            payload.mgmt_only = Some(nwi_config.mgmt_only);
+            payload.tagged_vlans = Some(nwi_config.tagged_vlans.clone().unwrap_or_default());
+            payload.wireless_lans = Some(nwi_config.wireless_lans.clone().unwrap_or_default());
+            payload.tags = Some(Vec::new());
         }
-        None => None,
-    };
-    payload.speed = match config_data.system.primary_network_interface {
-        Some(nwi_name) => {
-            let interface = machine
-                .network_information
-                .iter()
-                .find(|nwi| nwi.name == nwi_name);
-            interface.map(|nwi| nwi.interface_speed.clone()).flatten()
-        }
-        None => None,
-    };
-    payload.description = Some(String::from(
-        "This interface was automatically created by Nazara.",
-    ));
-    payload.mode = Some(config_data.nwi.mode.unwrap_or(String::from("")));
-    payload.rf_role = Some(config_data.nwi.rf_role.unwrap_or(String::from("")));
-    payload.rf_channel = Some(config_data.nwi.rf_channel.unwrap_or(String::from("")));
-    payload.poe_mode = Some(String::from(""));
-    payload.poe_type = Some(String::new());
-    payload.custom_fields = config_data.nwi.custom_fields;
-    payload.mark_connected = Some(true);
-    payload.enabled = Some(true);
-    payload.vdcs = Some(Vec::new());
-    payload.label = Some(String::new());
-    payload.mgmt_only = Some(false);
-    payload.tagged_vlans = Some(Vec::new());
-    payload.wireless_lans = Some(Vec::new());
-    payload.tags = Some(Vec::new());
+    } else {
+        // Handle case where `nwi` is None
+        payload.r#type = Some(String::from("other"));
+        payload.parent = None;
+        payload.bridge = None;
+        payload.lag = None;
+        payload.mtu = None;
+        payload.mac_address = interface.mac_addr.clone();
+        payload.speed = interface.interface_speed.clone();
+        payload.description = Some(String::from("This interface was automatically created by Nazara."));
+        payload.mode = Some(String::new());
+        payload.rf_role = Some(String::new());
+        payload.rf_channel = Some(String::new());
+        payload.poe_mode = Some(String::new());
+        payload.poe_type = Some(String::new());
+        payload.custom_fields = Some(HashMap::new());
+        payload.mark_connected = Some(false);
+        payload.enabled = Some(true);
+        payload.vdcs = Some(Vec::new());
+        payload.label = Some(String::new());
+        payload.mgmt_only = Some(false);
+        payload.tagged_vlans = Some(Vec::new());
+        payload.wireless_lans = Some(Vec::new());
+        payload.tags = Some(Vec::new());
+    }
 
     payload
 }
@@ -220,8 +227,6 @@ pub fn information_to_interface(
 /// * config_data: `&ConfigData` - Data read from the config file.
 /// * interface_id: `i64` - ID of the network interface this IP belongs to.
 pub fn information_to_ip(
-    machine: &Machine,
-    config_data: &ConfigData,
 	interface_address: IpAddr,
     interface_id: i64,
 ) -> WritableIPAddressRequest {
@@ -241,7 +246,7 @@ pub fn information_to_ip(
     payload.description = String::from("This Address was automatically created by Nazara.");
     payload.comments = String::from("Automatically created by Nazara. Dummy only.");
     // payload.tags = todo!();
-    payload.custom_fields = config_data.nwi.custom_fields.clone();
+    payload.custom_fields = Some(HashMap::new());
 
     payload
 }

@@ -123,7 +123,7 @@ pub fn register_machine(
 
                     if let Some(ipv4_address) = interface.v4ip {
                         let ipv4_payload: WritableIPAddressRequest =
-                            translator::information_to_ip(&machine, &config_data, ipv4_address, interface_id);
+                            translator::information_to_ip(ipv4_address, interface_id);
 
                         let _ = match create_ip(client, ipv4_payload) {
                             Ok(id) => id,
@@ -136,7 +136,7 @@ pub fn register_machine(
 
                     if let Some(ipv6_address) = interface.v6ip {
                         let ipv6_payload: WritableIPAddressRequest =
-                            translator::information_to_ip(&machine, &config_data, ipv6_address, interface_id);
+                            translator::information_to_ip(ipv6_address, interface_id);
 
                         let _ = match create_ip(client, ipv6_payload) {
                             Ok(id) => id,
