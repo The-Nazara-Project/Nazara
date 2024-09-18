@@ -152,12 +152,15 @@ pub fn information_to_vm(
 pub fn information_to_interface(
     machine: &Machine,
     config_data: ConfigData,
-	interface: &NetworkInformation,
+    interface: &NetworkInformation,
     device_id: &i64,
 ) -> WritableInterfaceRequest {
-    println!("Creating Network Interface payload for '{}'...", &interface.name);
+    println!(
+        "Creating Network Interface payload for '{}'...",
+        &interface.name
+    );
 
-   let mut payload: WritableInterfaceRequest = WritableInterfaceRequest::default();
+    let mut payload: WritableInterfaceRequest = WritableInterfaceRequest::default();
 
     payload.device = Some(device_id.to_owned());
     payload.name = Some(interface.name.to_owned());
@@ -165,7 +168,10 @@ pub fn information_to_interface(
     // Default to empty values if no NWI configuration exists
     if let Some(nwi_configs) = config_data.nwi {
         // Find the NwiConfig that matches the current interface name
-        if let Some(nwi_config) = nwi_configs.iter().find(|nwi| nwi.name.as_ref() == Some(&interface.name)) {
+        if let Some(nwi_config) = nwi_configs
+            .iter()
+            .find(|nwi| nwi.name.as_ref() == Some(&interface.name))
+        {
             payload.r#type = Some(nwi_config.r#type.clone());
             payload.parent = nwi_config.parent;
             payload.bridge = nwi_config.bridge;
@@ -198,7 +204,9 @@ pub fn information_to_interface(
         payload.mtu = None;
         payload.mac_address = interface.mac_addr.clone();
         payload.speed = interface.interface_speed.clone();
-        payload.description = Some(String::from("This interface was automatically created by Nazara."));
+        payload.description = Some(String::from(
+            "This interface was automatically created by Nazara.",
+        ));
         payload.mode = Some(String::new());
         payload.rf_role = Some(String::new());
         payload.rf_channel = Some(String::new());
@@ -226,10 +234,7 @@ pub fn information_to_interface(
 /// * machine: `&Machine` - Collected machine information.
 /// * config_data: `&ConfigData` - Data read from the config file.
 /// * interface_id: `i64` - ID of the network interface this IP belongs to.
-pub fn information_to_ip(
-	interface_address: IpAddr,
-    interface_id: i64,
-) -> WritableIPAddressRequest {
+pub fn information_to_ip(interface_address: IpAddr, interface_id: i64) -> WritableIPAddressRequest {
     println!("Creating IP Address payload...");
 
     let mut payload: WritableIPAddressRequest = WritableIPAddressRequest::default();
