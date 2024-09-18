@@ -103,37 +103,50 @@ pub fn register_machine(
 
                 // Create new interface object if no interface ID is given, or the given ID does
                 // not exist.
-                let interface_id: i64 = config_data
-                    .nwi
-                    .id
-                    .filter(|id| interface_exists(client, *id))
-                    .unwrap_or_else(|| {
-                        let interface_payload: WritableInterfaceRequest =
-                            translator::information_to_interface(
-                                &machine,
-                                config_data.clone(),
-                                &device_id,
-                            );
+                for interface in &machine.network_information {
+					println!("Interace: {}", interface.name);
+                    let interface_payload: WritableInterfaceRequest =
+                        translator::information_to_interface(
+                            &machine,
+                            config_data.clone(),
+							interface,
+                            &device_id,
+                        );
 
-                        match create_interface(client, interface_payload.clone()) {
+                    let interface_id = match create_interface(client, interface_payload) {
+                        Ok(id) => id,
+                        Err(e) => {
+                            eprintln!("{}", e.to_string());
+                            e.abort(None);
+                        }
+                    };
+
+                    if let Some(ipv4_address) = interface.v4ip {
+                        let ipv4_payload: WritableIPAddressRequest =
+                            translator::information_to_ip(&machine, &config_data, ipv4_address, interface_id);
+
+                        let _ = match create_ip(client, ipv4_payload) {
                             Ok(id) => id,
                             Err(e) => {
-                                eprintln!("{}", e);
+                                eprintln!("{}", e.to_string());
                                 e.abort(None);
                             }
-                        }
-                    });
-
-                let ip_payload: WritableIPAddressRequest =
-                    translator::information_to_ip(&machine, &config_data, interface_id);
-
-                let _ = match create_ip(client, ip_payload) {
-                    Ok(id) => id,
-                    Err(e) => {
-                        eprintln!("{}", e);
-                        process::exit(1);
+                        };
                     }
-                };
+
+                    if let Some(ipv6_address) = interface.v6ip {
+                        let ipv6_payload: WritableIPAddressRequest =
+                            translator::information_to_ip(&machine, &config_data, ipv6_address, interface_id);
+
+                        let _ = match create_ip(client, ipv6_payload) {
+                            Ok(id) => id,
+                            Err(e) => {
+                                eprintln!("{}", e.to_string());
+                                e.abort(None);
+                            }
+                        };
+                    };
+                }
             }
         }
     }

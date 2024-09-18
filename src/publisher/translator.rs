@@ -151,6 +151,7 @@ pub fn information_to_vm(
 pub fn information_to_interface(
     machine: &Machine,
     config_data: ConfigData,
+	interface: &NetworkInformation,
     device_id: &i64,
 ) -> WritableInterfaceRequest {
     println!("Creating Network Interface...");
@@ -158,7 +159,7 @@ pub fn information_to_interface(
     let mut payload: WritableInterfaceRequest = WritableInterfaceRequest::default();
 
     payload.device = Some(device_id.to_owned());
-    payload.name = config_data.system.primary_network_interface.clone();
+    payload.name = Some(interface.name.to_owned());
 
     // FIXME:
     payload.r#type = Some(config_data.nwi.r#type);
@@ -195,16 +196,16 @@ pub fn information_to_interface(
     payload.mode = Some(config_data.nwi.mode.unwrap_or(String::from("")));
     payload.rf_role = Some(config_data.nwi.rf_role.unwrap_or(String::from("")));
     payload.rf_channel = Some(config_data.nwi.rf_channel.unwrap_or(String::from("")));
-    payload.poe_mode = Some(config_data.nwi.poe_mode.unwrap_or(String::from("")));
-    payload.poe_type = Some(config_data.nwi.poe_type.unwrap_or(String::from("")));
+    payload.poe_mode = Some(String::from(""));
+    payload.poe_type = Some(String::new());
     payload.custom_fields = config_data.nwi.custom_fields;
-    payload.mark_connected = Some(config_data.nwi.mark_connected);
-    payload.enabled = Some(config_data.nwi.enabled);
-    payload.vdcs = Some(config_data.nwi.vdcs.unwrap_or_default());
-    payload.label = Some(config_data.nwi.label.unwrap_or_default());
-    payload.mgmt_only = Some(config_data.nwi.mgmt_only);
-    payload.tagged_vlans = Some(config_data.nwi.tagged_vlans.unwrap_or_default());
-    payload.wireless_lans = Some(config_data.nwi.wireless_lans.unwrap_or_default());
+    payload.mark_connected = Some(true);
+    payload.enabled = Some(true);
+    payload.vdcs = Some(Vec::new());
+    payload.label = Some(String::new());
+    payload.mgmt_only = Some(false);
+    payload.tagged_vlans = Some(Vec::new());
+    payload.wireless_lans = Some(Vec::new());
     payload.tags = Some(Vec::new());
 
     payload
@@ -221,24 +222,14 @@ pub fn information_to_interface(
 pub fn information_to_ip(
     machine: &Machine,
     config_data: &ConfigData,
+	interface_address: IpAddr,
     interface_id: i64,
 ) -> WritableIPAddressRequest {
     println!("Creating IP Address payload...");
 
     let mut payload: WritableIPAddressRequest = WritableIPAddressRequest::default();
 
-    let local_interface: &NetworkInformation = machine
-        .network_information
-        .iter()
-        .find(|s| {
-            s.name
-                == <std::option::Option<std::string::String> as Clone>::clone(
-                    &config_data.system.primary_network_interface,
-                )
-                .unwrap()
-        })
-        .unwrap();
-    payload.address = format!("{}", local_interface.v4ip.unwrap());
+    payload.address = format!("{}", interface_address);
     // payload.vrf = todo!();
     // payload.tenant = todo!();
     payload.status = String::from("active");
