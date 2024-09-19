@@ -104,7 +104,6 @@ pub fn register_machine(
                 // Create new interface object if no interface ID is given, or the given ID does
                 // not exist.
                 for interface in &machine.network_information {
-                    println!("Interace: {}", interface.name);
                     let interface_payload: WritableInterfaceRequest =
                         translator::information_to_interface(
                             config_data.clone(),
