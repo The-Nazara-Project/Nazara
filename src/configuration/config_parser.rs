@@ -80,7 +80,7 @@ use std::io::prelude::*;
 use std::path::Path;
 use std::{fs, path::PathBuf};
 
-use super::config_exceptions::{self, *};
+use super::config_exceptions::ConfigError;
 
 /// Configuration State set by the configuration file.
 ///
@@ -244,7 +244,7 @@ pub fn set_up_configuration(
     uri: Option<String>,
     token: Option<String>,
     name: Option<String>,
-) -> Result<ConfigData, String> {
+) -> Result<ConfigData, ConfigError> {
     let mut conf_data: ConfigData;
 
     println!("Checking for existing configuration file...");
@@ -281,20 +281,12 @@ pub fn set_up_configuration(
         Ok(_) => {
             println!("\x1b[32m[success]\x1b[0m Default configuration file created successfully.")
         }
-        Err(_) => {
-            let err = config_exceptions::UnableToCreateConfigError {
-                message: "\x1b[31m[FATAL]\x1b[0m An error occurred while initializing the config!"
-                    .to_string(),
-            };
-            err.abort(12)
-        }
+        Err(e) => e.abort(None),
     }
 
     if uri.is_none() || token.is_none() {
-        let err = config_exceptions::NoConfigError {
-            message: "\x1b[31m[FATAL]\x1b[0m No configuration parameters found in CLI while using an empty config file!\nPlease enter valid configuration parameters in the configuration file or provide them via the CLI.".to_string()
-        };
-        err.abort(11)
+        let err = ConfigError::MissingConfigOptionError(String::from("netbox_uri, netbox_token"));
+        err.abort(None)
     }
 
     conf_data = ConfigData::read_config_file();
@@ -372,22 +364,19 @@ impl ConfigData {
         uri: &Option<String>,
         token: &Option<String>,
         name: &Option<String>,
-    ) -> std::io::Result<()> {
+    ) -> Result<(), ConfigError> {
         let template_path: &Path = Path::new("src/configuration/config_template.toml");
         let mut file: File = match File::open(&template_path) {
             Ok(file) => file,
             Err(err) => {
-                let exc = config_exceptions::UnableToReadConfigError {
-                message: format!("\x1b[31m[error]\x1b[0m An Error occurred while attempting to read template file! {}", err)
-            };
-                exc.abort(1);
+                return Err(ConfigError::FileOpError(err));
             }
         };
         let mut contents: String = String::new();
         match file.read_to_string(&mut contents) {
             Ok(x) => x,
             Err(err) => {
-                panic!("{}", err);
+                return Err(ConfigError::FileOpError(err));
             }
         };
 
@@ -434,49 +423,48 @@ impl ConfigData {
     ///
     /// * not able to read the config file.
     /// * the config file does not have valid TOML syntax.
-    fn validate_config_file() -> Result<(), String> {
-        let mut file = File::open(get_config_dir())
-            .map_err(|e| format!("\x1b[31m[error]\x1b[0m Failed to open config file! {}", e))?;
+    fn validate_config_file() -> Result<(), ConfigError> {
+        // TODO improve this
+        let mut file = match File::open(get_config_dir()) {
+            Ok(f) => f,
+            Err(e) => return Err(ConfigError::FileOpError(e)),
+        };
         let mut contents = String::new();
-        file.read_to_string(&mut contents)
-            .map_err(|e| format!("\x1b[31m[error]\x1b[0m Failed to read config file! {}", e))?;
+        match file.read_to_string(&mut contents) {
+            Ok(_) => {}
+            Err(e) => return Err(ConfigError::FileOpError(e)),
+        }
 
-        let config_data: ConfigData = toml::from_str(&contents).map_err(|e| {
-            format!(
-                "\x1b[31m[error]\x1b[31m Failed to deserialize toml parameters! {}",
-                e
-            )
-        })?;
+        let config_data: ConfigData = match toml::from_str(&contents) {
+            Ok(data) => data,
+            Err(e) => return Err(ConfigError::DeserializationError(e)),
+        };
 
         if config_data.netbox.netbox_uri.is_empty() {
-            return Err(
-            "\x1b[31m[error]\x1b[0m Validation Error: Config parameter 'netbox_uri' is empty! This parameter is mandatory."
-                .to_string(),
-        );
+            return Err(ConfigError::MissingConfigOptionError(String::from(
+                "netbox_url",
+            )));
         }
 
         if config_data.netbox.netbox_api_token.is_empty() {
-            return Err(
-            "\x1b[31m[error]\x1b[0m Validation Error: Config parameter 'netbox_api_token' is empty! This parameter is mandatory."
-                .to_string(),
-        );
+            return Err(ConfigError::MissingConfigOptionError(String::from(
+                "netbox_api_token",
+            )));
         }
 
         if config_data.system.name.is_empty() {
-            return Err(
-            "\x1b[31m[error]\x1b[0m Validation Error: Config parameter 'name' is empty! This parameter is mandatory."
-                .to_string(),
-        );
+            return Err(ConfigError::MissingConfigOptionError(String::from(
+                "system name",
+            )));
         }
 
         // Optional NWI Section
         if let Some(nwi_list) = &config_data.nwi {
             for nwi in nwi_list {
                 if nwi.r#type.is_none() {
-                    return Err(
-                    "\x1b[31m[error]\x1b[0m Validation Error: 'type' is required for every network interface if present."
-                        .to_string(),
-                );
+                    return Err(ConfigError::MissingConfigOptionError(String::from(
+                        "r#type",
+                    )));
                 }
             }
         } else {
@@ -500,13 +488,8 @@ impl ConfigData {
         let mut file = match File::open(get_config_dir()) {
             Ok(file) => file,
             Err(err) => {
-                let exc = config_exceptions::UnableToReadConfigError {
-                    message: format!(
-                        "[error] An error occurred while attempting to read the config file: {}",
-                        err
-                    ),
-                };
-                exc.abort(1);
+                let exc: ConfigError = ConfigError::FileOpError(err);
+                exc.abort(None);
             }
         };
 
@@ -514,23 +497,16 @@ impl ConfigData {
         match file.read_to_string(&mut contents) {
             Ok(u) => u,
             Err(err) => {
-                let exc = config_exceptions::UnableToReadConfigError {
-                    message: format!("[error] Unable to read config file to buffer! {}", err),
-                };
-                exc.abort(1);
+                let exc = ConfigError::FileOpError(err);
+                exc.abort(None);
             }
         };
 
         let config_data: ConfigData = match toml::from_str(&contents) {
             Ok(t) => t,
             Err(err) => {
-                let exc = config_exceptions::UnableToCreateConfigError {
-                    message: format!(
-                        "[error] An error occurred while trying to parse the toml: {}",
-                        err
-                    ),
-                };
-                exc.abort(1);
+                let exc = ConfigError::DeserializationError(err);
+                exc.abort(None);
             }
         };
 
