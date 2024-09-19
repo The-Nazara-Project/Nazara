@@ -11,9 +11,9 @@ use reqwest::Error as ReqwestError;
 use serde_json::Value;
 use thanix_client::{
     paths::{
-        dcim_devices_create, dcim_interfaces_create, dcim_interfaces_list,
-        dcim_interfaces_retrieve, ipam_ip_addresses_create, DcimDevicesCreateResponse,
-        DcimInterfacesListQuery,
+        dcim_devices_create, dcim_devices_update, dcim_interfaces_create, dcim_interfaces_list,
+        dcim_interfaces_retrieve, dcim_interfaces_update, ipam_ip_addresses_create,
+        DcimDevicesCreateResponse, DcimDevicesUpdateResponse, DcimInterfacesListQuery,
     },
     types::{
         Interface, WritableDeviceWithConfigContextRequest, WritableIPAddressRequest,
@@ -132,11 +132,11 @@ fn get_major_verison(version: &str) -> Option<u32> {
 /// This function terminates the process if the response code is not the expected `201`.
 pub fn create_device(
     client: &ThanixClient,
-    payload: &WritableDeviceWithConfigContextRequest,
+    payload: WritableDeviceWithConfigContextRequest,
 ) -> Result<i64, NetBoxApiError> {
     println!("Creating device in NetBox...");
 
-    match dcim_devices_create(client, payload.clone()) {
+    match dcim_devices_create(client, payload) {
         Ok(response) => {
             match response {
                 DcimDevicesCreateResponse::Http201(created_device) => {
@@ -152,6 +152,49 @@ pub fn create_device(
                 }
             }
         }
+        Err(err) => {
+            let exc: NetBoxApiError = NetBoxApiError::Reqwest(err);
+            Err(exc)
+        }
+    }
+}
+
+/// Update a device with a given ID.
+///
+/// Will simply overwrite the given `Device` object in NetBox with the collected information.
+///
+/// # Parameters
+///
+/// * `client: &ThanixClient` - The API client instance to use.
+/// * `payload: WritableDeviceWithConfigContextRequest` - The payload for the API request.
+/// * `id: i64` - The ID of the device to update.
+///
+/// # Returns
+///
+/// * `Ok(i64)` - The ID of the updated device.
+/// * `Err(NetBoxApiError)` - Returns a `NetBoxApiError` when the request fails.
+///
+/// # Aborts
+///
+/// This function may terminate the process if NetBox returns an unexpected non-200 response code.
+pub fn update_device(
+    client: &ThanixClient,
+    payload: WritableDeviceWithConfigContextRequest,
+    id: i64,
+) -> Result<i64, NetBoxApiError> {
+    println!("Updating device in NetBox...");
+
+    match dcim_devices_update(client, payload, id) {
+        Ok(response) => match response {
+            DcimDevicesUpdateResponse::Http200(updated_device) => {
+                println!("\x1b[32m[success]\x1b[0m Device updated successfully!");
+                Ok(updated_device.id)
+            }
+            DcimDevicesUpdateResponse::Other(other_response) => {
+                let exc: NetBoxApiError = NetBoxApiError::Other(format!("\x1b[31m[error]\x1b[0m Unexpected response code '{}' when trying to update device!", other_response.status()));
+                exc.abort(Some(35));
+            }
+        },
         Err(err) => {
             let exc: NetBoxApiError = NetBoxApiError::Reqwest(err);
             Err(exc)
@@ -197,6 +240,19 @@ pub fn create_interface(
             Err(exc)
         }
     }
+}
+
+pub fn update_interface(
+    client: &ThanixClient,
+    payload: WritableInterfaceRequest,
+    device_id: i64,
+    interface_id: i64,
+) -> Result<i64, NetBoxApiError> {
+    println!(
+        "Updating interface '{}' belonging to device '{}'...",
+        interface_id, device_id
+    );
+    todo!("Interface update not yet implemented!");
 }
 
 /// Create new IP adress object.
