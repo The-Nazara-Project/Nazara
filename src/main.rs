@@ -118,5 +118,8 @@ fn main() {
     }
 
     // Register the machine or VM with NetBox
-    let _ = register_machine(&client, machine, config);
+    match register_machine(&client, machine, config) {
+        Ok(_) => {}
+        Err(e) => e.abort(None),
+    };
 }
