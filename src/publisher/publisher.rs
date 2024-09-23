@@ -22,8 +22,8 @@ use crate::{
     configuration::config_parser::ConfigData,
     publisher::{
         api_client::{
-            create_device, create_interface, create_ip, get_interface, get_interface_by_name,
-            get_interface_list, test_connection, update_device,
+            create_device, create_interface, create_ip, get_interface, get_interface_list,
+            search_device, test_connection, update_device,
         },
         translator,
     },
@@ -86,7 +86,11 @@ pub fn register_machine(
         let device_payload: WritableDeviceWithConfigContextRequest =
             translator::information_to_device(&client, &machine, config_data.clone());
 
-        match search_for_matches(&machine, &nb_devices) {
+        match search_device(
+            client,
+            &config_data.system.name,
+            &machine.dmi_information.system_information.serial,
+        ) {
             Some(device_id) => {
                 let updated_id = match update_device(client, device_payload, device_id) {
                     Ok(id) => id,
@@ -395,13 +399,25 @@ fn get_machines(client: &ThanixClient, machine: &Machine) -> DeviceListOrVMList 
 /// # Returns
 ///
 /// - `Option<i64, None>` - Either returns the id of the device or Vm found, or None.
-fn search_for_matches(machine: &Machine, device_list: &DeviceListOrVMList) -> Option<i64> {
+fn search_for_matches(
+    machine: &Machine,
+    device_list: &DeviceListOrVMList,
+    config_data: &ConfigData,
+) -> Option<i64> {
     match device_list {
         DeviceListOrVMList::DeviceList(devices) => {
             if machine.name.is_none() {
                 println!("\x1b[36m[info]\x1b[0m No machine name provided. Searching via serial number...");
                 for device in devices {
-                    if machine.dmi_information.system_information.serial == device.serial {
+                    if let Some(device_name) = &device.name {
+                        if config_data.system.name == *device_name {
+                            println!(
+                                "\x1b[32m[success]\x1b[0m Found machine using configured name!"
+                            );
+                            return Some(device.id);
+                        }
+                    }
+                    if device.serial == machine.dmi_information.system_information.serial {
                         println!("\x1b[32m[success]\x1b[0m Machine found using serial number!");
                         return Some(device.id);
                     }
