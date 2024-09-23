@@ -23,14 +23,14 @@ use crate::{
     publisher::{
         api_client::{
             create_device, create_interface, create_ip, get_interface, get_interface_by_name,
-            test_connection, update_device,
+            get_interface_list, test_connection, update_device,
         },
         translator,
     },
     Machine,
 };
 
-use super::publisher_exceptions::NetBoxApiError;
+use super::{api_client::update_interface, publisher_exceptions::NetBoxApiError};
 
 /// Workaround until rust supports return type polymorphism on stable
 /// to allow for generics to be used instead.
@@ -101,6 +101,36 @@ pub fn register_machine(
                 // 2. Check if IP Address(es) linked to this device already exist.
                 //    If no: Create new
                 //    If yes: Update/Overwrite (delete old)
+                let registered_nwis = get_interface_list(client)?;
+                for interface in &machine.network_information {
+                    if let Some(registered_nwis) = &registered_nwis {
+                        // Check if any registered interface has the same name as the current `interface`
+                        if registered_nwis
+                            .iter()
+                            .any(|nwi| nwi.name.as_ref() == Some(&interface.name))
+                        {
+                            // Interface is already registered, update it
+                            let nwi_id: i64 = registered_nwis
+                                .iter()
+                                .find(|nwi| nwi.name.as_ref() == Some(&interface.name))
+                                .unwrap()
+                                .id; // Assume `id` exists or handle appropriately
+                            update_nwi(client, updated_id, interface, config_data.clone(), nwi_id)?;
+
+                            update_ips(client, interface, nwi_id)?;
+                        } else {
+                            // Interface not found, create a new one
+                            let nwi_id: i64 =
+                                create_nwi(client, updated_id, interface, config_data.clone())?;
+                            create_ips(client, interface, nwi_id)?;
+                        }
+                    } else {
+                        // No registered interfaces, create a new one
+                        let nwi_id: i64 =
+                            create_nwi(client, updated_id, interface, config_data.clone())?;
+                        create_ips(client, interface, nwi_id)?;
+                    }
+                }
             }
             None => {
                 let device_id = match create_device(client, device_payload) {
@@ -152,6 +182,39 @@ fn create_nwi(
     create_interface(client, payload)
 }
 
+/// Update a given NWI.
+///
+/// Creates a new Interface API payload and invokes the API call to update the interface.
+///
+/// # Parameters
+///
+/// * `client: &ThanixClient` - The API client instance to use.
+/// * `device_id: i64` - The ID of the device this NWI belongs to.
+/// * `interface: &NetworkInformation` - The information of the interface to update.
+/// * `config_data: ConfigData` - The configuration data.
+/// * `interface_id: i64` - The ID of the interface to update.
+///
+/// # Returns
+///
+/// * `Ok(i64)` - The ID of the updated interface.
+/// * `Err(NetboxApiError)` - In case the connection or API request fails.
+fn update_nwi(
+    client: &ThanixClient,
+    device_id: i64,
+    interface: &NetworkInformation,
+    config_data: ConfigData,
+    interface_id: i64,
+) -> Result<i64, NetBoxApiError> {
+    println!(
+        "Updating interface '{}' belonging to device '{}'",
+        interface_id, device_id
+    );
+    let payload: WritableInterfaceRequest =
+        translator::information_to_interface(config_data, interface, &device_id);
+
+    update_interface(client, payload, interface_id)
+}
+
 /// Checks if a given network interface ID corresponds to a interface which already exsists.
 ///
 /// # Parameter
@@ -201,6 +264,43 @@ fn create_ips(
 
         create_ip(client, ipv6_payload)?;
     };
+    Ok(())
+}
+
+/// Update all IPs of a given interface.
+///
+/// # Parameters
+///
+/// * `client, &ThanixClient` - The API client instance to use.
+/// * `interface: &NetworkInformation` - The interface this address belongs to.
+/// * `interface_id: i64` - The ID of the interface object in NetBox.
+///
+/// # Returns
+///
+/// * `Ok(())` - If the operation was successful.
+/// * `Err(NetBoxApiError)` - In case something unforseen happens.
+fn update_ips(
+    client: &ThanixClient,
+    interface: &NetworkInformation,
+    interface_id: i64,
+) -> Result<(), NetBoxApiError> {
+    if let Some(ipv4_address) = interface.v4ip {
+        let ipv4_payload: WritableIPAddressRequest =
+            translator::information_to_ip(ipv4_address, interface_id);
+
+        // update_ip() ?
+    }
+
+    if let Some(ipv6_address) = interface.v6ip {
+        let ipv6_payload: WritableIPAddressRequest =
+            translator::information_to_ip(ipv6_address, interface_id);
+
+        // update_ip() ?
+    }
+    println!(
+        "\x1b[32m[success]\x1b[0m IP Addresses of interface '{} (ID: '{}')' updated successfully!",
+        interface.name, interface_id
+    );
     Ok(())
 }
 

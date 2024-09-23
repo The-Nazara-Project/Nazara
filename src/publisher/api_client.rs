@@ -11,9 +11,7 @@ use reqwest::Error as ReqwestError;
 use serde_json::Value;
 use thanix_client::{
     paths::{
-        dcim_devices_create, dcim_devices_update, dcim_interfaces_create, dcim_interfaces_list,
-        dcim_interfaces_retrieve, dcim_interfaces_update, ipam_ip_addresses_create,
-        DcimDevicesCreateResponse, DcimDevicesUpdateResponse, DcimInterfacesListQuery,
+        dcim_devices_create, dcim_devices_update, dcim_interfaces_create, dcim_interfaces_list, dcim_interfaces_retrieve, dcim_interfaces_update, ipam_ip_addresses_create, ipam_ip_addresses_update, DcimDevicesCreateResponse, DcimDevicesUpdateResponse, DcimInterfacesListQuery
     },
     types::{
         Interface, WritableDeviceWithConfigContextRequest, WritableIPAddressRequest,
@@ -235,8 +233,7 @@ pub fn create_interface(
             }
         },
         Err(e) => {
-            eprintln!("\x1b[33m[warning]\x1b[0m Error while decoding NetBox Response while creating network interface. This is probably still fine and a problem with NetBox.\nError: {}", e);
-            let exc = NetBoxApiError::Other(e.to_string());
+            let exc = NetBoxApiError::Reqwest(e);
             Err(exc)
         }
     }
@@ -245,14 +242,25 @@ pub fn create_interface(
 pub fn update_interface(
     client: &ThanixClient,
     payload: WritableInterfaceRequest,
-    device_id: i64,
     interface_id: i64,
 ) -> Result<i64, NetBoxApiError> {
-    println!(
-        "Updating interface '{}' belonging to device '{}'...",
-        interface_id, device_id
-    );
-    todo!("Interface update not yet implemented!");
+
+	match dcim_interfaces_update(client, payload, interface_id) {
+		Ok(response) => match response {
+			thanix_client::paths::DcimInterfacesUpdateResponse::Http200(result) => {
+				println!("\x1b[32m[success]\x1b[0m Interface '{}' updated successfully.", result.id);
+				Ok(result.id)
+			}
+			thanix_client::paths::DcimInterfacesUpdateResponse::Other(other) => {
+				let exc: NetBoxApiError = NetBoxApiError::Other(other.text().unwrap());
+				Err(exc)
+			}
+		},
+		Err(e) => {
+			let exc = NetBoxApiError::Reqwest(e);
+			Err(exc)
+		}
+	}
 }
 
 /// Create new IP adress object.
@@ -294,6 +302,36 @@ pub fn create_ip(
     }
 }
 
+/// Update a given IP address object.
+///
+/// # Parameters
+///
+/// * `client: &ThanixClient` - The API client instance to use.
+/// * `payload: WritableIPAddressRequest` - The API call payload.
+/// * `id: i64` - The ID of the IP Address to update.
+///
+/// # Returns
+///
+/// * `Ok(i64)` - The ID of the updated object.
+/// * `Err(NetBoxApiError)` - In case the connection fails or an unexpected response is returned.
+pub fn update_ip(client: &ThanixClient, payload: WritableIPAddressRequest, id: i64) -> Result<i64, NetBoxApiError> {
+	println!("Updating IPs for given interface...");
+
+	match ipam_ip_addresses_update(client, payload, id) {
+		Ok(response) => match response {
+			thanix_client::paths::IpamIpAddressesUpdateResponse::Http200(result) => Ok(result.id),
+			thanix_client::paths::IpamIpAddressesUpdateResponse::Other(other) => {
+				let exc: NetBoxApiError = NetBoxApiError::Other(other.text().unwrap());
+				Err(exc)
+			}
+		},
+		Err(e) => {
+			let exc: NetBoxApiError = NetBoxApiError::Reqwest(e);
+			Err(exc)
+		}
+	}
+}
+
 /// Get Interface by ID.
 ///
 /// # Parameters
@@ -326,6 +364,29 @@ pub fn get_interface(state: &ThanixClient, id: i64) -> Result<Interface, NetBoxA
             Err(err)
         }
     }
+}
+
+pub fn get_interface_list(state: &ThanixClient) -> Result<Option<Vec<Interface>>, NetBoxApiError> {
+	println!("Retrieving list of interfaces...");
+
+	match dcim_interfaces_list(state, DcimInterfacesListQuery::default()) {
+		Ok(response) => {
+			let interfaces = match response {
+				thanix_client::paths::DcimInterfacesListResponse::Http200(interfaces) => {
+					interfaces.results
+				},
+				thanix_client::paths::DcimInterfacesListResponse::Other(other) => {
+					let err: NetBoxApiError = NetBoxApiError::Other(other.text().unwrap());
+					return Err(err)
+				}
+			};
+			Ok(interfaces)
+		},
+		Err(e) => {
+			let err: NetBoxApiError = NetBoxApiError::Reqwest(e);
+			Err(err)
+		}
+	}
 }
 
 /// Attempt to retrieve an interface by its name.
