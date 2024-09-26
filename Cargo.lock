@@ -670,7 +670,7 @@ dependencies = [
 
 [[package]]
 name = "nazara"
-version = "0.0.1-pre-alpha.1"
+version = "0.0.1-pre-alpha.2"
 dependencies = [
  "clap",
  "mockall",
