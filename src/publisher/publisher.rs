@@ -5,8 +5,6 @@
 //! machine or update an existing one.
 //!
 //! The actual request logic will be provided by the `thanix_client` crate.
-use std::process;
-/// TODO: 1. Implement Creation/update logic 2. Denest by splitting query logic off 3. Do not panic upon request fail
 use thanix_client::{
     paths::{
         self, DcimDevicesListQuery, DcimDevicesListResponse,
@@ -20,18 +18,19 @@ use thanix_client::{
 };
 
 use crate::{
+    collectors::network_collector::NetworkInformation,
     configuration::config_parser::ConfigData,
     publisher::{
         api_client::{
-            create_device, create_interface, create_ip, get_interface, get_interface_by_name,
-            test_connection,
+            create_device, create_interface, create_ip, get_interface, get_interface_list,
+            search_device, search_interface, search_ip, test_connection, update_device, update_ip,
         },
         translator,
     },
     Machine,
 };
 
-use super::publisher_exceptions::NetBoxApiError;
+use super::{api_client::update_interface, publisher_exceptions::NetBoxApiError};
 
 /// Workaround until rust supports return type polymorphism on stable
 /// to allow for generics to be used instead.
@@ -87,68 +86,152 @@ pub fn register_machine(
         let device_payload: WritableDeviceWithConfigContextRequest =
             translator::information_to_device(&client, &machine, config_data.clone());
 
-        match search_for_matches(&machine, &nb_devices) {
+        match search_device(
+            client,
+            &config_data.system.name,
+            &machine.dmi_information.system_information.serial,
+        ) {
             Some(device_id) => {
-                todo!("Device update not yet implemented.") // TODO Implement machine update
+                let updated_id = match update_device(client, device_payload, device_id) {
+                    Ok(id) => id,
+                    Err(e) => e.abort(None),
+                };
+
+                // TODO:
+                // For every interface collected:
+                // 1. Check if interface already exists,
+                //    If no: Create new
+                //    If yes: Update/Overwrite
+                // 2. Check if IP Address(es) linked to this device already exist.
+                //    If no: Create new
+                //    If yes: Update/Overwrite (delete old)
+                let mut nwi_id: i64;
+                let mut ip_id: i64;
+                for interface in &machine.network_information {
+                    let interface_payload = translator::information_to_interface(
+                        config_data.clone(),
+                        interface,
+                        &updated_id,
+                    );
+                    match search_interface(client, &updated_id, &interface.name) {
+                        Some(interface_id) => {
+                            update_interface(client, interface_payload, interface_id)?;
+                            nwi_id = interface_id;
+                        }
+                        None => {
+                            nwi_id = create_interface(client, interface_payload)?;
+                        }
+                    }
+
+                    match search_ips(client, interface, updated_id) {
+                        Ok((Some(ipv4), Some(ipv6))) => {
+                            let mut payload =
+                                translator::information_to_ip(interface.v4ip.unwrap(), nwi_id);
+                            update_ip(client, payload, ipv4)?;
+                            payload =
+                                translator::information_to_ip(interface.v6ip.unwrap(), nwi_id);
+                            update_ip(client, payload, ipv6)?;
+                        }
+                        Ok((Some(ipv4), None)) => {
+                            let payload =
+                                translator::information_to_ip(interface.v4ip.unwrap(), nwi_id);
+                            update_ip(client, payload, ipv4)?;
+                        }
+                        Ok((None, Some(ipv6))) => {
+                            let payload =
+                                translator::information_to_ip(interface.v6ip.unwrap(), nwi_id);
+                            update_ip(client, payload, ipv6)?;
+                        }
+                        Ok((None, None)) => {
+                            create_ips(client, interface, nwi_id)?;
+                        }
+                        Err(e) => {
+                            e.abort(None);
+                        }
+                    }
+                }
             }
             None => {
-                // Creates Device. Will need to be updated after IP Adress creation.
-                let device_id = match create_device(client, &device_payload) {
+                let device_id = match create_device(client, device_payload) {
                     Ok(id) => id,
                     Err(e) => {
-                        println!("{}", e);
-                        process::exit(1);
+                        e.abort(None);
                     }
                 };
 
                 // Create new interface object if no interface ID is given, or the given ID does
                 // not exist.
                 for interface in &machine.network_information {
-                    let interface_payload: WritableInterfaceRequest =
-                        translator::information_to_interface(
-                            config_data.clone(),
-                            interface,
-                            &device_id,
-                        );
-
-                    let interface_id = match create_interface(client, interface_payload) {
-                        Ok(id) => id,
-                        Err(e) => {
-                            eprintln!("{}", e.to_string());
-                            e.abort(None);
-                        }
-                    };
-
-                    if let Some(ipv4_address) = interface.v4ip {
-                        let ipv4_payload: WritableIPAddressRequest =
-                            translator::information_to_ip(ipv4_address, interface_id);
-
-                        let _ = match create_ip(client, ipv4_payload) {
+                    let interface_id =
+                        match create_nwi(client, device_id, interface, config_data.clone()) {
                             Ok(id) => id,
-                            Err(e) => {
-                                eprintln!("{}", e.to_string());
-                                e.abort(None);
-                            }
+                            Err(e) => e.abort(None),
                         };
-                    }
 
-                    if let Some(ipv6_address) = interface.v6ip {
-                        let ipv6_payload: WritableIPAddressRequest =
-                            translator::information_to_ip(ipv6_address, interface_id);
-
-                        let _ = match create_ip(client, ipv6_payload) {
-                            Ok(id) => id,
-                            Err(e) => {
-                                eprintln!("{}", e.to_string());
-                                e.abort(None);
-                            }
-                        };
-                    };
+                    create_ips(client, interface, interface_id)?;
                 }
             }
         }
     }
     Ok(())
+}
+
+/// Create new Network Interface object in NetBox.
+///
+/// # Parameters
+///
+/// * `client: &ThanixClient` - The API client instance to use.
+/// * `device_id: i64` - The device this interface belongs to.
+/// * `interface: &NetworkInformation` - The interface to create.
+/// * `config_data: ConfigData` - The configuration read from the config file.
+///
+/// # Returns
+///
+/// * `Ok(i64)` - The ID of the newly created interface.
+/// * `Err(NetBoxApiError)` - In case the API request fails.
+fn create_nwi(
+    client: &ThanixClient,
+    device_id: i64,
+    interface: &NetworkInformation,
+    config_data: ConfigData,
+) -> Result<i64, NetBoxApiError> {
+    let payload: WritableInterfaceRequest =
+        translator::information_to_interface(config_data, interface, &device_id);
+
+    create_interface(client, payload)
+}
+
+/// Update a given NWI.
+///
+/// Creates a new Interface API payload and invokes the API call to update the interface.
+///
+/// # Parameters
+///
+/// * `client: &ThanixClient` - The API client instance to use.
+/// * `device_id: i64` - The ID of the device this NWI belongs to.
+/// * `interface: &NetworkInformation` - The information of the interface to update.
+/// * `config_data: ConfigData` - The configuration data.
+/// * `interface_id: i64` - The ID of the interface to update.
+///
+/// # Returns
+///
+/// * `Ok(i64)` - The ID of the updated interface.
+/// * `Err(NetboxApiError)` - In case the connection or API request fails.
+fn update_nwi(
+    client: &ThanixClient,
+    device_id: i64,
+    interface: &NetworkInformation,
+    config_data: ConfigData,
+    interface_id: i64,
+) -> Result<i64, NetBoxApiError> {
+    println!(
+        "Updating interface '{}' belonging to device '{}'",
+        interface_id, device_id
+    );
+    let payload: WritableInterfaceRequest =
+        translator::information_to_interface(config_data, interface, &device_id);
+
+    update_interface(client, payload, interface_id)
 }
 
 /// Checks if a given network interface ID corresponds to a interface which already exsists.
@@ -168,6 +251,116 @@ fn interface_exists(state: &ThanixClient, id: i64) -> bool {
         return true;
     }
     false
+}
+
+/// Search for a pair of IP addresses.
+///
+/// Checks if the `ipv4` and/or `ìpv6` addresses of the given `NetworkInformation` are set and
+/// invokes `search_ip` on each or both of these addresses.
+///
+/// # Parameters
+///
+/// * `client, &ThanixClient` - The API client instance to use.
+/// * `interface: &NetworkInformation` - The interface this address belongs to.
+/// * `device_id: i64` - The ID of the device these Addresses are linked to.
+///
+/// # Returns
+///
+/// * `Ok((Option<i64>, Option<i64>))` - A tuple of the IDs of each the IPv4 and IPv6 addresses if
+/// they are registered. The first field represents the IPv4 Address, the second the IPv6 address.
+/// If one or both are not already registered the value will be `None`.
+/// * `Err(NetBoxApiError)` - In case something unforseen happens.
+fn search_ips(
+    client: &ThanixClient,
+    interface: &NetworkInformation,
+    device_id: i64,
+) -> Result<(Option<i64>, Option<i64>), NetBoxApiError> {
+    let mut result: (Option<i64>, Option<i64>) = (None, None);
+    if let Some(ipv4_address) = interface.v4ip {
+        result = (
+            search_ip(client, &ipv4_address.to_string(), &device_id),
+            result.1,
+        );
+    }
+
+    if let Some(ipv6_address) = interface.v6ip {
+        result = (
+            result.0,
+            search_ip(client, &ipv6_address.to_string(), &device_id),
+        );
+    }
+    Ok(result)
+}
+
+/// Creates the given interface's IPv4 and/or IPv6 address(es).
+///
+/// # Parameters
+///
+/// * `client: &ThanixClient` - The API client instance to use.
+/// * `interface: &NetworkInformation` - The interface to get the IP Addresses from.
+/// * `interface_id: i64` - The ID of the interface these addresses belong to.
+///
+/// # Returns
+///
+/// * `Ok(())` - If the registration has successfully been completed.
+/// * `Err(NetboxApiError)` - If the creation failed.
+fn create_ips(
+    client: &ThanixClient,
+    interface: &NetworkInformation,
+    interface_id: i64,
+) -> Result<(), NetBoxApiError> {
+    if let Some(ipv4_address) = interface.v4ip {
+        let ipv4_payload: WritableIPAddressRequest =
+            translator::information_to_ip(ipv4_address, interface_id);
+
+        create_ip(client, ipv4_payload)?;
+    }
+
+    if let Some(ipv6_address) = interface.v6ip {
+        let ipv6_payload: WritableIPAddressRequest =
+            translator::information_to_ip(ipv6_address, interface_id);
+
+        create_ip(client, ipv6_payload)?;
+    };
+    Ok(())
+}
+
+/// Update all IPs of a given interface.
+///
+/// # Parameters
+///
+/// * `client, &ThanixClient` - The API client instance to use.
+/// * `interface: &NetworkInformation` - The interface this address belongs to.
+/// * `interface_id: i64` - The ID of the interface object in NetBox.
+///
+/// # Returns
+///
+/// * `Ok(())` - If the operation was successful.
+/// * `Err(NetBoxApiError)` - In case something unforseen happens.
+fn update_ips(
+    client: &ThanixClient,
+    interface: &NetworkInformation,
+    interface_id: i64,
+    ip_id: i64,
+) -> Result<(), NetBoxApiError> {
+    if let Some(ipv4_address) = interface.v4ip {
+        let ipv4_payload: WritableIPAddressRequest =
+            translator::information_to_ip(ipv4_address, interface_id);
+
+        update_ip(client, ipv4_payload, ip_id)?;
+    }
+
+    if let Some(ipv6_address) = interface.v6ip {
+        let ipv6_payload: WritableIPAddressRequest =
+            translator::information_to_ip(ipv6_address, interface_id);
+
+        update_ip(client, ipv6_payload, ip_id)?;
+    }
+    println!(
+        "\x1b[32m[success]\x1b[0m IP Addresses of interface '{} (ID: '{}')' updated successfully!",
+        interface.name, interface_id
+    );
+    Ok(())
 }
 
 /// Get list of machines.
@@ -261,13 +454,25 @@ fn get_machines(client: &ThanixClient, machine: &Machine) -> DeviceListOrVMList 
 /// # Returns
 ///
 /// - `Option<i64, None>` - Either returns the id of the device or Vm found, or None.
-fn search_for_matches(machine: &Machine, device_list: &DeviceListOrVMList) -> Option<i64> {
+fn search_for_matches(
+    machine: &Machine,
+    device_list: &DeviceListOrVMList,
+    config_data: &ConfigData,
+) -> Option<i64> {
     match device_list {
         DeviceListOrVMList::DeviceList(devices) => {
             if machine.name.is_none() {
                 println!("\x1b[36m[info]\x1b[0m No machine name provided. Searching via serial number...");
                 for device in devices {
-                    if machine.dmi_information.system_information.serial == device.serial {
+                    if let Some(device_name) = &device.name {
+                        if config_data.system.name == *device_name {
+                            println!(
+                                "\x1b[32m[success]\x1b[0m Found machine using configured name!"
+                            );
+                            return Some(device.id);
+                        }
+                    }
+                    if device.serial == machine.dmi_information.system_information.serial {
                         println!("\x1b[32m[success]\x1b[0m Machine found using serial number!");
                         return Some(device.id);
                     }
