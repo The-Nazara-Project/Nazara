@@ -13,8 +13,10 @@ use thanix_client::{
     paths::{
         dcim_devices_create, dcim_devices_list, dcim_devices_update, dcim_interfaces_create,
         dcim_interfaces_list, dcim_interfaces_retrieve, dcim_interfaces_update,
-        ipam_ip_addresses_create, ipam_ip_addresses_update, DcimDevicesCreateResponse,
-        DcimDevicesListQuery, DcimDevicesUpdateResponse, DcimInterfacesListQuery,
+        ipam_ip_addresses_create, ipam_ip_addresses_list, ipam_ip_addresses_update,
+        DcimDevicesCreateResponse, DcimDevicesListQuery, DcimDevicesUpdateResponse,
+        DcimInterfacesListQuery, DcimInterfacesListResponse, IpamIpAddressesListQuery,
+        IpamIpAddressesListResponse,
     },
     types::{
         Interface, PaginatedDeviceWithConfigContextList, WritableDeviceWithConfigContextRequest,
@@ -111,6 +113,15 @@ fn check_version_compatiblity(netbox_version: &str, thanix_version: &str) -> boo
     }
 }
 
+/// Get the major version from the given version String.
+///
+/// # Parameters
+///
+/// * `version: &str` - String representation of the application version.
+///
+/// # Returns
+///
+/// `Some(u32)` if the Version can be parsed to an `u32`, if not, returns `None`.
 fn get_major_verison(version: &str) -> Option<u32> {
     version.split('.').next()?.parse().ok()
 }
@@ -124,7 +135,16 @@ fn get_major_verison(version: &str) -> Option<u32> {
 /// * `serial: String` - The serial number of the machine.
 ///
 /// # Returns
-/// TBD
+///
+/// * `Option<i64>` - The ID of the device, if it exists, if not, returns `None`.
+///
+/// # Aborts
+///
+/// This function terminates the process under following conditions:
+///
+/// * Search results are indecisive. E.g more than one result.
+/// * The API request returns an unexpected response code.
+/// * The API request fails (e.g the connection fails).
 pub fn search_device(client: &ThanixClient, name: &String, serial: &String) -> Option<i64> {
     println!("Checking if device is already registered...");
     let payload: DcimDevicesListQuery = DcimDevicesListQuery {
@@ -136,7 +156,6 @@ pub fn search_device(client: &ThanixClient, name: &String, serial: &String) -> O
     match dcim_devices_list(client, payload) {
         Ok(response) => match response {
             thanix_client::paths::DcimDevicesListResponse::Http200(device_list) => {
-                println!("{:?}", device_list.results);
                 if device_list.results.len() == 1 {
                     return Some(device_list.results[0].id);
                 }
@@ -246,6 +265,61 @@ pub fn update_device(
     }
 }
 
+/// Search for interfaces with a given search parameters.
+///
+/// # Parameters
+///
+/// * `client: &ThanixClient` - The `ThanixClient` instance to use for communication.
+/// * `device_id: &i64` - The ID of the device this interface is linked to.
+/// * `name: &String` - The name of this interface.
+///
+/// # Returns
+///
+/// `Some(i64)` the ID of the interface when it is found, else returns `None`
+///
+/// # Aborts
+///
+/// This function aborts in these cases:
+///
+/// * The search results are inconclusive (interface is listed multiple times).
+/// * The request returns an unexpected response code.
+/// * The request fails (e.g the connection fails).
+pub fn search_interface(client: &ThanixClient, device_id: &i64, name: &String) -> Option<i64> {
+    println!("Searching for interface '{}'...", name);
+
+    let payload: DcimInterfacesListQuery = DcimInterfacesListQuery {
+        device_id: Some(vec![*device_id]),
+        name: Some(vec![name.clone()]),
+        ..Default::default()
+    };
+
+    match dcim_interfaces_list(client, payload) {
+        Ok(response) => match response {
+            DcimInterfacesListResponse::Http200(mut interfaces) => {
+                if interfaces.results.as_mut().unwrap().len() == 1 {
+                    let result = interfaces.results.unwrap();
+                    return Some(result[0].id);
+                }
+                if interfaces.results.unwrap().len() == 0 {
+                    return None;
+                }
+                let err = NetBoxApiError::Other(
+                    "Ambiguous search result. Interface listed more than once.".to_owned(),
+                );
+                err.abort(None);
+            }
+            DcimInterfacesListResponse::Other(res) => {
+                let err: NetBoxApiError = NetBoxApiError::Other(format!("\x1b[31m[error]\x1b[0m Unexpected response code '{}' when trying to search for interface!", res.status()));
+                err.abort(None);
+            }
+        },
+        Err(e) => {
+            let err: NetBoxApiError = NetBoxApiError::Reqwest(e);
+            err.abort(None);
+        }
+    }
+}
+
 /// Create an interface object in NetBox.
 ///
 /// # Parameters
@@ -257,10 +331,6 @@ pub fn update_device(
 ///
 /// * `Ok(i64)` - The ID of the interface object.
 /// * `Err(NetBoxApiError)` - Error will be passed back to `publisher`.
-///
-/// # Panics
-///
-/// Panics if NetBox become unreachable.
 pub fn create_interface(
     client: &ThanixClient,
     payload: WritableInterfaceRequest,
@@ -319,6 +389,41 @@ pub fn update_interface(
         Err(e) => {
             let exc = NetBoxApiError::Reqwest(e);
             Err(exc)
+        }
+    }
+}
+
+pub fn search_ip(client: &ThanixClient, address: &String, device_id: &i64) -> Option<i64> {
+    println!("Searching for IP Address '{}'...", address);
+    let payload: IpamIpAddressesListQuery = IpamIpAddressesListQuery {
+        address: Some(vec![address.clone()]),
+        device_id: Some(vec![*device_id]),
+        ..Default::default()
+    };
+
+    match ipam_ip_addresses_list(client, payload) {
+        Ok(response) => match response {
+            IpamIpAddressesListResponse::Http200(addresses) => {
+                if addresses.results.len() == 1 {
+                    return Some(addresses.results[0].id);
+                }
+                if addresses.results.len() == 0 {
+                    return None;
+                }
+                let err = NetBoxApiError::Other("Ambiguous search result. IP address listed more than once. Please check your data.".to_owned());
+                err.abort(None);
+            }
+            IpamIpAddressesListResponse::Other(res) => {
+                let err: NetBoxApiError = NetBoxApiError::Other(format!(
+                    "Unexpected response code '{}' when trying to search for IP addresses!",
+                    res.status()
+                ));
+                err.abort(None);
+            }
+        },
+        Err(e) => {
+            let err: NetBoxApiError = NetBoxApiError::Reqwest(e);
+            err.abort(None);
         }
     }
 }
