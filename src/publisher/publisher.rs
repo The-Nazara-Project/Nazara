@@ -108,39 +108,31 @@ pub fn register_machine(
                 let mut nwi_id: i64;
                 let mut ip_id: i64;
                 for interface in &machine.network_information {
-                    let interface_payload = translator::information_to_interface(
-                        config_data.clone(),
-                        interface,
-                        &updated_id,
-                    );
                     match search_interface(client, &updated_id, &interface.name) {
                         Some(interface_id) => {
-                            update_interface(client, interface_payload, interface_id)?;
-                            nwi_id = interface_id;
+                            nwi_id = update_nwi(
+                                client,
+                                updated_id,
+                                interface,
+                                config_data.clone(),
+                                &interface_id,
+                            )?;
                         }
                         None => {
-                            nwi_id = create_interface(client, interface_payload)?;
+                            nwi_id =
+                                create_nwi(client, updated_id, interface, config_data.clone())?;
                         }
                     }
 
                     match search_ips(client, interface, updated_id) {
                         Ok((Some(ipv4), Some(ipv6))) => {
-                            let mut payload =
-                                translator::information_to_ip(interface.v4ip.unwrap(), nwi_id);
-                            update_ip(client, payload, ipv4)?;
-                            payload =
-                                translator::information_to_ip(interface.v6ip.unwrap(), nwi_id);
-                            update_ip(client, payload, ipv6)?;
+                            update_ips(client, interface, nwi_id, Some(ipv4), Some(ipv6))?;
                         }
                         Ok((Some(ipv4), None)) => {
-                            let payload =
-                                translator::information_to_ip(interface.v4ip.unwrap(), nwi_id);
-                            update_ip(client, payload, ipv4)?;
+                            update_ips(client, interface, nwi_id, Some(ipv4), None)?;
                         }
                         Ok((None, Some(ipv6))) => {
-                            let payload =
-                                translator::information_to_ip(interface.v6ip.unwrap(), nwi_id);
-                            update_ip(client, payload, ipv6)?;
+                            update_ips(client, interface, nwi_id, None, Some(ipv6))?;
                         }
                         Ok((None, None)) => {
                             create_ips(client, interface, nwi_id)?;
@@ -222,7 +214,7 @@ fn update_nwi(
     device_id: i64,
     interface: &NetworkInformation,
     config_data: ConfigData,
-    interface_id: i64,
+    interface_id: &i64,
 ) -> Result<i64, NetBoxApiError> {
     println!(
         "Updating interface '{}' belonging to device '{}'",
@@ -231,26 +223,7 @@ fn update_nwi(
     let payload: WritableInterfaceRequest =
         translator::information_to_interface(config_data, interface, &device_id);
 
-    update_interface(client, payload, interface_id)
-}
-
-/// Checks if a given network interface ID corresponds to a interface which already exsists.
-///
-/// # Parameter
-///
-/// * state: `&ThanixClient` - Client instance to use for communication.
-/// * id: `&Option<i64>` - ID parameter retrieved from the config file.
-///
-/// # Returns
-///
-/// True/False depending on whether the interface exists.
-fn interface_exists(state: &ThanixClient, id: i64) -> bool {
-    println!("Trying to retrieve Interface '{}'", id);
-
-    if get_interface(state, id).is_ok() {
-        return true;
-    }
-    false
+    update_interface(client, payload, *interface_id)
 }
 
 /// Search for a pair of IP addresses.
@@ -341,21 +314,42 @@ fn update_ips(
     client: &ThanixClient,
     interface: &NetworkInformation,
     interface_id: i64,
-    ip_id: i64,
+    ip_id_v4: Option<i64>,
+    ip_id_v6: Option<i64>,
 ) -> Result<(), NetBoxApiError> {
-    if let Some(ipv4_address) = interface.v4ip {
-        let ipv4_payload: WritableIPAddressRequest =
-            translator::information_to_ip(ipv4_address, interface_id);
+    match (interface.v4ip, interface.v6ip) {
+        (Some(ipv4_address), Some(ipv6_address)) => {
+            // Update both IPv4 and IPv6 addresses
+            if let Some(ipv4) = ip_id_v4 {
+                let ipv4_payload = translator::information_to_ip(ipv4_address, interface_id);
+                update_ip(client, ipv4_payload, ipv4)?;
+            }
 
-        update_ip(client, ipv4_payload, ip_id)?;
+            if let Some(ipv6) = ip_id_v6 {
+                let ipv6_payload = translator::information_to_ip(ipv6_address, interface_id);
+                update_ip(client, ipv6_payload, ipv6)?;
+            }
+        }
+        (Some(ipv4_address), None) => {
+            // Only update IPv4
+            if let Some(ipv4) = ip_id_v4 {
+                let ipv4_payload = translator::information_to_ip(ipv4_address, interface_id);
+                update_ip(client, ipv4_payload, ipv4)?;
+            }
+        }
+        (None, Some(ipv6_address)) => {
+            // Only update IPv6
+            if let Some(ipv6) = ip_id_v6 {
+                let ipv6_payload = translator::information_to_ip(ipv6_address, interface_id);
+                update_ip(client, ipv6_payload, ipv6)?;
+            }
+        }
+        (None, None) => {
+            // No IPs to update
+            create_ips(client, interface, interface_id)?;
+        }
     }
 
-    if let Some(ipv6_address) = interface.v6ip {
-        let ipv6_payload: WritableIPAddressRequest =
-            translator::information_to_ip(ipv6_address, interface_id);
-
-        update_ip(client, ipv6_payload, ip_id)?;
-    }
     println!(
         "\x1b[32m[success]\x1b[0m IP Addresses of interface '{} (ID: '{}')' updated successfully!",
         interface.name, interface_id
