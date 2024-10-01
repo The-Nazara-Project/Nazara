@@ -119,7 +119,10 @@ fn main() {
 
     // Register the machine or VM with NetBox
     match register_machine(&client, machine, config) {
-        Ok(_) => {}
+        Ok(_) => {
+            println!("\x1b[32mAll done, have a nice day!\x1b[0m");
+            process::exit(0);
+        }
         Err(e) => e.abort(None),
     };
 }

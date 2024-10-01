@@ -142,6 +142,7 @@ pub fn register_machine(
                         }
                     }
                 }
+                println!("\x1b[32m[success] Update process completed!");
             }
             None => {
                 let device_id = match create_device(client, device_payload) {
@@ -162,6 +163,7 @@ pub fn register_machine(
 
                     create_ips(client, interface, interface_id)?;
                 }
+                println!("\x1b[32m[success]\x1b[0m Registration process completed!")
             }
         }
     }
