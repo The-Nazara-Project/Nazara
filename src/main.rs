@@ -84,8 +84,7 @@ fn main() {
     let config = match set_up_configuration(args.uri, args.token, args.name.clone()) {
         Ok(conf) => conf,
         Err(err) => {
-            println!("{}", err);
-            process::exit(1)
+            err.abort(None);
         }
     };
 
