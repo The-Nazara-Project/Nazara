@@ -12,7 +12,7 @@ API. It enables the automatic creation of new machines in NetBox or population o
 
 **Nazara is in the early stages of its development. Please note that the information listed below is subject to change.**
 
-## Installation
+## Building from Source
 
 To use Nazara, you will need to have the Rust programming language and `cargo` installed. If you do not have them
 installed already, you can follow the instructions provided in the [official Rust documentation](https://www.rust-lang.org/tools/install).
@@ -29,9 +29,28 @@ cargo build --release
 
 This will create an executable file in the `target/release` directory.
 
+## Installation
+
+### Installation via `crates.io`
+
+Nazara is published on `crates.io`. If your operating system permits cargo to install packages globally, simply run `cargo install nazara` to install it.
+
 ## Usage (WIP)
 
 To use Nazara, you will need to configure the URL of your NetBox API and provide an API token to the program.
+
+After that, simply run
+
+```bash
+nazara
+```
+
+in your terminal. Nazara will automatically collect all required system information and decide whether to create a new device, or update an existing entry.
+
+> [!Note]
+> Nazara is currently in an alpha state. Bugs are bound to happen. If you encounter any, please [report them](https://github.com/The-Nazara-Project/Nazara/issues).
+>
+> Furthermore, **Nazara currently does not support custom fields for any NetBox object**. Though, this is the next item on our agenda.
 
 ### Configuration (WIP)
 
@@ -67,71 +86,57 @@ custom fields to your system information that cannot be automatically selected. 
 
 ```toml
 [netbox]
-netbox_api_token = "$API_TOKEN"
-netbox_uri = "$NETBOX_URI"
+netbox_uri = ""
+netbox_api_token = ""
 
 [system]
-system_location = "$SYSTEM_LOCATION"
-```
-
-An example file would look like this:
-
-```toml
-# Template nazara-config.toml file for v0.1.0
-
-# Configuration parameters for the NetBox connection
-[netbox]
-netbox_api_token = "{NETBOX_TOKEN}"
-netbox_uri = "{NETBOX_URI}"
-
-# Mandatory information about the system
-[system]
-name = "{SYSTEM_NAME}" # Name of the machine or VM. **Required** when device is a VM
-site_id = 0 # The id of the site this device is located at. (Stored in NetBox)
-# site_name = "" # Name of the site this device is located at. (May take longer to find.)
+name = "some_name" # Required for virtual machines!
+site_id = 0 # The ID of the site this device is located at.
 description = ""
-comments = "Automatically registered by Nazara."
-device_type = 0 # ID of the type of the Device Type in NetBox
-device_role = 0 # ID of the device role in NetBox
-face = "" # Direction this device may face in (e.g front or rear)
-status = "active" # Status of the device. Default: active
-airflow = "front-to-rear" # Direction of airflow
+comments = "Automatically registered using Nazara."
+device_type = 0
+role = 0
+# Name of the network interface to set. (e.g eth0, etc)
+# If not set, the first active interface will be selected.
+primary_network_interface = ""
+face = "" # Direction this device may face (e.g front or rear)
+status = "active" # Status of the device. 'active' by default.
+airflow = "front-to-rear" # Direction of airflow.
 
-# Optional data of your device.
+# Optional data of your device
+# This section may be empty
 [[system.optional]]
-# tenant_group = 0 # ID of the department this device belongs to
-# tenant_group_name = "" # Name of the department this device belongs to. (May take longer to find.)
-# tenant = 0 # ID of the team or individual this device belongs to.
-# tenant_name = "" # Name of the team or individual this device belongs to.
-# location = 0 # ID fof the location of the device.
-# rack = 0 # ID of the rack this device is mounted in if any.
-# position = 0 # Position of the device within the rack.
-platform = "x86_64"
+# tenant_group = 0 # The ID of the department this device belongs to.
+# tenant = 0 # ID of the team or individual this device blongs to.
+# location = 0 # ID of the location of the device.
+# rack = 0 # ID of the Rack this device sits in.
+# position = 0 # Position of the device within the Rack.
+platform = "x86_64" # Name of the paltform of this device.
 
-# Custom parameters about the system, which fall under the "custom_fields" section.
+# These will be parsed into a single HashMap. You must provide
+# the correct field labels as there is no way for Nazara to know.
+
+# These values are purely exemplary.
 [system.custom_fields]
-# Custom fields for the system
 
 # Network Interfaces Configuration (optional)
-# Uncomment and define `[[nwi]]` tables if network interfaces need to be configured.
-# If this section is not present, `nwi` will be an empty vector.
 #[[nwi]]
-#name = "interface1"
+#name = "" # Required. Must match interface that exists on the machine.
 #enabled = true
 #rtype = "type1"
 #parent = 1
-#bridge = 2
-#lag = 3
+#bridge = 1
+#lag = 1
 #mtu = 1500
 #duplex = "full"
 #wwn = "wwn12345"
 #mgmt_only = false
-#description = "Interface 1 Description"
-#mode = "mode1"
-#rf_role = "role1"
-#rf_channel = "channel1"
-#poe_mode = "poe_mode1"
-#poe_type = "poe_type1"
+#description = "Automatically created by Nazara."
+#mode = ""
+#rf_role = ""
+#rf_channel = ""
+#poe_role = ""
+#poe_channel = ""
 #rf_channel_frequency = 2400.0
 #rf_channel_width = 20.0
 #tx_power = 20
@@ -140,9 +145,11 @@ platform = "x86_64"
 #mark_connected = true
 #wireless_lans = [50, 60]
 #vrf = 1
-# Custom fields specific to this interface
+# Custom fields specific for this interface
 #[nwi.custom_fields]
+# ...
 ```
+
 
 *Please note that this section is still a work in progress and all information is subject to change.*
 
