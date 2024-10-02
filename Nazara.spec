@@ -15,7 +15,7 @@
 # Please submit bugfixes or comments via https://bugs.opensuse.org/
 
 Name:           Nazara
-Version:        0.0.1_pre-alpha.3
+version:        0.0.1_alpha.1
 Release:        0.1
 Summary:        Automated registration and update of machines and VMs in NetBox
 # FIXME: Select a correct license from https://github.com/openSUSE/spec-cleaner#spdx-licenses
