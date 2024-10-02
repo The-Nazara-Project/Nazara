@@ -38,9 +38,9 @@ use std::{error::Error, fmt, process};
 /// * `Reqwest` - Wraps a `reqwest::Error`. Used for handling failures with requests and responses.
 /// * `VersionMismatch` - Used to indicate the `thanix_client` version is incompatible with NetBox.
 /// * `MissingVersion` - Used to indicate that NetBox's initial response does not contain the
-/// application version.
+///    application version.
 /// * `JsonParse` - Wraps a `serde_json::Error`. Used to handle failures with response
-/// serialization.
+///    serialization.
 /// * `Other` - Expects a `String` message. Used for edge cases and general purpose error cases.
 #[derive(Debug)]
 pub enum NetBoxApiError {
@@ -121,12 +121,11 @@ impl NetBoxApiError {
     ///
     /// This function does not return.
     pub fn abort(&self, exit_code: Option<i32>) -> ! {
-        let code: i32;
-        if exit_code.is_none() {
-            code = self.figure_exit_code();
+        let code: i32 = if exit_code.is_none() {
+            self.figure_exit_code()
         } else {
-            code = exit_code.unwrap();
-        }
+            exit_code.unwrap()
+        };
 
         eprintln!("{} (Error code: {})", self, code);
         process::exit(code);

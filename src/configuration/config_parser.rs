@@ -366,7 +366,7 @@ impl ConfigData {
         name: &Option<String>,
     ) -> Result<(), ConfigError> {
         let template_path: &Path = Path::new("src/configuration/config_template.toml");
-        let mut file: File = match File::open(&template_path) {
+        let mut file: File = match File::open(template_path) {
             Ok(file) => file,
             Err(err) => {
                 return Err(ConfigError::FileOpError(err));
@@ -382,13 +382,13 @@ impl ConfigData {
 
         // Replace placeholders with actual values if exist.
         if let Some(uri) = uri {
-            contents = contents.replace("{NETBOX_URI}", &uri);
+            contents = contents.replace("{NETBOX_URI}", uri);
         }
         if let Some(token) = token {
-            contents = contents.replace("{NETBOX_TOKEN}", &token);
+            contents = contents.replace("{NETBOX_TOKEN}", token);
         }
         if let Some(name) = name {
-            contents = contents.replace("{SYSTEM_NAME}", &name);
+            contents = contents.replace("{SYSTEM_NAME}", name);
         }
 
         // Path to the output file

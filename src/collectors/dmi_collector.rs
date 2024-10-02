@@ -11,7 +11,7 @@
 
 use super::collector_exceptions::CollectorError;
 use super::util::{find_table, split_output};
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use std::{
     process::{Command, Output},
     str::Split,
@@ -133,7 +133,7 @@ pub fn construct_dmi_information() -> DmiInformation {
         chassis_information: dmidecode_chassis(DefaultDmiDecodeInformation {}),
         cpu_information: dmidecode_cpu(DefaultDmiDecodeTable {}),
     };
-    return dmi_information;
+    dmi_information
 }
 
 /// Represents the `get_dmidecode_table` function which, when called, returns the contents of the requested dmi table.
@@ -265,18 +265,18 @@ fn dmidecode_system<T: DmiDecodeInformation>(_param: T) -> SystemInformation {
     for parameter in POSSIBLE_SYSTEM_PARAMETERS.iter() {
         match *parameter {
             "system-manufacturer" => {
-                system_information.vendor = T::get_dmidecode_information(*parameter);
+                system_information.vendor = T::get_dmidecode_information(parameter);
 
                 if system_information.vendor == "QEMU" {
                     system_information.is_virtual = true;
                 }
             }
             "system-product-name" => {
-                system_information.model = T::get_dmidecode_information(*parameter)
+                system_information.model = T::get_dmidecode_information(parameter)
             }
-            "system-uuid" => system_information.uuid = T::get_dmidecode_information(*parameter),
+            "system-uuid" => system_information.uuid = T::get_dmidecode_information(parameter),
             "system-serial-number" => {
-                system_information.serial = T::get_dmidecode_information(*parameter)
+                system_information.serial = T::get_dmidecode_information(parameter)
             }
             _ => {
                 println!(
@@ -287,7 +287,7 @@ fn dmidecode_system<T: DmiDecodeInformation>(_param: T) -> SystemInformation {
         }
     }
     println!("\x1b[32m[success]\x1b[0m System information collection completed.");
-    return system_information;
+    system_information
 }
 
 /// Construct a ChassisInformation object by parsing the content of dmi chassis table.
@@ -311,13 +311,13 @@ fn dmidecode_chassis<T: DmiDecodeInformation>(_param: T) -> ChassisInformation {
     for parameter in POSSIBLE_CHASSIS_PARAMETERS.iter() {
         match *parameter {
             "chassis-type" => {
-                chassis_information.chassis_type = T::get_dmidecode_information(*parameter)
+                chassis_information.chassis_type = T::get_dmidecode_information(parameter)
             }
             "chassis-asset-tag" => {
-                chassis_information.asset = T::get_dmidecode_information(*parameter)
+                chassis_information.asset = T::get_dmidecode_information(parameter)
             }
             "chassis-serial-number" => {
-                chassis_information.chassis_serial = T::get_dmidecode_information(*parameter)
+                chassis_information.chassis_serial = T::get_dmidecode_information(parameter)
             }
             _ => {
                 println!(
@@ -328,7 +328,7 @@ fn dmidecode_chassis<T: DmiDecodeInformation>(_param: T) -> ChassisInformation {
         }
     }
     println!("\x1b[32m[success]\x1b[0m Chassis information collection completed.");
-    return chassis_information;
+    chassis_information
 }
 
 /// Construct a CpuInformation object by parsing the content of dmi cpu table.
@@ -372,7 +372,7 @@ fn dmidecode_cpu<T: DmiDecodeTable>(_param: T) -> CpuInformation {
         let mut key: String = String::new();
         let mut value: String = String::new();
 
-        match split.get(0) {
+        match split.first() {
             Some(x) => {
                 key = x.to_string();
             }
@@ -419,7 +419,7 @@ fn dmidecode_cpu<T: DmiDecodeTable>(_param: T) -> CpuInformation {
         }
     };
     println!("\x1b[32m[success]\x1b[0m CPU information collection completed.");
-    return cpu_information;
+    cpu_information
 }
 
 /// Gets the architecture name through `uname`.
@@ -435,7 +435,7 @@ fn get_architecture() -> Result<String, CollectorError> {
         Ok(output) => output,
         Err(e) => {
             let err = CollectorError::UnableToCollectDataError (
-                String::from(format!("\x1b[31m[error]\x1b[0m An error occured while attempting to execute `uname -p`! {}", e))
+                format!("\x1b[31m[error]\x1b[0m An error occured while attempting to execute `uname -p`! {}", e)
 			);
             return Err(err);
         }

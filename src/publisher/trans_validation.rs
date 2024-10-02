@@ -11,9 +11,7 @@
 //! > Also, given the filename here is room for a statement:
 //! > Trans rights are human rights!
 
-use thanix_client::{types::WritableDeviceWithConfigContextRequest, util::ThanixClient};
-
-use crate::{configuration::config_parser::ConfigData, Machine};
+use thanix_client::types::WritableDeviceWithConfigContextRequest;
 
 /// Validate the system information found in the config file.
 ///
@@ -46,6 +44,7 @@ use crate::{configuration::config_parser::ConfigData, Machine};
 /// # Returns
 ///
 /// - Ok(())
+#[allow(unused)]
 fn validate_device_payload(payload: WritableDeviceWithConfigContextRequest) -> bool {
     println!("Validating device payload...");
 
