@@ -57,7 +57,7 @@ pub fn test_connection(client: &ThanixClient) -> Result<(), publisher_exceptions
             if resp.status().is_success() {
                 let json: Value = resp
                     .json::<Value>()
-                    .map_err(|e| NetBoxApiError::Reqwest(e))?;
+                    .map_err(NetBoxApiError::Reqwest)?;
 
                 if let Some(netbox_ver) = json.get("netbox-version").and_then(Value::as_str) {
                     // Compare netbox version for compatibility
@@ -159,7 +159,7 @@ pub fn search_device(client: &ThanixClient, name: &String, serial: &String) -> O
                 if device_list.results.len() == 1 {
                     return Some(device_list.results[0].id);
                 }
-                if device_list.results.len() == 0 {
+                if device_list.results.is_empty() {
                     return None;
                 }
                 let err = NetBoxApiError::Other("Ambiguous search result. Device listed more than once. Please check your data.".to_owned());
@@ -300,7 +300,7 @@ pub fn search_interface(client: &ThanixClient, device_id: &i64, name: &String) -
                     let result = interfaces.results.unwrap();
                     return Some(result[0].id);
                 }
-                if interfaces.results.unwrap().len() == 0 {
+                if interfaces.results.unwrap().is_empty() {
                     return None;
                 }
                 let err = NetBoxApiError::Other(
@@ -407,7 +407,7 @@ pub fn search_ip(client: &ThanixClient, address: &String, device_id: &i64) -> Op
                 if addresses.results.len() == 1 {
                     return Some(addresses.results[0].id);
                 }
-                if addresses.results.len() == 0 {
+                if addresses.results.is_empty() {
                     return None;
                 }
                 let err = NetBoxApiError::Other("Ambiguous search result. IP address listed more than once. Please check your data.".to_owned());

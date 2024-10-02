@@ -39,7 +39,7 @@ use super::{api_client::update_interface, publisher_exceptions::NetBoxApiError};
 pub fn probe(client: &ThanixClient) -> Result<(), NetBoxApiError> {
     println!("Probing connection to NetBox...");
 
-    match test_connection(&client) {
+    match test_connection(client) {
         Ok(()) => {
             println!("\x1b[32m[success] Connection established!\x1b[0m");
             Ok(())
@@ -70,7 +70,7 @@ pub fn register_machine(
         todo!("Virtual machine creation not yet implemented!") // TODO: VM Creation / Update
     } else {
         let device_payload: WritableDeviceWithConfigContextRequest =
-            translator::information_to_device(&client, &machine, config_data.clone());
+            translator::information_to_device(client, &machine, config_data.clone());
 
         match search_device(
             client,

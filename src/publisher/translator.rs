@@ -66,7 +66,7 @@ pub fn information_to_device(
     payload.role = config_data.system.device_role;
     payload.tenant = config_data.system.tenant;
     payload.platform = match wanted_platform {
-        Some(platform_name) => get_platform_id(&state, platform_name),
+        Some(platform_name) => get_platform_id(state, platform_name),
         None => None,
     };
     payload.serial = machine.dmi_information.system_information.serial.clone();
@@ -185,7 +185,7 @@ pub fn information_to_interface(
     payload.mtu = nwi_config.as_ref().and_then(|nwi| nwi.mtu);
 
     payload.mac_address = Some(interface.mac_addr.clone().unwrap_or_default());
-    payload.speed = Some(interface.interface_speed.clone().unwrap_or_default());
+    payload.speed = Some(interface.interface_speed.unwrap_or_default());
     payload.description = Some(
         nwi_config
             .as_ref()
@@ -324,7 +324,7 @@ fn get_platform_id(state: &ThanixClient, platform_name: String) -> Option<i64> {
     println!("Searching for id of platform '{}' ... ", platform_name);
     let platform_list: Vec<Platform>;
 
-    match paths::dcim_platforms_list(&state, DcimPlatformsListQuery::default()) {
+    match paths::dcim_platforms_list(state, DcimPlatformsListQuery::default()) {
         Ok(response) => {
             println!("List received. Analyzing...");
 
@@ -395,7 +395,7 @@ fn get_primary_addresses(
     };
 
     // TODO: Split this API call off so it is only done once.
-    match paths::ipam_ip_addresses_list(&state, IpamIpAddressesListQuery::default()) {
+    match paths::ipam_ip_addresses_list(state, IpamIpAddressesListQuery::default()) {
         Ok(response) => {
             println!("IPAddress list received. Analyzing...");
 

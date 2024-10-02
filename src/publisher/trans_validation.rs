@@ -11,9 +11,8 @@
 //! > Also, given the filename here is room for a statement:
 //! > Trans rights are human rights!
 
-use thanix_client::{types::WritableDeviceWithConfigContextRequest, util::ThanixClient};
+use thanix_client::types::WritableDeviceWithConfigContextRequest;
 
-use crate::{configuration::config_parser::ConfigData, Machine};
 
 /// Validate the system information found in the config file.
 ///

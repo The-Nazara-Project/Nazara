@@ -197,7 +197,7 @@ pub fn construct_network_information() -> Result<Vec<NetworkInformation>, Collec
         interfaces.push(network_information)
     }
     println!("\x1b[32m[success]\x1b[0m Network Interface collection completed.");
-    return Ok(interfaces);
+    Ok(interfaces)
 }
 
 /// NetBox needs to differentiate between a physical and virtual network device.
@@ -228,7 +228,7 @@ fn check_for_physical_nw(interface_name: &str) -> bool {
     */
     let path: String = format!("/sys/class/net/{}/device/virtfn0", interface_name);
 
-    return fs::metadata(&path).is_ok();
+    fs::metadata(&path).is_ok()
 }
 
 /// Validates if the speed of a network can be actually read and will print the error messages if it cannot.
@@ -272,10 +272,10 @@ fn build_interface_file_from_name(interface_name: &str) -> Result<std::fs::File,
 
     match std::fs::File::open(interface_path) {
         Ok(file) => {
-            return Ok(file);
+            Ok(file)
         }
         Err(_) => {
-            return Err(format!(
+            Err(format!(
                 "\x1b[33m[warning]\x1b[0m Speed file for interface '{}' does not exist.",
                 interface_name
             ))
