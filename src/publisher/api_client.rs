@@ -19,8 +19,8 @@ use thanix_client::{
         IpamIpAddressesListResponse,
     },
     types::{
-        Interface, PaginatedDeviceWithConfigContextList, WritableDeviceWithConfigContextRequest,
-        WritableIPAddressRequest, WritableInterfaceRequest,
+        Interface, WritableDeviceWithConfigContextRequest, WritableIPAddressRequest,
+        WritableInterfaceRequest,
     },
     util::ThanixClient,
 };
@@ -535,6 +535,16 @@ pub fn get_interface(state: &ThanixClient, id: i64) -> Result<Interface, NetBoxA
     }
 }
 
+/// Get List of Interfaces.
+///
+/// # Parameters
+///
+/// * `state: &ThanixClient` - The API client instance to use.
+///
+/// # Returns
+///
+/// * `Ok(Vec<Interface>)` - A list of Interface objects.
+/// * `Err(NetBoxApiError)` - A `NetBoxApiError` when something goes wrong.
 pub fn get_interface_list(state: &ThanixClient) -> Result<Option<Vec<Interface>>, NetBoxApiError> {
     println!("Retrieving list of interfaces...");
 
