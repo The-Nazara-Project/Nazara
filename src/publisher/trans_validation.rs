@@ -44,6 +44,7 @@ use thanix_client::types::WritableDeviceWithConfigContextRequest;
 /// # Returns
 ///
 /// - Ok(())
+#[allow(unused)]
 fn validate_device_payload(payload: WritableDeviceWithConfigContextRequest) -> bool {
     println!("Validating device payload...");
 
