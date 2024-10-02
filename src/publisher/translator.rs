@@ -29,11 +29,12 @@ use crate::{configuration::config_parser::ConfigData, Machine};
 /// - state: `&ThanixClient` - API Client instance used for search and validation.
 /// - machine: `&Machine` - Collected information about the device.
 /// - config_data: `ConfigData` - Additional information about the device provided by config file
-/// or CLI.
+///   or CLI.
 ///
 /// # Returns
 ///
 /// - device: `WritableDeviceWithConfigContextRequest` - Payload for machine creation request
+#[allow(clippy::field_reassign_with_default)]
 pub fn information_to_device(
     state: &ThanixClient,
     machine: &Machine,
@@ -128,7 +129,8 @@ pub fn information_to_device(
 /// # Returns
 ///
 /// * payload: `WritableVirtualMachineWithConfigContextRequest` - Payload for the VM POST or UPDATE
-/// request.
+///   request.
+#[allow(unused)]
 pub fn information_to_vm(
     state: &ThanixClient,
     machine: &Machine,
@@ -148,6 +150,7 @@ pub fn information_to_vm(
 /// # Returns
 ///
 /// * payload: `WritableInterfaceRequest` - Payload for creating an interface.
+#[allow(clippy::field_reassign_with_default)]
 pub fn information_to_interface(
     config_data: ConfigData,
     interface: &NetworkInformation,
@@ -288,22 +291,23 @@ pub fn information_to_interface(
 pub fn information_to_ip(interface_address: IpAddr, interface_id: i64) -> WritableIPAddressRequest {
     println!("Creating IP Address payload...");
 
-    let mut payload: WritableIPAddressRequest = WritableIPAddressRequest::default();
+    let payload: WritableIPAddressRequest = WritableIPAddressRequest {
+        address: format!("{}", interface_address),
+        status: String::from("active"),
+        assigned_object_type: Some(String::from("dcim.interface")),
+        assigned_object_id: Some(interface_id as u64),
+        description: String::from("This Address was automatically created by Nazara."),
+        comments: String::from("Automatically created by Nazara."),
+        custom_fields: Some(HashMap::new()),
+        ..Default::default()
+    };
 
-    payload.address = format!("{}", interface_address);
     // payload.vrf = todo!();
     // payload.tenant = todo!();
-    payload.status = String::from("active");
     // payload.role = todo!();
-    payload.assigned_object_type = Some(String::from("dcim.interface"));
-    payload.assigned_object_id = Some(interface_id as u64);
     // payload.nat_inside = todo!();
     // payload.dns_name = todo!();
-    payload.description = String::from("This Address was automatically created by Nazara.");
-    payload.comments = String::from("Automatically created by Nazara. Dummy only.");
     // payload.tags = todo!();
-    payload.custom_fields = Some(HashMap::new());
-
     payload
 }
 
@@ -322,18 +326,20 @@ pub fn information_to_ip(interface_address: IpAddr, interface_id: i64) -> Writab
 /// If the netBox connection fails, this may terimnate the process.
 fn get_platform_id(state: &ThanixClient, platform_name: String) -> Option<i64> {
     println!("Searching for id of platform '{}' ... ", platform_name);
-    let platform_list: Vec<Platform>;
 
-    match paths::dcim_platforms_list(state, DcimPlatformsListQuery::default()) {
+    let platform_list: Vec<Platform> = match paths::dcim_platforms_list(
+        state,
+        DcimPlatformsListQuery::default(),
+    ) {
         Ok(response) => {
             println!("List received. Analyzing...");
 
-            platform_list = match response {
+            match response {
                 paths::DcimPlatformsListResponse::Http200(platforms) => platforms.results,
                 _ => {
                     todo!("Handling of non 200 Response code when getting platforms not implemented yet.")
                 }
-            };
+            }
         }
         Err(e) => {
             eprintln!(
@@ -377,7 +383,6 @@ fn get_primary_addresses(
     preferred_nwi: String,
 ) -> Option<i64> {
     println!("Retrieving list of Addresses...");
-    let ip_list: Vec<IPAddress>;
     let key_nwi: &NetworkInformation;
 
     if let Some(nwi_match) = machine
@@ -395,11 +400,14 @@ fn get_primary_addresses(
     };
 
     // TODO: Split this API call off so it is only done once.
-    match paths::ipam_ip_addresses_list(state, IpamIpAddressesListQuery::default()) {
+    let ip_list: Vec<IPAddress> = match paths::ipam_ip_addresses_list(
+        state,
+        IpamIpAddressesListQuery::default(),
+    ) {
         Ok(response) => {
             println!("IPAddress list received. Analyzing...");
 
-            ip_list = match response {
+            match response {
                 paths::IpamIpAddressesListResponse::Http200(adresses) => adresses.results,
                 paths::IpamIpAddressesListResponse::Other(response) => {
                     eprintln!("\x1b[31m[error]\x1b[0m Failure while trying to retrieve list of IPAddresses. \n --- Unexpected response: {} ---",
@@ -407,7 +415,7 @@ fn get_primary_addresses(
                     );
                     process::exit(1);
                 }
-            };
+            }
         }
         Err(e) => {
             eprintln!(
@@ -416,7 +424,7 @@ fn get_primary_addresses(
             );
             process::exit(1);
         }
-    }
+    };
 
     let mut result: Option<i64> = None;
 
@@ -510,7 +518,7 @@ fn get_site_id(state: &ThanixClient, config_data: &ConfigData) -> Option<i64> {
     return Some(
         site_list
             .iter()
-            .find(|site| &site.name == &target)
+            .find(|site| site.name == target)
             .unwrap()
             .id,
     );

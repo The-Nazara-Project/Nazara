@@ -55,9 +55,7 @@ pub fn test_connection(client: &ThanixClient) -> Result<(), publisher_exceptions
     match response {
         Ok(resp) => {
             if resp.status().is_success() {
-                let json: Value = resp
-                    .json::<Value>()
-                    .map_err(NetBoxApiError::Reqwest)?;
+                let json: Value = resp.json::<Value>().map_err(NetBoxApiError::Reqwest)?;
 
                 if let Some(netbox_ver) = json.get("netbox-version").and_then(Value::as_str) {
                     // Compare netbox version for compatibility

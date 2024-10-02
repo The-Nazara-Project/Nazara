@@ -271,15 +271,11 @@ fn build_interface_file_from_name(interface_name: &str) -> Result<std::fs::File,
     let interface_path: String = format!("/sys/class/net/{}/speed", interface_name);
 
     match std::fs::File::open(interface_path) {
-        Ok(file) => {
-            Ok(file)
-        }
-        Err(_) => {
-            Err(format!(
-                "\x1b[33m[warning]\x1b[0m Speed file for interface '{}' does not exist.",
-                interface_name
-            ))
-        }
+        Ok(file) => Ok(file),
+        Err(_) => Err(format!(
+            "\x1b[33m[warning]\x1b[0m Speed file for interface '{}' does not exist.",
+            interface_name
+        )),
     }
 }
 

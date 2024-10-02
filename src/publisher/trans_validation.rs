@@ -13,7 +13,6 @@
 
 use thanix_client::types::WritableDeviceWithConfigContextRequest;
 
-
 /// Validate the system information found in the config file.
 ///
 /// Checks that parameters such as IDs and other system parameters entered in the config file
