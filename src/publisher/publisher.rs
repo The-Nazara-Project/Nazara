@@ -83,14 +83,6 @@ pub fn register_machine(
                     Err(e) => e.abort(None),
                 };
 
-                // TODO:
-                // For every interface collected:
-                // 1. Check if interface already exists,
-                //    If no: Create new
-                //    If yes: Update/Overwrite
-                // 2. Check if IP Address(es) linked to this device already exist.
-                //    If no: Create new
-                //    If yes: Update/Overwrite (delete old)
                 let mut nwi_id: i64;
                 for interface in &machine.network_information {
                     match search_interface(client, &updated_id, &interface.name) {

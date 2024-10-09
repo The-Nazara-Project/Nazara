@@ -3,12 +3,6 @@
 //! This module provides logic to collect and process system information by using dmidecode.
 //!
 
-/*
- * TODO:
- * 1. Implement Error checking.
- * 2. Check netbox api documentation for correct information type.
- * */
-
 use super::collector_exceptions::CollectorError;
 use super::util::{find_table, split_output};
 use serde::Serialize;
