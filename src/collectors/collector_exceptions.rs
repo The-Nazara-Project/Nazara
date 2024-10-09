@@ -23,7 +23,7 @@
 //!
 use std::{error::Error, fmt, process};
 
-use serde::Serialize;
+use serde_json::Error as SerdeJsonError;
 
 /// Variants of all Errors the Collector might encounter.
 ///
@@ -35,12 +35,13 @@ use serde::Serialize;
 /// malformed or invalid
 /// * `NoNetworkInterfacesError` - Used in case the NWI collector crate cannot find any interfaces.
 /// * `Other` - Expects a `String` message. Used for edge cases and general purpose errors.
-#[derive(Serialize, Debug)]
+#[derive(Debug)]
 pub enum CollectorError {
     DmiError(String),
     UnableToCollectDataError(String),
     InvalidNetworkInterfaceError(String),
     NoNetworkInterfacesError(String),
+    InvalidPluginOutputError(SerdeJsonError),
     Other(String),
 }
 
@@ -59,6 +60,13 @@ impl fmt::Display for CollectorError {
             CollectorError::NoNetworkInterfacesError(ref err) => {
                 write!(f, "\x1b[31m[error]\x1b[0m Network Collector Error: {}", err)
             }
+            CollectorError::InvalidPluginOutputError(ref err) => {
+                write!(
+                    f,
+                    "\x1b[31m[error]\x1b[0m Plugin returned invalid JSON: {}",
+                    err
+                )
+            }
             CollectorError::Other(ref err) => {
                 write!(f, "\x1b[31m[error]\x1b[0m Collector Error: {}", err)
             }
@@ -68,7 +76,20 @@ impl fmt::Display for CollectorError {
 
 impl Error for CollectorError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        todo!()
+        match *self {
+            CollectorError::DmiError(_) => None,
+            CollectorError::UnableToCollectDataError(_) => None,
+            CollectorError::InvalidNetworkInterfaceError(_) => None,
+            CollectorError::NoNetworkInterfacesError(_) => None,
+            CollectorError::InvalidPluginOutputError(ref err) => Some(err),
+            CollectorError::Other(_) => None,
+        }
+    }
+}
+
+impl From<SerdeJsonError> for CollectorError {
+    fn from(err: SerdeJsonError) -> Self {
+        CollectorError::InvalidPluginOutputError(err)
     }
 }
 
@@ -105,6 +126,7 @@ impl CollectorError {
             CollectorError::UnableToCollectDataError(_) => 21,
             CollectorError::InvalidNetworkInterfaceError(_) => 25,
             CollectorError::NoNetworkInterfacesError(_) => 26,
+            CollectorError::InvalidPluginOutputError(_) => 27,
             CollectorError::Other(_) => 29,
         }
     }
