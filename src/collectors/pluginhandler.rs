@@ -36,3 +36,18 @@ pub fn execute(path: &str) -> Result<Value, Box<dyn Error>> {
 
     Ok(json_output)
 }
+
+/// Validate the output of the given Plugin to make sure it is valid JSON.
+///
+/// # Parameters
+///
+/// * TODO
+///
+/// # Returns
+///
+/// * `Ok(())` if the output is valid JSON.
+/// * `Err(collector_exceptions::CollectorError::InvalidPluginOutputError)` if the output is not
+///   valid JSON.
+fn validate() -> Result<(), CollectorError> {
+	todo!()
+}
