@@ -26,7 +26,7 @@ pub fn execute(path: &str) -> Result<Value, Box<dyn Error>> {
     let output = Command::new("bash").arg(path).output()?;
 
     if !output.status.success() {
-        let err = CollectorError::Other("Plugin script execution failed.".into());
+        let err = CollectorError::PluginExecutionError("Either you have a syntax error in your code or the file does not exist.".to_string());
         return Err(err.into());
     }
 
