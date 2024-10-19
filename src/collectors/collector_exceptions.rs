@@ -42,6 +42,7 @@ pub enum CollectorError {
     InvalidNetworkInterfaceError(String),
     NoNetworkInterfacesError(String),
     InvalidPluginOutputError(SerdeJsonError),
+	PluginExecutionError(String),
     Other(String),
 }
 
@@ -67,6 +68,13 @@ impl fmt::Display for CollectorError {
                     err
                 )
             }
+			CollectorError::PluginExecutionError(ref err) => {
+				write!(
+					f,
+					"\x1b[31m[error]\x1b[0m Plugin execution failed: {}",
+					err
+				)
+			}
             CollectorError::Other(ref err) => {
                 write!(f, "\x1b[31m[error]\x1b[0m Collector Error: {}", err)
             }
@@ -82,6 +90,7 @@ impl Error for CollectorError {
             CollectorError::InvalidNetworkInterfaceError(_) => None,
             CollectorError::NoNetworkInterfacesError(_) => None,
             CollectorError::InvalidPluginOutputError(ref err) => Some(err),
+			CollectorError::PluginExecutionError(_) => None,
             CollectorError::Other(_) => None,
         }
     }
@@ -127,6 +136,7 @@ impl CollectorError {
             CollectorError::InvalidNetworkInterfaceError(_) => 25,
             CollectorError::NoNetworkInterfacesError(_) => 26,
             CollectorError::InvalidPluginOutputError(_) => 27,
+			CollectorError::PluginExecutionError(_) => 28,
             CollectorError::Other(_) => 29,
         }
     }
