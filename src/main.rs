@@ -118,7 +118,7 @@ fn main() {
         network_information,
 		custom_information: match args.plugin {
 			Some(path) => {
-				Some(pluginhandler::execute(path.as_ref())?)
+				todo!()
 			},
 			None => None,
 		}

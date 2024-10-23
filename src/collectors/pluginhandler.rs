@@ -17,6 +17,11 @@ use serde_json::{self, Value};
 ///
 /// * `path: PathBuf` - The Path of the script to execute relative to the CWD. (If none, plugins
 ///   directory will be searched.)
+///
+/// # Returns
+///
+/// * `Ok(Value)` - Returns a JSON Value if the plugin script returns valid JSON.
+/// * `Error` - If the execution of the plugin fails or it does not return a valid JSON.
 pub fn execute(path: &str) -> Result<Value, Box<dyn Error>> {
     println!("Attempting to execute plugin at path '{}'...", path);
     if !fs::metadata(path)?.is_file() {
@@ -32,7 +37,13 @@ pub fn execute(path: &str) -> Result<Value, Box<dyn Error>> {
 
     let stdout_str = String::from_utf8(output.stdout)?;
 
-    let json_output: Value = serde_json::from_str(&stdout_str)?;
+    let json_output: Value = match serde_json::from_str(&stdout_str) {
+		Ok(content) => content,
+		Err(e) => {
+			let err: CollectorError = CollectorError::InvalidPluginOutputError(e);
+			return Err(err);
+		}
+	};
 
     Ok(json_output)
 }
