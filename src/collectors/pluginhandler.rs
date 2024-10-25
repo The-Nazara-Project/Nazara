@@ -23,24 +23,29 @@ use serde_json::{self, Value};
 ///
 /// * `Ok(HashMap<String, Value, RandomState>)` - Returns a HashMap if the plugin script returns valid JSON.
 /// * `Error` - If the execution of the plugin fails or it does not return a valid JSON.
-pub fn execute(path: Option<String>) -> Result<HashMap<String, Value, RandomState>, Box<dyn Error>> {
+pub fn execute(
+    path: Option<String>,
+) -> Result<HashMap<String, Value, RandomState>, Box<dyn Error>> {
     let script_path = match path.as_deref() {
         Some(p) => Path::new(p),
         None => return Err("No path provided.".into()),
     };
 
-    println!("Attempting to execute plugin at path '{}'...", script_path.display());
+    println!(
+        "Attempting to execute plugin at path '{}'...",
+        script_path.display()
+    );
 
     if !script_path.is_file() {
         return Err("Provided path does not lead to a file.".into());
     }
 
-    let output = Command::new("bash")
-        .arg(script_path)
-        .output()?;
+    let output = Command::new("bash").arg(script_path).output()?;
 
     if !output.status.success() {
-        let err = CollectorError::PluginExecutionError("Either you have a syntax error in your code or the file does not exist.".to_string());
+        let err = CollectorError::PluginExecutionError(
+            "Either you have a syntax error in your code or the file does not exist.".to_string(),
+        );
         return Err(err.into());
     }
 

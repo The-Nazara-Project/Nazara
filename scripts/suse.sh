@@ -57,7 +57,6 @@ cpu_config="{\"CPU_Sockets\": \"$cpu_sockets\", \"CPU_Cores\": \"$cpu_cores\", \
 system_info["CPU_Configuration"]="$cpu_config"
 
 # Print the final JSON output
-echo "System Information:"
 cat << EOF
 {
   "CPU_Architecture": "${system_info["CPU_Architecture"]}",

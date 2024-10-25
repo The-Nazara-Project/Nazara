@@ -41,9 +41,9 @@ pub enum CollectorError {
     UnableToCollectDataError(String),
     InvalidNetworkInterfaceError(String),
     NoNetworkInterfacesError(String),
-	UnableToParseUTF8(FromUtf8Error),
+    UnableToParseUTF8(FromUtf8Error),
     InvalidPluginOutputError(SerdeJsonError),
-	PluginExecutionError(String),
+    PluginExecutionError(String),
     Other(String),
 }
 
@@ -62,9 +62,13 @@ impl fmt::Display for CollectorError {
             CollectorError::NoNetworkInterfacesError(ref err) => {
                 write!(f, "\x1b[31m[error]\x1b[0m Network Collector Error: {}", err)
             }
-			CollectorError::UnableToParseUTF8(ref err) => {
-				write!(f, "\x1b[31m[error]\x1b[0m Unable to parse stdout from UTF8 to string: {}", err)
-			}
+            CollectorError::UnableToParseUTF8(ref err) => {
+                write!(
+                    f,
+                    "\x1b[31m[error]\x1b[0m Unable to parse stdout from UTF8 to string: {}",
+                    err
+                )
+            }
             CollectorError::InvalidPluginOutputError(ref err) => {
                 write!(
                     f,
@@ -72,13 +76,9 @@ impl fmt::Display for CollectorError {
                     err
                 )
             }
-			CollectorError::PluginExecutionError(ref err) => {
-				write!(
-					f,
-					"\x1b[31m[error]\x1b[0m Plugin execution failed: {}",
-					err
-				)
-			}
+            CollectorError::PluginExecutionError(ref err) => {
+                write!(f, "\x1b[31m[error]\x1b[0m Plugin execution failed: {}", err)
+            }
             CollectorError::Other(ref err) => {
                 write!(f, "\x1b[31m[error]\x1b[0m Collector Error: {}", err)
             }
@@ -93,9 +93,9 @@ impl Error for CollectorError {
             CollectorError::UnableToCollectDataError(_) => None,
             CollectorError::InvalidNetworkInterfaceError(_) => None,
             CollectorError::NoNetworkInterfacesError(_) => None,
-			CollectorError::UnableToParseUTF8(ref err) => Some(err),
+            CollectorError::UnableToParseUTF8(ref err) => Some(err),
             CollectorError::InvalidPluginOutputError(ref err) => Some(err),
-			CollectorError::PluginExecutionError(_) => None,
+            CollectorError::PluginExecutionError(_) => None,
             CollectorError::Other(_) => None,
         }
     }
@@ -108,9 +108,9 @@ impl From<SerdeJsonError> for CollectorError {
 }
 
 impl From<FromUtf8Error> for CollectorError {
-	fn from(err: FromUtf8Error) -> Self {
-		CollectorError::UnableToParseUTF8(err)
-	}
+    fn from(err: FromUtf8Error) -> Self {
+        CollectorError::UnableToParseUTF8(err)
+    }
 }
 
 impl CollectorError {
@@ -146,11 +146,10 @@ impl CollectorError {
             CollectorError::UnableToCollectDataError(_) => 21,
             CollectorError::InvalidNetworkInterfaceError(_) => 22,
             CollectorError::NoNetworkInterfacesError(_) => 23,
-			CollectorError::UnableToParseUTF8(_) => 26,
+            CollectorError::UnableToParseUTF8(_) => 26,
             CollectorError::InvalidPluginOutputError(_) => 27,
-			CollectorError::PluginExecutionError(_) => 28,
+            CollectorError::PluginExecutionError(_) => 28,
             CollectorError::Other(_) => 29,
         }
     }
 }
-

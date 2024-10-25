@@ -118,9 +118,9 @@ fn main() {
         dmi_information,
         network_information,
         custom_information: match execute(args.plugin) {
-			Ok(info) => Some(info),
-			Err(e) => panic!("{}", e.to_string()),
-		},
+            Ok(info) => Some(info),
+            Err(e) => panic!("{}", e.to_string()),
+        },
     };
 
     // Passing a name in any way is mandatory for a virtual machine
