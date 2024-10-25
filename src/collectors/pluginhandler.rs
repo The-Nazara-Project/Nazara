@@ -72,3 +72,73 @@ fn validate(output: &str) -> Result<(), CollectorError> {
         .map(|_| ())
         .map_err(|e| CollectorError::InvalidPluginOutputError(e))
 }
+
+#[cfg(test)]
+mod tests {
+    use serde_json::{json, Value};
+    use std::collections::HashMap;
+    use std::error::Error;
+    use std::fs::File;
+    use std::io::Write;
+    use std::os::unix::fs::PermissionsExt;
+    use std::path::PathBuf;
+
+    use super::*;
+
+    fn create_test_script(content: &str) -> Result<PathBuf, Box<dyn Error>> {
+        // Create a temporary directory path
+        let mut path = std::env::temp_dir();
+        // Set the name of the script
+        path.push("test_script.sh");
+
+        // Create a new file at the specified path
+        let mut file = File::create(&path)?;
+        // Write the provided content into the file
+        writeln!(file, "{}", content)?;
+
+        // Make the script executable (Unix/Linux)
+        #[cfg(unix)]
+        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755))?;
+
+        // Return the path to the created script
+        Ok(path)
+    }
+
+    #[test]
+    fn test_validate_invalid_json() {
+        let invalid_json = "Invalid JSON format";
+
+        let result = validate(invalid_json);
+        assert!(result.is_err());
+        if let Err(CollectorError::InvalidPluginOutputError(e)) = result {
+            // Convert the error to a string and check its content
+            let error_message = e.to_string();
+            assert!(
+                error_message.contains("expected value")
+                    || error_message.contains("trailing characters")
+            );
+        }
+    }
+
+    #[test]
+    fn test_execute_invalid_json() {
+        // Create a script that outputs invalid JSON
+        let script_content = r#"
+        #!/bin/bash
+        echo "Invalid JSON"
+    "#;
+
+        let path = create_test_script(script_content).unwrap();
+
+        let result = execute(Some(path.to_str().unwrap().to_string()));
+        assert!(result.is_err());
+        if let Err(e) = result {
+            // Convert the error to a string and check its content
+            let error_message = e.to_string();
+            assert!(
+                error_message.contains("expected value")
+                    || error_message.contains("trailing characters")
+            );
+        }
+    }
+}
