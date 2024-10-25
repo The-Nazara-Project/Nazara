@@ -69,7 +69,7 @@
 //! # ...
 //! ```
 //!
-//! It will be created at ` ~/.nazara-config.toml`.
+//! It will be created at ` ~/.nazara/.config.toml`.
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -224,7 +224,7 @@ pub struct NwiConfig {
 
 /// Set up configuration
 ///
-/// This function reads the configuration file located at `~/.nazara-config.toml`. If no file can be found, a warning is
+/// This function reads the configuration file located at `~/.nazara/config.toml`. If no file can be found, a warning is
 /// displayed to the user and a default config file is written.
 /// If command line arguments are given, the parameters read from the file will be overwritten.
 ///
@@ -344,7 +344,7 @@ fn get_config_dir() -> PathBuf {
         }
     };
 
-    let config_file_path: PathBuf = Path::new(&home_dir).join(".nazara-config.toml");
+    let config_file_path: PathBuf = Path::new(&home_dir).join(".nazara/config.toml");
 
     config_file_path
 }
