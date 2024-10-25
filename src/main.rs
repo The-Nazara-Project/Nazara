@@ -6,13 +6,14 @@ use clap::Parser;
 use collectors::{
     dmi_collector::{self, DmiInformation},
     network_collector::{self, NetworkInformation},
+    pluginhandler::execute,
 };
 use configuration::config_parser::set_up_configuration;
 use publisher::publisher::*;
 use reqwest::blocking::Client;
+use serde_json::Value;
 use std::{collections::HashMap, process};
 use thanix_client::util::ThanixClient;
-use serde_json::Value;
 
 use crate::collectors::pluginhandler;
 
@@ -29,7 +30,7 @@ pub struct Machine {
     pub name: Option<String>,
     pub dmi_information: DmiInformation,
     pub network_information: Vec<NetworkInformation>,
-	pub custom_information: Option<HashMap<String, Value>>,
+    pub custom_information: Option<HashMap<String, Value>>,
 }
 
 /// The arguments that Nazara expects to get via the cli.
@@ -116,12 +117,10 @@ fn main() {
         name: args.name,
         dmi_information,
         network_information,
-		custom_information: match args.plugin {
-			Some(path) => {
-				todo!()
-			},
-			None => None,
-		}
+        custom_information: match execute(args.plugin) {
+			Ok(info) => Some(info),
+			Err(e) => panic!("{}", e.to_string()),
+		},
     };
 
     // Passing a name in any way is mandatory for a virtual machine

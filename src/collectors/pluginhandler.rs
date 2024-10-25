@@ -4,9 +4,10 @@
 //!
 //! Currently, Nazara is set to handle `bash`, `python` and `Lua` scripts.
 
-use std::error::Error;
-use std::fs;
+use std::collections::HashMap;
+use std::hash::RandomState;
 use std::process::Command;
+use std::{error::Error, path::Path};
 
 use crate::collectors::collector_exceptions::CollectorError;
 use serde_json::{self, Value};
@@ -15,20 +16,28 @@ use serde_json::{self, Value};
 ///
 /// # Parameters
 ///
-/// * `path: PathBuf` - The Path of the script to execute relative to the CWD. (If none, plugins
+/// * `path: Option<String>` - The Path of the script to execute relative to the CWD. (If none, plugins
 ///   directory will be searched.)
 ///
 /// # Returns
 ///
-/// * `Ok(Value)` - Returns a JSON Value if the plugin script returns valid JSON.
+/// * `Ok(HashMap<String, Value, RandomState>)` - Returns a HashMap if the plugin script returns valid JSON.
 /// * `Error` - If the execution of the plugin fails or it does not return a valid JSON.
-pub fn execute(path: &str) -> Result<Value, Box<dyn Error>> {
-    println!("Attempting to execute plugin at path '{}'...", path);
-    if !fs::metadata(path)?.is_file() {
-        return Err("Provided path does not lead to file.".into());
+pub fn execute(path: Option<String>) -> Result<HashMap<String, Value, RandomState>, Box<dyn Error>> {
+    let script_path = match path.as_deref() {
+        Some(p) => Path::new(p),
+        None => return Err("No path provided.".into()),
+    };
+
+    println!("Attempting to execute plugin at path '{}'...", script_path.display());
+
+    if !script_path.is_file() {
+        return Err("Provided path does not lead to a file.".into());
     }
 
-    let output = Command::new("bash").arg(path).output()?;
+    let output = Command::new("bash")
+        .arg(script_path)
+        .output()?;
 
     if !output.status.success() {
         let err = CollectorError::PluginExecutionError("Either you have a syntax error in your code or the file does not exist.".to_string());
@@ -37,28 +46,24 @@ pub fn execute(path: &str) -> Result<Value, Box<dyn Error>> {
 
     let stdout_str = String::from_utf8(output.stdout)?;
 
-    let json_output: Value = match serde_json::from_str(&stdout_str) {
-		Ok(content) => content,
-		Err(e) => {
-			let err: CollectorError = CollectorError::InvalidPluginOutputError(e);
-			return Err(err);
-		}
-	};
+    validate(&stdout_str)?; // Validate JSON format
 
+    let json_output: HashMap<String, Value> = serde_json::from_str(&stdout_str)?;
     Ok(json_output)
 }
 
-/// Validate the output of the given Plugin to make sure it is valid JSON.
+/// Validate the output of the given plugin to ensure it is valid JSON.
 ///
 /// # Parameters
 ///
-/// * TODO
+/// * `output: &str` - The output string to validate.
 ///
 /// # Returns
 ///
 /// * `Ok(())` if the output is valid JSON.
-/// * `Err(collector_exceptions::CollectorError::InvalidPluginOutputError)` if the output is not
-///   valid JSON.
-fn validate() -> Result<(), CollectorError> {
-	todo!()
+/// * `Err(CollectorError::InvalidPluginOutputError)` if the output is not valid JSON.
+fn validate(output: &str) -> Result<(), CollectorError> {
+    serde_json::from_str::<Value>(output)
+        .map(|_| ())
+        .map_err(|e| CollectorError::InvalidPluginOutputError(e))
 }
