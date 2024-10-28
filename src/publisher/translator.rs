@@ -90,7 +90,7 @@ pub fn information_to_device(
     payload.airflow = config_data.system.airflow;
     payload.comments = config_data.system.comments;
     // payload.config_template = todo!();
-    payload.custom_fields = config_data.system.custom_fields;
+    payload.custom_fields = machine.custom_information.clone();
     payload.description = config_data.system.description;
     // payload.local_context_data = todo!();
     // payload.oob_ip = todo!();
@@ -114,6 +114,8 @@ pub fn information_to_device(
     // payload.vc_priority = todo!();
     payload.tenant = config_data.system.tenant;
     payload.location = config_data.system.location;
+
+    println!("PAYLOAD:\n{:?}", &payload);
 
     payload
 }

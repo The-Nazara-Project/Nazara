@@ -12,18 +12,18 @@
 //! |------|-----------|-----------------------------|
 //! |`20`  |DmiError   |Unable to execute `dmidecode`|
 //! |`21`  |UnableToCollectDataError|Unspecified Error with data collection. Usually appears when subprocess fails or an output is malformed.|
-//! |`22`  |--Undefined--|--Undefined--|
-//! |`23`  |--Undefined--|--Undefined--|
+//! |`22`  |InvalidNetworkInterfaceError|Unable to identify a Network Interface as such.|
+//! |`23`  |NoNetworkInterfacesException|Unable to find any Network Interfaces.|
 //! |`24`  |--Undefined--|--Undefined--|
-//! |`25`  |InvalidNetworkInterfaceError|Unable to identify a Network Interface as such.|
-//! |`26`  |NoNetworkInterfacesException|Unable to find any Network Interfaces.|
-//! |`27`  |--Undefined--|--Undefined--|
-//! |`28`  |--Undefined--|--Undefined--|
+//! |`25`  |--Undefined--|--Undefined--|
+//! |`26`  |UnableToParseUTF8|Nazara was unable to parse the output of your plugin from utf8.|
+//! |`27`  |InvalidPluginOutputError|Your Plugin did not return valid JSON output.|
+//! |`28`  |PluginExecutionError|Nazara was unable to execute your Plugin script.|
 //! |`29`  |--Reserved--|Used for the `Other` error type if no other code can be defined.|
 //!
-use std::{error::Error, fmt, process};
+use std::{error::Error, fmt, process, string::FromUtf8Error};
 
-use serde::Serialize;
+use serde_json::Error as SerdeJsonError;
 
 /// Variants of all Errors the Collector might encounter.
 ///
@@ -35,12 +35,15 @@ use serde::Serialize;
 /// malformed or invalid
 /// * `NoNetworkInterfacesError` - Used in case the NWI collector crate cannot find any interfaces.
 /// * `Other` - Expects a `String` message. Used for edge cases and general purpose errors.
-#[derive(Serialize, Debug)]
+#[derive(Debug)]
 pub enum CollectorError {
     DmiError(String),
     UnableToCollectDataError(String),
     InvalidNetworkInterfaceError(String),
     NoNetworkInterfacesError(String),
+    UnableToParseUTF8(FromUtf8Error),
+    InvalidPluginOutputError(SerdeJsonError),
+    PluginExecutionError(String),
     Other(String),
 }
 
@@ -59,6 +62,23 @@ impl fmt::Display for CollectorError {
             CollectorError::NoNetworkInterfacesError(ref err) => {
                 write!(f, "\x1b[31m[error]\x1b[0m Network Collector Error: {}", err)
             }
+            CollectorError::UnableToParseUTF8(ref err) => {
+                write!(
+                    f,
+                    "\x1b[31m[error]\x1b[0m Unable to parse stdout from UTF8 to string: {}",
+                    err
+                )
+            }
+            CollectorError::InvalidPluginOutputError(ref err) => {
+                write!(
+                    f,
+                    "\x1b[31m[error]\x1b[0m Plugin returned invalid JSON: {}",
+                    err
+                )
+            }
+            CollectorError::PluginExecutionError(ref err) => {
+                write!(f, "\x1b[31m[error]\x1b[0m Plugin execution failed: {}", err)
+            }
             CollectorError::Other(ref err) => {
                 write!(f, "\x1b[31m[error]\x1b[0m Collector Error: {}", err)
             }
@@ -68,7 +88,28 @@ impl fmt::Display for CollectorError {
 
 impl Error for CollectorError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        todo!()
+        match *self {
+            CollectorError::DmiError(_) => None,
+            CollectorError::UnableToCollectDataError(_) => None,
+            CollectorError::InvalidNetworkInterfaceError(_) => None,
+            CollectorError::NoNetworkInterfacesError(_) => None,
+            CollectorError::UnableToParseUTF8(ref err) => Some(err),
+            CollectorError::InvalidPluginOutputError(ref err) => Some(err),
+            CollectorError::PluginExecutionError(_) => None,
+            CollectorError::Other(_) => None,
+        }
+    }
+}
+
+impl From<SerdeJsonError> for CollectorError {
+    fn from(err: SerdeJsonError) -> Self {
+        CollectorError::InvalidPluginOutputError(err)
+    }
+}
+
+impl From<FromUtf8Error> for CollectorError {
+    fn from(err: FromUtf8Error) -> Self {
+        CollectorError::UnableToParseUTF8(err)
     }
 }
 
@@ -103,67 +144,12 @@ impl CollectorError {
         match &self {
             CollectorError::DmiError(_) => 20,
             CollectorError::UnableToCollectDataError(_) => 21,
-            CollectorError::InvalidNetworkInterfaceError(_) => 25,
-            CollectorError::NoNetworkInterfacesError(_) => 26,
+            CollectorError::InvalidNetworkInterfaceError(_) => 22,
+            CollectorError::NoNetworkInterfacesError(_) => 23,
+            CollectorError::UnableToParseUTF8(_) => 26,
+            CollectorError::InvalidPluginOutputError(_) => 27,
+            CollectorError::PluginExecutionError(_) => 28,
             CollectorError::Other(_) => 29,
         }
     }
 }
-
-// /// Handles general errors with collecting information.
-// ///
-// /// Either because the command is unavailable, requires sudo privileges or other failures.
-// ///
-// /// As this is an Error this cannot be recovered from and the program must abort.
-// pub struct UnableToCollectDataError {
-//     pub message: String,
-// }
-
-// impl fmt::Display for UnableToCollectDataError {
-//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-//         write!(f, "{}", self.message)
-//     }
-// }
-
-// impl UnableToCollectDataError {
-//     pub fn abort(&self, exit_code: i32) -> ! {
-//         println!("{} (Error code: {})", self, exit_code);
-//         process::exit(exit_code)
-//     }
-// }
-
-// /// This exception shall be raised whenever a Network Interface cannot be identified.
-// ///
-// /// Usually because some or all parameters such as name, addr or mac_addr are missing.
-// ///
-// /// As this is an Error this cannot be recovered from and the program must abort.
-// pub struct InvalidNetworkInterfaceError {
-//     pub message: String,
-// }
-
-// impl fmt::Display for InvalidNetworkInterfaceError {
-//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-//         write!(f, "{}", self.message)
-//     }
-// }
-
-// impl InvalidNetworkInterfaceError {
-//     pub fn abort(&self, exit_code: i32) -> ! {
-//         println!("{} (Error code: {})", self, exit_code);
-//         process::exit(exit_code)
-//     }
-// }
-
-// /// This exception will be raised if no Network Interfaces can be found, so if the returned vector is empty.
-// ///
-// /// This is not a unrecoverable error.
-// #[derive(Debug)]
-// pub struct NoNetworkInterfacesException {
-//     pub message: String,
-// }
-
-// impl fmt::Display for NoNetworkInterfacesException {
-//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-//         write!(f, "{}", self.message)
-//     }
-// }

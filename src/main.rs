@@ -6,12 +6,16 @@ use clap::Parser;
 use collectors::{
     dmi_collector::{self, DmiInformation},
     network_collector::{self, NetworkInformation},
+    pluginhandler::execute,
 };
 use configuration::config_parser::set_up_configuration;
 use publisher::publisher::*;
 use reqwest::blocking::Client;
-use std::process;
+use serde_json::Value;
+use std::{collections::HashMap, process};
 use thanix_client::util::ThanixClient;
+
+use crate::collectors::pluginhandler;
 
 /// The Machine struct
 ///
@@ -26,6 +30,7 @@ pub struct Machine {
     pub name: Option<String>,
     pub dmi_information: DmiInformation,
     pub network_information: Vec<NetworkInformation>,
+    pub custom_information: Option<HashMap<String, Value>>,
 }
 
 /// The arguments that Nazara expects to get via the cli.
@@ -59,6 +64,10 @@ struct Args {
     /// The name of the device
     #[arg(short, long)]
     name: Option<String>,
+
+    /// The Path to a plugin script you want to run
+    #[arg(short, long)]
+    plugin: Option<String>,
 }
 
 fn main() {
@@ -108,6 +117,10 @@ fn main() {
         name: args.name,
         dmi_information,
         network_information,
+        custom_information: match execute(args.plugin) {
+            Ok(info) => Some(info),
+            Err(e) => panic!("{}", e.to_string()),
+        },
     };
 
     // Passing a name in any way is mandatory for a virtual machine

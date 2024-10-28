@@ -97,7 +97,7 @@ pub fn test_connection(client: &ThanixClient) -> Result<(), publisher_exceptions
 ///
 /// # Returns
 ///
-/// `bool` depending if the `thanix_client` dependency is compatible with the running NetBox
+/// * `bool` depending if the `thanix_client` dependency is compatible with the running NetBox
 /// version.
 fn check_version_compatiblity(netbox_version: &str, thanix_version: &str) -> bool {
     println!("Checking API client compatibility with used NetBox version...");
@@ -119,7 +119,7 @@ fn check_version_compatiblity(netbox_version: &str, thanix_version: &str) -> boo
 ///
 /// # Returns
 ///
-/// `Some(u32)` if the Version can be parsed to an `u32`, if not, returns `None`.
+/// * `Some(u32)` if the Version can be parsed to an `u32`, if not, returns `None`.
 fn get_major_verison(version: &str) -> Option<u32> {
     version.split('.').next()?.parse().ok()
 }
