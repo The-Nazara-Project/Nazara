@@ -153,6 +153,24 @@ platform = "x86_64" # Name of the paltform of this device.
 
 *Please note that this section is still a work in progress and all information is subject to change.*
 
+## Custom Plugins
+
+Users are able to fill `custom_fields` parameters in their NetBox objects using custom bash scripts.
+These scripts should be placed inside the `~/.nazara/scripts/` directory.
+
+These scripts can collect the desired information and output *a valid JSON representation* to `stdout`.
+Nazara then reads this output, validates it, and attempts to parse it to a `HashMap` of values.
+
+If everything works out, this will populate all of your custom fields no matter what fields you specified, as long as your script
+is correct.
+
+> [!Warning]
+> Users must make sure that the output of their scripts matches the name of their desired custom fields they specified 
+> in NetBox.
+>
+> Currently, **we only support text fields** as all the other field types would require smart parsing on our end.
+> We are currently investiating on how to achieve this.
+
 # Contributing
 
 If you would like to contribute to Nazara, feel free to check the [contributing guide](./CONTRIBUTING.md) for
