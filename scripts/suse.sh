@@ -57,13 +57,12 @@ cpu_config="{\"CPU_Sockets\": \"$cpu_sockets\", \"CPU_Cores\": \"$cpu_cores\", \
 system_info["CPU_Configuration"]="$cpu_config"
 
 # Print the final JSON output
+# FIXME: cpu_type omitted until filter works
 cat << EOF
 {
-  "CPU_Architecture": "${system_info["CPU_Architecture"]}",
-  "Max_Capacity_TB": "${system_info["Max_Capacity_TB"]}",
-  "CPU_Type": "${system_info["CPU_Type"]}",
-  "Max_Power_Watt": "${system_info["Max_Power_Watt"]}",
-  "RAM_GB": "${system_info["RAM_GB"]}",
-  "CPU_Configuration": ${system_info["CPU_Configuration"]}
+  "arch": "${system_info["CPU_Architecture"]}",
+  "capacity": "${system_info["Max_Capacity_TB"]}",
+  "max_power": "${system_info["Max_Power_Watt"]}",
+  "memory": "${system_info["RAM_GB"]}"
 }
 EOF
