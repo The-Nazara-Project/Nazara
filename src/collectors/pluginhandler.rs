@@ -29,7 +29,12 @@ pub fn execute(
 ) -> Result<HashMap<String, Value, RandomState>, Box<dyn Error>> {
     let script_path = match path.as_deref() {
         Some(p) => Path::new(p),
-        None => return Err("No path provided.".into()),
+        None => {
+            println!(
+                "\x1b[36m[info]\x1b[0m No plugin path provided. Custom field parameters ignored."
+            );
+            return Ok(HashMap::new());
+        }
     };
 
     println!(
