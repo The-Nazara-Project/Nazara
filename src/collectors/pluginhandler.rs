@@ -24,85 +24,38 @@ use serde_json::{self, Value};
 ///
 /// * `Ok(HashMap<String, Value, RandomState>)` - Returns a HashMap if the plugin script returns valid JSON.
 /// * `Error` - If the execution of the plugin fails or it does not return a valid JSON.
-pub fn execute(path: Option<String>) -> Result<HashMap<String, Value, RandomState>, Box<dyn Error>> {
-    println!("Attempting to execute plugin at path '{:?}'...", path);
+pub fn execute(
+    path: Option<String>,
+) -> Result<HashMap<String, Value, RandomState>, Box<dyn Error>> {
+    let script_path = match path.as_deref() {
+        Some(p) => Path::new(p),
+        None => return Err("No path provided.".into()),
+    };
 
-    // Verify that the path is valid
-    if let Some(path) = path.clone() {
-        if !PathBuf::from(path).is_file() {
-            return Err("Provided path does not lead to a valid file.".into());
-        }
+    println!(
+        "Attempting to execute plugin at path '{}'...",
+        script_path.display()
+    );
+
+    if !script_path.is_file() {
+        return Err("Provided path does not lead to a file.".into());
     }
 
-    // Execute the script
-    let output = Command::new("bash").arg(path.unwrap()).output()?;
+    let output = Command::new("bash").arg(script_path).output()?;
 
-    // Check for execution errors
     if !output.status.success() {
-        return Err("Script execution failed.".into());
+        let err = CollectorError::PluginExecutionError(
+            "Either you have a syntax error in your code or the file does not exist.".to_string(),
+        );
+        return Err(err.into());
     }
 
-    // Convert stdout to a string
     let stdout_str = String::from_utf8(output.stdout)?;
 
-    // Parse the output JSON
-    let json_output: Value = serde_json::from_str(&stdout_str)?;
+    validate(&stdout_str)?; // Validate JSON format
 
-    let valid_arch: HashSet<&str> = [
-        "aarch64", "i386", "ia64", "x86_64", "ppc64", "s390x", "ppc64le",
-    ]
-    .iter()
-    .cloned()
-    .collect();
-
-    // Convert JSON to a HashMap, filtering invalid cpu_type and arch values
-    let mut output_map: HashMap<String, Value> = json_output
-        .as_object()
-        .ok_or("Expected JSON object format")?
-        .clone()
-        .into_iter()
-        .collect();
-
-    if let Some(arch) = output_map.get("arch") {
-        if let Some(arch_str) = arch.as_str() {
-            if !valid_arch.contains(arch_str) {
-                output_map.remove("arch");
-            }
-        }
-    }
-
-    // Parse and adjust Max_Power_Watt, RAM_GB, and Max_Capacity_TB as integers
-    if let Some(max_power) = output_map.get("max_power") {
-        if let Some(max_power_str) = max_power.as_str() {
-            if let Ok(max_power_int) = max_power_str.parse::<i64>() {
-                output_map.insert("max_power".to_string(), Value::Number(max_power_int.into()));
-            } else {
-                output_map.remove("max_power"); // Remove if not a valid integer
-            }
-        }
-    }
-
-    if let Some(ram_gb) = output_map.get("memory") {
-        if let Some(ram_gb_str) = ram_gb.as_str() {
-            if let Ok(ram_gb_int) = ram_gb_str.parse::<i64>() {
-                output_map.insert("memory".to_string(), Value::Number(ram_gb_int.into()));
-            } else {
-                output_map.remove("memory"); // Remove if not a valid integer
-            }
-        }
-    }
-
-    if let Some(max_capacity) = output_map.get("capacity") {
-        if let Some(max_capacity_str) = max_capacity.as_str() {
-            if let Ok(max_capacity_int) = max_capacity_str.parse::<i64>() {
-                output_map.insert("capacity".to_string(), Value::Number(max_capacity_int.into()));
-            } else {
-                output_map.remove("capacity"); // Remove if not a valid integer
-            }
-        }
-    }
-
-    Ok(output_map)
+    let json_output: HashMap<String, Value> = serde_json::from_str(&stdout_str)?;
+    Ok(json_output)
 }
 
 /// Validate the output of the given plugin to ensure it is valid JSON.
