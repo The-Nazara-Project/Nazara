@@ -12,7 +12,26 @@ API. It enables the automatic creation of new machines in NetBox or population o
 
 **Nazara is in the early stages of its development. Please note that the information listed below is subject to change.**
 
-## Building from Source
+> [!Note]
+> Nazara is currently in an alpha state. Bugs are bound to happen. If you encounter any, please [report them](https://github.com/The-Nazara-Project/Nazara/issues).
+>
+> Furthermore, **Nazara currently does not support custom fields for any NetBox object**. Though, this is the next item on our agenda.
+
+- [Installation](#installation)
+  - [Building from source](#building-from-source)
+    - [Installation via `crates.io`](#installation-via-cratesio)
+- [Usage](#usage)
+- [Configuration](#configuration)
+  - [Configuring via CLI](#configuring-via-cli)
+  - [Configuring via `~/.nazara/config.toml`file.](#configuring-via-nazaraconfigtomlfile)
+  - [Configuring custom fields using user plugins](#configuring-custom-fields-using-user-plugins)
+- [Contributing](#contributing)
+- [License](#license)
+
+
+# Installation
+
+## Building from source
 
 To use Nazara, you will need to have the Rust programming language and `cargo` installed. If you do not have them
 installed already, you can follow the instructions provided in the [official Rust documentation](https://www.rust-lang.org/tools/install).
@@ -29,15 +48,14 @@ cargo build --release
 
 This will create an executable file in the `target/release` directory.
 
-## Installation
-
 ### Installation via `crates.io`
 
 Nazara is published on `crates.io`. If your operating system permits cargo to install packages globally, simply run `cargo install nazara` to install it.
 
-## Usage (WIP)
+# Usage
 
-To use Nazara, you will need to configure the URL of your NetBox API and provide an API token to the program.
+To use Nazara, you will need to configure the URL of your NetBox API and provide an API token to the program by
+configuring all of these parameters inside the [configuration file](#configuring-via-nazaraconfigtomlfile).
 
 After that, simply run
 
@@ -47,12 +65,7 @@ nazara
 
 in your terminal. Nazara will automatically collect all required system information and decide whether to create a new device, or update an existing entry.
 
-> [!Note]
-> Nazara is currently in an alpha state. Bugs are bound to happen. If you encounter any, please [report them](https://github.com/The-Nazara-Project/Nazara/issues).
->
-> Furthermore, **Nazara currently does not support custom fields for any NetBox object**. Though, this is the next item on our agenda.
-
-### Configuration (WIP)
+# Configuration
 
 Nazara supports two ways of providing configuration parameters: CLI arguments and a configuration file.
 
@@ -61,7 +74,7 @@ Nazara requires two parameters from you:
 - `API_URL`: The URL of your NetBox API
 - `API_TOKEN`: The authentication token for the NetBox API
 
-#### Configuring via CLI
+## Configuring via CLI
 
 Here is an example for passing these parameters on using the CLI:
 
@@ -69,10 +82,9 @@ Here is an example for passing these parameters on using the CLI:
 ./target/release/Nazara --api-url <API_URL> --api-token <API_TOKEN>
 ```
 
-#### Configuring via `nbs-config.toml`file.
+## Configuring via `~/.nazara/config.toml`file.
 
-Alternatively, you can provide the configuration parameters in a config file named `nazara-config.toml`, located in the same
-directory as the executable file. Here is an example how the config file should look like:
+Nazara's configuration must be located in the user's home directory at `~/.nazara/config.toml`.
 
 ```toml
 [netbox]
@@ -80,11 +92,12 @@ netbox_api_token = "$API_TOKEN"
 netbox_uri = "$API_URI"
 ```
 
-Aside from the NetBox system parameters, configuration via the `.nazara-config.toml` also allows you to add certain
+Aside from the NetBox system parameters, configuration via the `config.toml` also allows you to add certain
 custom fields to your system information that cannot be automatically selected. A great example would be the
 `System Location` entry. To specify that, simply add the parameter under the `[system]` block in your configuration file.
 
 ```toml
+# A default configuration file looks like this:
 [netbox]
 netbox_uri = ""
 netbox_api_token = ""
@@ -102,20 +115,18 @@ primary_network_interface = ""
 face = "" # Direction this device may face (e.g front or rear)
 status = "active" # Status of the device. 'active' by default.
 airflow = "front-to-rear" # Direction of airflow.
-
 # Optional data of your device
 # This section may be empty
 [[system.optional]]
+
 # tenant_group = 0 # The ID of the department this device belongs to.
 # tenant = 0 # ID of the team or individual this device blongs to.
 # location = 0 # ID of the location of the device.
 # rack = 0 # ID of the Rack this device sits in.
 # position = 0 # Position of the device within the Rack.
 platform = "x86_64" # Name of the paltform of this device.
-
 # These will be parsed into a single HashMap. You must provide
 # the correct field labels as there is no way for Nazara to know.
-
 # These values are purely exemplary.
 [system.custom_fields]
 
@@ -150,10 +161,9 @@ platform = "x86_64" # Name of the paltform of this device.
 # ...
 ```
 
-
 *Please note that this section is still a work in progress and all information is subject to change.*
 
-## Custom Plugins
+## Configuring custom fields using user plugins
 
 Users are able to fill `custom_fields` parameters in their NetBox objects using custom bash scripts.
 These scripts should be placed inside the `~/.nazara/scripts/` directory.
@@ -165,11 +175,11 @@ If everything works out, this will populate all of your custom fields no matter 
 is correct.
 
 > [!Warning]
-> Users must make sure that the output of their scripts matches the name of their desired custom fields they specified 
+> Users must make sure that the output of their scripts matches the name of their desired custom fields they specified
 > in NetBox.
 >
 > Currently, **we only support text fields** as all the other field types would require smart parsing on our end.
-> We are currently investiating on how to achieve this.
+> We are currently investigating on how to achieve this.
 
 # Contributing
 
