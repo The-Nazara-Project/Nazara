@@ -84,7 +84,7 @@ fn main() {
 
     // Welcome Message.
     println!(
-        "{} \n(c) Christopher Hock aka ByteOtter. (github.com/ByteOtter)\n
+        "{} \n(c) Tiara Hock aka ByteOtter. (github.com/ByteOtter)\n
          Licensed under the terms of the GPL-v3.0 License.\n\
          Check github.com/The-Nazara-Project/Nazara/LICENSE for more info.\n",
         ascii_art
