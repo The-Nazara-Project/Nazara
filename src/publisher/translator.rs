@@ -115,8 +115,6 @@ pub fn information_to_device(
     payload.tenant = config_data.system.tenant;
     payload.location = config_data.system.location;
 
-    println!("PAYLOAD:\n{:?}", &payload);
-
     payload
 }
 
