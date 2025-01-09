@@ -56,11 +56,11 @@ install -m 0755 %{_builddir}/%{name}-%{version}/target/release/%{bin_name} %{bui
 %doc README.md
 
 %changelog
-* Tue Oct 01 2024 Christopher Hock <christopher-hock@protonmail.com> - 0.0.1_pre-alpha.3
+* Tue Oct 01 2024 Tiara Hock <tiara.dev@proton.me> - 0.0.1_pre-alpha.3
 - Enable machine update
 - Fix search of existing NetBox objects
 - Update thanix_client dependency to v1.3.2
-* Thu Sep 26 2024 Christopher Hock <christopher-hock@protonmail.com> - 0.1.0_pre-alpha.2
+* Thu Sep 26 2024 Tiara Hock <tiara.dev@proton.me> - 0.1.0_pre-alpha.2
 - Enable in-bulk creation of network interfaces & IP addresses
 - Finish machine registration feature
 - Update thanix_client dependency to v1.3.1
