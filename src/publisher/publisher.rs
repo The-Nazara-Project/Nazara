@@ -119,7 +119,7 @@ pub fn register_machine(
                         }
                     }
                 }
-                println!("\x1b[32m[success] Update process completed!");
+                println!("\x1b[32m[success]\x1b[0m Update process completed!");
             }
             None => {
                 let device_id = match create_device(client, device_payload) {
