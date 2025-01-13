@@ -22,5 +22,10 @@ jobs:
             - uses: actions-rs/cargo@v1
               with:
                 use-cross: true
+                command: install
+                args: cargo-audit --locked
+            - uses: actions-rs/cargo@v1
+              with:
+                use-cross: true
                 command: audit
                 args: --color always
