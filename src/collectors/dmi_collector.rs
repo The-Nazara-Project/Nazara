@@ -428,9 +428,10 @@ fn get_architecture() -> Result<String, CollectorError> {
     let output = match Command::new("uname").arg("-p").output() {
         Ok(output) => output,
         Err(e) => {
-            let err = CollectorError::UnableToCollectDataError (
-                format!("\x1b[31m[error]\x1b[0m An error occured while attempting to execute `uname -p`! {}", e)
-			);
+            let err = CollectorError::UnableToCollectDataError(format!(
+                "An error occured while attempting to execute `uname -p`! {}",
+                e
+            ));
             return Err(err);
         }
     };

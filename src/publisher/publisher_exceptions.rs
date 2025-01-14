@@ -74,7 +74,7 @@ impl fmt::Display for NetBoxApiError {
             NetBoxApiError::JsonParse(ref err) => {
                 write!(f, "\x1b[31m[error]\x1b[0m JSON parsing error: {}", err)
             }
-            NetBoxApiError::Other(ref err) => write!(f, "\x1b[31m[Error]\x1b[0m {}", err),
+            NetBoxApiError::Other(ref err) => write!(f, "\x1b[31m[error]\x1b[0m {}", err),
         }
     }
 }

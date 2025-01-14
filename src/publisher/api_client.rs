@@ -198,21 +198,22 @@ pub fn create_device(
     println!("Creating device in NetBox...");
 
     match dcim_devices_create(client, payload) {
-        Ok(response) => {
-            match response {
-                DcimDevicesCreateResponse::Http201(created_device) => {
-                    println!(
-                        "\x1b[32m[success]\x1b[0m Device creation successful! New Device-ID: '{}'.",
-                        created_device.id
-                    );
-                    Ok(created_device.id)
-                }
-                DcimDevicesCreateResponse::Other(other_response) => {
-                    let exc: NetBoxApiError = NetBoxApiError::Other(format!("\x1b[0m[error] Unexpected response code '{}' when trying to create a device!", other_response.status()));
-                    exc.abort(Some(35));
-                }
+        Ok(response) => match response {
+            DcimDevicesCreateResponse::Http201(created_device) => {
+                println!(
+                    "\x1b[32m[success]\x1b[0m Device creation successful! New Device-ID: '{}'.",
+                    created_device.id
+                );
+                Ok(created_device.id)
             }
-        }
+            DcimDevicesCreateResponse::Other(other_response) => {
+                let exc: NetBoxApiError = NetBoxApiError::Other(format!(
+                    "Unexpected response code '{}' when trying to create a device!",
+                    other_response.status()
+                ));
+                exc.abort(Some(35));
+            }
+        },
         Err(err) => {
             let exc: NetBoxApiError = NetBoxApiError::Reqwest(err);
             Err(exc)
@@ -252,7 +253,10 @@ pub fn update_device(
                 Ok(updated_device.id)
             }
             DcimDevicesUpdateResponse::Other(other_response) => {
-                let exc: NetBoxApiError = NetBoxApiError::Other(format!("\x1b[31m[error]\x1b[0m Unexpected response code '{}' when trying to update device!", other_response.status()));
+                let exc: NetBoxApiError = NetBoxApiError::Other(format!(
+                    "Unexpected response code '{}' when trying to update device!",
+                    other_response.status()
+                ));
                 exc.abort(Some(35));
             }
         },
@@ -307,7 +311,10 @@ pub fn search_interface(client: &ThanixClient, device_id: &i64, name: &String) -
                 err.abort(None);
             }
             DcimInterfacesListResponse::Other(res) => {
-                let err: NetBoxApiError = NetBoxApiError::Other(format!("\x1b[31m[error]\x1b[0m Unexpected response code '{}' when trying to search for interface!", res.status()));
+                let err: NetBoxApiError = NetBoxApiError::Other(format!(
+                    "Unexpected response code '{}' when trying to search for interface!",
+                    res.status()
+                ));
                 err.abort(None);
             }
         },
