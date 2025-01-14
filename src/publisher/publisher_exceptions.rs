@@ -142,29 +142,3 @@ impl NetBoxApiError {
         }
     }
 }
-
-// TODO: Deprecate this.
-/// Error to be thrown when the validation of an API request payload fails.
-///
-/// # Members
-///
-/// * message: `String` - The error message containing the reason for the failure.
-pub struct PayloadValidationError {
-    message: String,
-}
-
-/// Implements the `Format` trait for `PayloadValidationError` for easy printing.
-impl fmt::Display for PayloadValidationError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "[FATAL] PayloadValidationError: {}", self.message)
-    }
-}
-
-/// Implement `abort` function to exit the program in an orderly manner, printing the error message
-/// in the process.
-impl PayloadValidationError {
-    pub fn abort(&self, exit_code: i32) -> ! {
-        println!("{} (Error code: {})", self, exit_code);
-        process::exit(exit_code);
-    }
-}
