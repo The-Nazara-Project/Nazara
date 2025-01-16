@@ -328,7 +328,7 @@ fn file_exists(path: &Path) -> bool {
 ///
 /// # Returns
 ///
-/// * `config_file_path: PathBuf` - The directory the config file is located (~/.nazara-config.toml)
+/// * `config_file_path: PathBuf` - The directory the config file is located (~/.nazara/config.toml)
 ///
 /// # Panics
 ///
