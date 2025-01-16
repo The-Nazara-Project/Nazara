@@ -17,6 +17,10 @@ API. It enables the automatic creation of new machines in NetBox or population o
 >
 > Furthermore, **Nazara currently does not support custom fields for any NetBox object**. Though, this is the next item on our agenda.
 
+> [!Warning]
+> The master build of Nazara is currently **only compatible with NetBox version v3.6.9** as this is the version we currently use.
+> We acknowledge this version of NetBox is outdated and will be rewriting the API connection logic to fit NetBox's new API once we are in the MVP stage.
+
 - [Installation](#installation)
   - [Building from source](#building-from-source)
     - [Installation via `crates.io`](#installation-via-cratesio)
@@ -48,7 +52,13 @@ cargo build --release
 
 This will create an executable file in the `target/release` directory.
 
-### Installation via `crates.io`
+> [!Important]
+> Running Nazara stock will cause it to use our NetBox API reference client library [`thanix_client`](https://github.com/The-Nazara-Project/thanix_client).
+> This client was generated from the API spec of a stock NetBox instance (1.x from NetBox v3.6.9 and 2.x from NetBox 4.1.0).
+> If you encounter API request issues with your NetBox instance, you may need to generate your own using [`Thanix`](https://github.com/The-Nazara-Project/Thanix).
+
+
+## Installation via `crates.io`
 
 Nazara is published on `crates.io`. If your operating system permits cargo to install packages globally, simply run `cargo install nazara` to install it.
 
@@ -69,32 +79,34 @@ in your terminal. Nazara will automatically collect all required system informat
 
 Nazara supports two ways of providing configuration parameters: CLI arguments and a configuration file.
 
-Nazara requires two parameters from you:
+Nazara accepts these parameters from you:
 
-- `API_URL`: The URL of your NetBox API
-- `API_TOKEN`: The authentication token for the NetBox API
+- `-u, --uri`: URI to your NetBox instance.
+- `-t, --token`: Your API authentication token.
+- `-n, --name`: The name of the device.
+- `-p, --plugin`: The path to a plugin script you want to use to fill in custom fields.
 
 ## Configuring via CLI
 
 Here is an example for passing these parameters on using the CLI:
 
 ```bash
-./target/release/Nazara --api-url <API_URL> --api-token <API_TOKEN>
+./target/release/Nazara --uri <API_URL> --token <API_TOKEN> --name test_device
 ```
 
-## Configuring via `~/.nazara/config.toml`file.
+## Configuring via `~/.nazara/config.toml`file (recommended)
 
 Nazara's configuration must be located in the user's home directory at `~/.nazara/config.toml`.
 
-```toml
-[netbox]
-netbox_api_token = "$API_TOKEN"
-netbox_uri = "$API_URI"
-```
+When launching Nazara for the first time, it will write a stock config file to that path. Certain parameters are required to be configured there manually.
+You recognize them by their line not being commented out.
 
-Aside from the NetBox system parameters, configuration via the `config.toml` also allows you to add certain
-custom fields to your system information that cannot be automatically selected. A great example would be the
-`System Location` entry. To specify that, simply add the parameter under the `[system]` block in your configuration file.
+When providing CLI parameters, Nazara will write them into the config file for you.
+
+> [!Note]
+> Currently, configuration by config file is the proper way to use Nazara given the amount of data required to reigster a machine.
+> We are investigating possibilities to make this less of a hastle. In the meantime, we suggest you copy-paste the config between machines of the same
+> type and function.
 
 ```toml
 # A default configuration file looks like this:
