@@ -12,25 +12,11 @@ help:
 	@echo "    setup - Setup dev enironment"
 	@echo "    format - Format code"
 
-# TODO: Check if Cargo and Rustup are already installed. If not, install them
-# using the system's package manager.
-install-rustup:
-	@echo "Installing rustup..."
-	@if! command -v zypper &> /dev/null; then \
-		sudo zypper in rustup -y; \
-	else \
-		if! command -v apt-get &> /dev/null; then \
-			sudo apt-get install rustup; \
-		if! command -v dnf dnf &> /dev/null; then \
-			sudo dnf install rustup; \
-		fi; \
-	fi;
-
 # Might fail when pip does not allow system wide installation
 install-pre-commit:
 	@echo "Installing pre-commit..."
 	pip install pre-commit || { echo 'Error installing pre-commit'; exit 1; }
- 
+
 setup-hooks:
 	@echo "Setting up pre-commit hooks..."
 	pre-commit install
