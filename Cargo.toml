@@ -2,7 +2,7 @@
 name = "nazara"
 authors = ["Tiara Hock <tiara.dev@proton.me>"]
 version = "0.1.0-alpha.1"
-edition = "2021"
+edition = "2024"
 description = "A CLI application to create and update machines and VMs in NetBox."
 readme = "README.md"
 repository = "https://github.com/The-Nazara-Project/Nazara"
