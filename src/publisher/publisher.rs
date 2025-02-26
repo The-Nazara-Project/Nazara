@@ -13,6 +13,7 @@ use thanix_client::{
 };
 
 use crate::{
+    Machine,
     collectors::network_collector::NetworkInformation,
     configuration::config_parser::ConfigData,
     publisher::{
@@ -22,7 +23,6 @@ use crate::{
         },
         translator,
     },
-    Machine,
 };
 
 use super::{api_client::update_interface, publisher_exceptions::NetBoxApiError};

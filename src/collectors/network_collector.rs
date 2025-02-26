@@ -298,7 +298,10 @@ fn collect_interface_speed(interface_name: &str, mut input: impl Read) -> Result
     match input.read_to_string(&mut network_speed) {
         Ok(_) => {}
         Err(err) => {
-            return Err(format!("\x1b[33m[warning]\x1b[0m Unable to open speed file for interface '{}'. This may happen for the loopback or wireless devices. ({}))", interface_name, err));
+            return Err(format!(
+                "\x1b[33m[warning]\x1b[0m Unable to open speed file for interface '{}'. This may happen for the loopback or wireless devices. ({}))",
+                interface_name, err
+            ));
         }
     };
     network_speed = network_speed.trim().replace("\n", "");
@@ -434,7 +437,8 @@ mod network_collector_tests {
         assert_eq!(
             result,
             Ok(1000),
-            "Test Scenario Failed (1): collect_interface_speed did not return Ok() despite supplying a correct speed value (1000)!");
+            "Test Scenario Failed (1): collect_interface_speed did not return Ok() despite supplying a correct speed value (1000)!"
+        );
     }
 
     /// Test if the `collect_network_speed` function returns an Err(String) with an expected message, when the interface
@@ -469,9 +473,9 @@ mod network_collector_tests {
         assert_eq!(
             result,
             Err(format!(
-                    "\x1b[31m[error]\x1b[0m Failed to parse speed as u32 for interface '{}': cannot parse integer from empty string!",
-                    interface_name
-                )),
+                "\x1b[31m[error]\x1b[0m Failed to parse speed as u32 for interface '{}': cannot parse integer from empty string!",
+                interface_name
+            )),
             "Test Scenario Failed (3): No error was raised by collect_interface_speed when trying to parse an empty string into u32!"
         );
     }

@@ -254,7 +254,9 @@ pub fn set_up_configuration(
         // TODO Rewrite validation logic to properly condition here
         match ConfigData::validate_config_file() {
             Ok(_) => {
-                println!("\x1b[32m[success]\x1b[0m Configuration file \x1b[32mvalid\x1b[0m. Loading defaults...");
+                println!(
+                    "\x1b[32m[success]\x1b[0m Configuration file \x1b[32mvalid\x1b[0m. Loading defaults..."
+                );
                 conf_data = ConfigData::read_config_file();
 
                 if uri.is_some() {
@@ -468,7 +470,9 @@ impl ConfigData {
                 }
             }
         } else {
-            println!("\x1b[36m[info]\x1b[0m No network interfaces defined in the 'nwi' section. This is allowed.");
+            println!(
+                "\x1b[36m[info]\x1b[0m No network interfaces defined in the 'nwi' section. This is allowed."
+            );
         }
 
         Ok(())

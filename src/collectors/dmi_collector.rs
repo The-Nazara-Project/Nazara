@@ -534,7 +534,9 @@ pub mod dmi_collector_tests {
 
     impl DmiDecodeTable for MockDmiDecodeTable {
         fn get_dmidecode_table(_dmidecode_table: i32) -> String {
-            let return_value: String = String::from("Processor Information\n\tSocket Designation: FP5\n\tType: Central Processor\n\tFamily: Zen\n\tManufacturer: Advanced Micro Devices, Inc\n\tVersion: AMD Ryzen 7 PRO 3700 w/ Radeon Vega Mobile Gfx\n\tVoltage: 1.2 V\n\tMax Speed: 4000 MHz\n\tCurrent Speed: 2300 MHz\n\tStatus: Populated, Enabled\n\tCore Count: 4\n\tCore Enabled: 4\n\tThread Count: 8");
+            let return_value: String = String::from(
+                "Processor Information\n\tSocket Designation: FP5\n\tType: Central Processor\n\tFamily: Zen\n\tManufacturer: Advanced Micro Devices, Inc\n\tVersion: AMD Ryzen 7 PRO 3700 w/ Radeon Vega Mobile Gfx\n\tVoltage: 1.2 V\n\tMax Speed: 4000 MHz\n\tCurrent Speed: 2300 MHz\n\tStatus: Populated, Enabled\n\tCore Count: 4\n\tCore Enabled: 4\n\tThread Count: 8",
+            );
             return return_value;
         }
     }

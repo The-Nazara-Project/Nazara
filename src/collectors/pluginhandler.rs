@@ -81,7 +81,7 @@ fn validate(output: &str) -> Result<(), CollectorError> {
 
 #[cfg(test)]
 mod tests {
-    use serde_json::{json, Value};
+    use serde_json::{Value, json};
     use std::collections::HashMap;
     use std::error::Error;
     use std::fs::File;

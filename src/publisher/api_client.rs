@@ -11,12 +11,12 @@ use reqwest::Error as ReqwestError;
 use serde_json::Value;
 use thanix_client::{
     paths::{
-        dcim_devices_create, dcim_devices_list, dcim_devices_update, dcim_interfaces_create,
-        dcim_interfaces_list, dcim_interfaces_retrieve, dcim_interfaces_update,
-        ipam_ip_addresses_create, ipam_ip_addresses_list, ipam_ip_addresses_update,
         DcimDevicesCreateResponse, DcimDevicesListQuery, DcimDevicesUpdateResponse,
         DcimInterfacesListQuery, DcimInterfacesListResponse, IpamIpAddressesListQuery,
-        IpamIpAddressesListResponse,
+        IpamIpAddressesListResponse, dcim_devices_create, dcim_devices_list, dcim_devices_update,
+        dcim_interfaces_create, dcim_interfaces_list, dcim_interfaces_retrieve,
+        dcim_interfaces_update, ipam_ip_addresses_create, ipam_ip_addresses_list,
+        ipam_ip_addresses_update,
     },
     types::{
         Interface, WritableDeviceWithConfigContextRequest, WritableIPAddressRequest,
@@ -60,10 +60,16 @@ pub fn test_connection(client: &ThanixClient) -> Result<(), publisher_exceptions
                 if let Some(netbox_ver) = json.get("netbox-version").and_then(Value::as_str) {
                     // Compare netbox version for compatibility
                     if check_version_compatiblity(netbox_ver, thanix_client::version::VERSION) {
-                        println!("\x1b[32m[success]\x1b[0m API client version compatible with NetBox version.");
+                        println!(
+                            "\x1b[32m[success]\x1b[0m API client version compatible with NetBox version."
+                        );
                         Ok(())
                     } else {
-                        Err(publisher_exceptions::NetBoxApiError::VersionMismatch(String::from("Client version incompatible with NetBox version! Use client v1.x for NetBox v3.6.x and above, and v2.x for NetBox 4.x.")))
+                        Err(publisher_exceptions::NetBoxApiError::VersionMismatch(
+                            String::from(
+                                "Client version incompatible with NetBox version! Use client v1.x for NetBox v3.6.x and above, and v2.x for NetBox 4.x.",
+                            ),
+                        ))
                     }
                 } else {
                     Err(publisher_exceptions::NetBoxApiError::MissingVersion(
@@ -345,7 +351,10 @@ pub fn create_interface(
     match dcim_interfaces_create(client, payload) {
         Ok(response) => match response {
             thanix_client::paths::DcimInterfacesCreateResponse::Http201(result) => {
-                println!("\x1b[32m[success]\x1b[0m Interface created successfully. New Interface-ID: '{}'", result.id);
+                println!(
+                    "\x1b[32m[success]\x1b[0m Interface created successfully. New Interface-ID: '{}'",
+                    result.id
+                );
                 Ok(result.id)
             }
             thanix_client::paths::DcimInterfacesCreateResponse::Other(other_response) => {
@@ -465,7 +474,10 @@ pub fn create_ip(
             }
         },
         Err(e) => {
-            eprintln!("\x1b[33m[warning]\x1b[0m Error while decoding NetBox response while creating IP address. This probably is still fine and a problem with NetBox.\nError: {}", e);
+            eprintln!(
+                "\x1b[33m[warning]\x1b[0m Error while decoding NetBox response while creating IP address. This probably is still fine and a problem with NetBox.\nError: {}",
+                e
+            );
             let exc = NetBoxApiError::Other(e.to_string());
             Err(exc)
         }

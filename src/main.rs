@@ -300,7 +300,9 @@ fn main() {
 
     // Passing a name in any way is mandatory for a virtual machine
     if machine.dmi_information.system_information.is_virtual && machine.name.is_none() {
-        eprintln!("[FATAL] No name has been provided for this virtual machine! Providing a name as search parameter is mandatory for virtual machines.");
+        eprintln!(
+            "[FATAL] No name has been provided for this virtual machine! Providing a name as search parameter is mandatory for virtual machines."
+        );
         process::exit(1)
     }
 

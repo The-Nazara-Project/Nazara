@@ -16,7 +16,7 @@ use thanix_client::types::{
 use thanix_client::util::ThanixClient;
 
 use crate::collectors::network_collector::NetworkInformation;
-use crate::{configuration::config_parser::ConfigData, Machine};
+use crate::{Machine, configuration::config_parser::ConfigData};
 
 /// Translate the machine information to a `WritableDeviceWithConfigContextRequest` required by
 /// NetBox's API.
@@ -45,7 +45,9 @@ pub fn information_to_device(
     let wanted_platform: Option<String> = if let Some(arch) =
         machine.dmi_information.cpu_information.arch.as_ref()
     {
-        println!("\x1b[36m[info]\x1b[0m CPU architecture was collected. Used by default, overriding possible config options...");
+        println!(
+            "\x1b[36m[info]\x1b[0m CPU architecture was collected. Used by default, overriding possible config options..."
+        );
         Some(arch.clone())
     } else if let Some(config_value) = config_data.system.platform_name.as_ref() {
         println!(
@@ -337,7 +339,9 @@ fn get_platform_id(state: &ThanixClient, platform_name: String) -> Option<i64> {
             match response {
                 paths::DcimPlatformsListResponse::Http200(platforms) => platforms.results,
                 _ => {
-                    todo!("Handling of non 200 Response code when getting platforms not implemented yet.")
+                    todo!(
+                        "Handling of non 200 Response code when getting platforms not implemented yet."
+                    )
                 }
             }
         }
@@ -410,8 +414,9 @@ fn get_primary_addresses(
             match response {
                 paths::IpamIpAddressesListResponse::Http200(adresses) => adresses.results,
                 paths::IpamIpAddressesListResponse::Other(response) => {
-                    eprintln!("\x1b[31m[error]\x1b[0m Failure while trying to retrieve list of IPAddresses. \n --- Unexpected response: {} ---",
-                    response.text().unwrap()
+                    eprintln!(
+                        "\x1b[31m[error]\x1b[0m Failure while trying to retrieve list of IPAddresses. \n --- Unexpected response: {} ---",
+                        response.text().unwrap()
                     );
                     process::exit(1);
                 }
@@ -477,7 +482,7 @@ fn get_site_id(state: &ThanixClient, config_data: &ConfigData) -> Option<i64> {
                 paths::DcimSitesRetrieveResponse::Other(response) => {
                     eprintln!(
                         "\x1b[31m[error]\x1b[0m Error while searching for site by site_id.\n--- Unexpected response: {} ---",
-                            response.text().unwrap()
+                        response.text().unwrap()
                     );
                     process::exit(1);
                 }
@@ -499,9 +504,10 @@ fn get_site_id(state: &ThanixClient, config_data: &ConfigData) -> Option<i64> {
         Ok(response) => match response {
             paths::DcimSitesListResponse::Http200(sites) => site_list = sites.results,
             paths::DcimSitesListResponse::Other(response) => {
-                eprintln!("\x1b[31[error] Error while retrieving site list.\n--- Unexpected response: {} ---",
+                eprintln!(
+                    "\x1b[31[error] Error while retrieving site list.\n--- Unexpected response: {} ---",
                     response.text().unwrap()
-                    );
+                );
                 process::exit(1);
             }
         },
