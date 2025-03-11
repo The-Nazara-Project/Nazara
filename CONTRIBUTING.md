@@ -37,6 +37,17 @@ Simply select a username and password of your wishes.
     - Site
     - Device Role
     (And depending on what you want to work on, replicate the custom fields you need 1:1 from your production instance.)
+7. After that's done, take the IDs of these objects and place it into the corresponding fields in the `~/.nazara/config.toml`
+
+> [!Important]
+> Currently, the generation of the config file is still a bit wonky, so if it isnt generated upon first executing nazara, copy and paste
+> the template from the README or `src/configuration/config_template.toml`.
+>
+> Also, despite my best efforts, the `primary_network_interface` field is still mandatory, even though it's not in the template.
+> So, check your network interfaces and select the one you want to set as primary. Then add the config parameter to the `[system]`
+> section at the bottom and paste the name of the interface as its value.
+
+Now it should work, if you have trouble setting it up, please reach out in the discussion section.
 
 # Setup
 
