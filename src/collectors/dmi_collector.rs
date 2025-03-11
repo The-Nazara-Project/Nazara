@@ -4,7 +4,7 @@
 //!
 
 use super::collector_exceptions::CollectorError;
-use super::util::{find_table, split_output};
+use super::util::{find_table, split_output, get_dbus_property};
 use serde::Serialize;
 use std::{
     process::{Command, Output},
@@ -123,7 +123,7 @@ pub fn construct_dmi_information() -> DmiInformation {
      *
      * */
     let dmi_information: DmiInformation = DmiInformation {
-        system_information: dmidecode_system(DefaultDmiDecodeInformation {}),
+        system_information: dbus_system_information(DefaultDmiDecodeInformation {}),
         chassis_information: dmidecode_chassis(DefaultDmiDecodeInformation {}),
         cpu_information: dmidecode_cpu(DefaultDmiDecodeTable {}),
     };
@@ -246,42 +246,23 @@ impl DmiDecodeInformation for DefaultDmiDecodeInformation {
 /// # Returns
 ///
 /// * `system_information: SystemInformation`- A SystemInformation object.
-fn dmidecode_system<T: DmiDecodeInformation>(_param: T) -> SystemInformation {
+fn dbus_system_information<T: DmiDecodeInformation>(_param: T) -> SystemInformation {
     println!("Collecting system information...");
-    let mut system_information: SystemInformation = SystemInformation {
-        vendor: String::new(),
-        model: String::new(),
-        uuid: String::new(),
-        serial: String::new(),
-        is_virtual: false,
-    };
+	let vendor = get_dbus_property("org.freedesktop.hostname1", "HardwareVendor").unwrap_or_default();
+	let model = get_dbus_property("org.freedesktop.hostname1", "HardwareModel").unwrap_or_default();
+	let uuid = get_dbus_property("org.freedesktop.hostname1", "MachineId").unwrap_or_default();
 
-    for parameter in POSSIBLE_SYSTEM_PARAMETERS.iter() {
-        match *parameter {
-            "system-manufacturer" => {
-                system_information.vendor = T::get_dmidecode_information(parameter);
+	let info = SystemInformation {
+		vendor,
+		model,
+		uuid,
+		serial: todo!("Investigate if here could be another dbus service. Alternatively it can be read from /sys/devices/virtual/dmi/id/product_serial"),
+		is_virtual: std::path::Path::new("/sys/class/dmi/id/product_name").exists(),
+	};
 
-                if system_information.vendor == "QEMU" {
-                    system_information.is_virtual = true;
-                }
-            }
-            "system-product-name" => {
-                system_information.model = T::get_dmidecode_information(parameter)
-            }
-            "system-uuid" => system_information.uuid = T::get_dmidecode_information(parameter),
-            "system-serial-number" => {
-                system_information.serial = T::get_dmidecode_information(parameter)
-            }
-            _ => {
-                println!(
-                    "\x1b[36m[info]\x1b[0m Parameter {} not supported therefore not collected.",
-                    parameter
-                );
-            }
-        }
-    }
     println!("\x1b[32m[success]\x1b[0m System information collection completed.");
-    system_information
+
+	info
 }
 
 /// Construct a ChassisInformation object by parsing the content of dmi chassis table.
@@ -518,7 +499,7 @@ pub mod dmi_collector_tests {
 
         // Mock existing get_dmidecode_information function return the expected parameters
 
-        let system_information: SystemInformation = dmidecode_system(MockDmiDecodeInformation {});
+        let system_information: SystemInformation = dbus_system_information(MockDmiDecodeInformation {});
 
         assert!(
             is_system_information(&system_information),
