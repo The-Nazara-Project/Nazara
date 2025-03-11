@@ -2,7 +2,41 @@
 
 Thank you for considering contributing to Nazara.
 
-To ensure a smooth collaboration, we suggest you follow the steps below:
+# Set up a NetBox Test instance
+
+In case you don't have a dedicated test instance of NetBox, you can easily set up a local instance via `docker-compose`.
+
+1. Simply clone the [netbox-docker](https://github.com/netbox-community/netbox-docker) repository
+2. Modify the `docker-compose.yml` file to the required NetBox version
+
+> [!Note]
+> Nazara currently only supports NetBox version v3.6.9 and compatible versions. A port to v4.x is planned in the near future.
+
+```yml
+services:
+    netbox: &netbox
+        image: docker.io/netboxcommunity/netbox:v3.6.9
+        ...
+```
+
+3. Then build the environment by running `docker compose up`
+4. When the container is built, you need to create a superuser test account
+
+```
+docker compose exec netbox /opt/netbox/netbox/manage.py createsuperuser
+```
+
+Simply select a username and password of your wishes.
+
+5. When that is done, you need to create an API Token `username > API Tokens > Add a Token` and paste it, along with the container's URL
+   into the Nazara config file at `~/.nazara/config.toml`
+6. After that, you need to create a few dummy fields that are sadly required to create a device via API
+    - Device Type
+    - Device Role
+    - Manufacturer
+    - Site
+    - Device Role
+    (And depending on what you want to work on, replicate the custom fields you need 1:1 from your production instance.)
 
 # Setup
 
