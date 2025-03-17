@@ -19,6 +19,19 @@ services:
         ...
 ```
 
+and execute these commands in accordance to [netbox-docker's setup guide](https://github.com/netbox-community/netbox-docker?tab=readme-ov-file#quickstart):
+
+```bash
+git clone -b release https://github.com/netbox-community/netbox-docker.git
+cd netbox-docker
+tee docker-compose.override.yml <<EOF
+services:
+  netbox:
+    ports:
+      - 8000:8080
+EOF
+```
+
 3. Then build the environment by running `docker compose up`
 4. When the container is built, you need to create a superuser test account
 
@@ -35,8 +48,10 @@ Simply select a username and password of your wishes.
     - Device Role
     - Manufacturer
     - Site
-    - Device Role
     (And depending on what you want to work on, replicate the custom fields you need 1:1 from your production instance.)
+    
+    If you want to specifiy and play around with some optional fields, you must create the objects you reference (like e.g Tenants) first.
+
 7. After that's done, take the IDs of these objects and place it into the corresponding fields in the `~/.nazara/config.toml`
 
 > [!Important]
