@@ -1,10 +1,10 @@
-//! # Client Module
+//! # API Client Module
 //!
-//! This module contains logic for the HTTP NetBox API client.
+//! This module's single responsibility is to take the payloads from the
+//! [`publisher`](crate::publisher) module - which it created using the
+//! [`translator`](crate::publisher::translator) module - and execute the individual API requests.
 //!
-//! This client allows us to get a list of all machines and create or update machines or VMs.
-//! We use the `reqwest` crate for blocking HTTP requests and `serde` together with `serde_json` to serialize and
-//! deserialize our data.
+//! Errors are escalated upwards.
 extern crate thanix_client;
 
 use reqwest::Error as ReqwestError;

@@ -1,10 +1,12 @@
 //! # Publisher Module
 //!
-//! This module contains logic to "steer" the API requests.
-//! Based on the conditions in this logic it is decided whether to use the machine or VM endpoints, to create a new
-//! machine or update an existing one.
+//! This module serves as a controller for publishing information to NetBox.
+//! It handles conditionals, error handling and everything else outside of actually sending API
+//! requests.
 //!
-//! The actual request logic will be provided by the `thanix_client` crate.
+//! It "steers" which endpoints are used when, which payload is created when and hands these
+//! responsibilities off to the [`translator`](crate::publisher::translator) and
+//! [`api_client`](crate::publisher::api_client) modules respectively.
 use thanix_client::{
     types::{
         WritableDeviceWithConfigContextRequest, WritableIPAddressRequest, WritableInterfaceRequest,

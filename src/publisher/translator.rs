@@ -1,7 +1,16 @@
 //! # Translator Module
 //!
-//! This module handles the translation and processing of the data sent to or received from NetBox.
+//! This module's sole responsibility is translating system information into payloads usable by the
+//! [`api_client`](crate::publisher::api_client) module to register the machine in NetBox.
 //!
+//! The information comes from the two collectors (both
+//! [`dmi_collector`](crate::collectors::dmi_collector) and
+//! [`network_collector`](crate::collectors::network_collector)) as well as the
+//! [`configuration`](crate::configuration::config_parser) module.
+//! It is then formed into data structures that NetBox can understand.
+//!
+//! This approach has been chosen, so the collectors and configuration parser can remain relatively
+//! unchanged in case NetBox significantly redesigns their API.
 use core::net::IpAddr;
 use std::collections::HashMap;
 use std::process;
