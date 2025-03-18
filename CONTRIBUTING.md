@@ -70,8 +70,11 @@ Now it should work, if you have trouble setting it up, please reach out in the d
 This will create a copy of the repository under your GitHub account.
 2. **Clone your forked repository** to your local machine using the git clone command.
 This will create a local copy of the repository that you can work on.
-3. **Install the project dependencies** by following the instructions provided in the project's README file.
-This will ensure that you have all the necessary tools and libraries to build and run the project.
+3. **Install the project dependencies** by installing `libopenssl-dev` and `libdbus-sys` are installed on your system. Both are required by Nazara to compile.
+
+> [!Note]
+> The names of both of these libraries can vary depending on your distribution. The examples are for openSUSE Tumbleweed.
+
 4. **Install and set up pre-commit for code quality checks**. This tool will automatically execute the `hooks` we implemented
 which will check your code for formatting or styling issue before each commit.
 
