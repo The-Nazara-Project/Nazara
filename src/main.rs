@@ -201,6 +201,14 @@ use crate::collectors::pluginhandler;
 /// It is used in places where it is necessary to have access to various
 /// pieces of collected information from a single source of truth.
 /// It will also be translated into the proper API type by the translator.
+///
+/// # Members
+/// * `name: Option<String>` - The name of the system to register. Read from the CLI.
+/// * `dmi_information: DmiInformation` - Information collected by `dmidecode`.
+/// * `network_information: Vec<NetworkInformation>` - List of Network Interfaces with associated
+/// information.
+/// * `custom_information: `Option<HashMap<String, Value>>` - Custom Fields read from config file or
+/// via Plugins.
 pub struct Machine {
     pub name: Option<String>,
     pub dmi_information: DmiInformation,
