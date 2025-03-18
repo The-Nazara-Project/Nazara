@@ -85,8 +85,8 @@ use super::config_exceptions::ConfigError;
 /// Configuration State set by the configuration file.
 ///
 /// # Members
-/// - netbox: `NetBoxConfig` - Configuration parameters for the NetBox connection.
-/// - system: `SystemConfig` - Parameters abouth the system.
+/// * netbox: `NetBoxConfig` - Configuration parameters for the NetBox connection.
+/// * system: `SystemConfig` - Parameters abouth the system.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ConfigData {
     pub netbox: NetboxConfig,
@@ -94,6 +94,11 @@ pub struct ConfigData {
     pub nwi: Option<Vec<NwiConfig>>,
 }
 
+/// Configuration Parameters relevant for NetBox connection.
+///
+/// # Members
+/// * netbox_api_token: `String` - The API token required for authentication.
+/// * netbox_uri: `String` - The base URL of your NetBox instance. (e.g https://netbox.yourorg.com)
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct NetboxConfig {
     pub netbox_api_token: String,
@@ -112,7 +117,7 @@ pub struct NetboxConfig {
 /// * device_role: `i64` - ID of the device role.
 /// * face: `String` - Tag of the orientation of the device.
 /// * status: `String` - Status of the device. (Default: `active`)
-/// * airflow `String` - Airflow orientation of the device.
+/// * airflow: `String` - Airflow orientation of the device.
 /// * primary_network_interface: `Option<String>` - Name of the network interface you want to set as
 /// primary.
 /// * custom_fields: `Option<HashMap<String, Value, RandomState>>` - Unsorted, unfiltered list of
@@ -309,7 +314,7 @@ pub fn set_up_configuration(
 ///
 /// # Arguments
 ///
-/// * `path: &str` - The path to the config file.
+/// * path: `&str` - The path to the config file.
 ///
 /// # Returns
 ///
@@ -330,7 +335,7 @@ fn file_exists(path: &Path) -> bool {
 ///
 /// # Returns
 ///
-/// * `config_file_path: PathBuf` - The directory the config file is located (~/.nazara/config.toml)
+/// * config_file_path: `PathBuf` - The directory the config file is located (~/.nazara/config.toml)
 ///
 /// # Panics
 ///
@@ -418,13 +423,6 @@ impl ConfigData {
     ///
     /// * `Ok(())` - When the config file is valid.
     /// * `Err(String)` - When the config file is invalid.s
-    ///
-    /// # Panics
-    ///
-    /// This function will panic if:
-    ///
-    /// * not able to read the config file.
-    /// * the config file does not have valid TOML syntax.
     fn validate_config_file() -> Result<(), ConfigError> {
         // TODO improve this
         let mut file = match File::open(get_config_dir()) {
@@ -483,7 +481,7 @@ impl ConfigData {
     ///
     /// # Returns
     ///
-    /// * `config: ConfigData` - A `ConfigData` object.
+    /// * config: `ConfigData` - A [`ConfigData`] object.
     ///
     /// # Aborts
     ///
@@ -521,7 +519,7 @@ impl ConfigData {
     ///
     /// # Returns
     ///
-    /// * `system_location: &str` - The location of the system to be created/updated as read from the config file.
+    /// * system_location: `&str` - The location of the system to be created/updated as read from the config file.
     pub fn get_netbox_uri(&self) -> &str {
         &self.netbox.netbox_uri
     }
@@ -530,7 +528,7 @@ impl ConfigData {
     ///
     /// # Returns
     ///
-    /// * `system_location: String` - The location of the system to be created/updated as read from the config file.
+    /// * system_location: `String` - The location of the system to be created/updated as read from the config file.
     pub fn get_api_token(&self) -> &str {
         &self.netbox.netbox_api_token
     }

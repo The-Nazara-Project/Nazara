@@ -26,6 +26,21 @@ use std::{error::Error, fmt, process};
 
 use toml::{de::Error as TomlDeError, ser::Error as TomlSeError};
 
+/// Variants of all Erros the ConfigParser can encounter.
+///
+/// # Variants:
+///
+/// * `FileOpError` - Wraps a [`std::io::Error`](std::io::Error). Used for handling errors during
+///   file operations.
+/// * `NoConfigFileError` - Indicates that no config file has been found, or it has been moved or
+///   deleted during program startup.
+/// * `MissingConfigOptionError` - Indicates that a required config option is missing from the
+///   config file.
+/// * `DeserializationError` - Wraps a [`toml::de::Error`](toml::de::Error). Indicates an error
+///   during deserialization of the TOML config file.
+/// * `SerializationError` - Wraps a [`toml::se::Error`](toml::se::Error). Indicates an error
+///   during Serialization of config parameters to a TOML value.
+/// * `Other` - Expects a `String` message. Used for edge cases and general purpose error cases.
 #[derive(Debug)]
 pub enum ConfigError {
     FileOpError(IoError),
