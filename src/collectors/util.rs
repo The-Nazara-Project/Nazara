@@ -1,3 +1,14 @@
+use dbug::blocking::Connection;
+use std::time::Duration;
+
+pub fn get_dbus_property(interface: &str, property: &str) -> Result<String, String> {
+	let conn = Connection::new_system().map_err(|e| e.to_string())?;
+	let proxy = conn.with_proxy("org.freedesktop.hostname1", "/org/freedesktop/hostname1");
+
+	let (value,): (String,) = proxy.get(interface, property).map_err(|e| e.to_string())?;
+	Ok(value)
+}
+
 pub fn split_output(part: &str) -> Result<Vec<&str>, &str> {
     let trimmed_output: &str = part.trim();
 
