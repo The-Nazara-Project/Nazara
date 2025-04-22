@@ -35,7 +35,7 @@ build-dev:
 	cargo build --bin
 
 docs:
-	cargo docs --bin --no-deps --document-private-items --open
+	cargo doc --bin nazara  --no-deps --document-private-items --open
 
 format:
 	@echo "Formatting code with 'cargo fmt'..."
