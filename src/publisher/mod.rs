@@ -7,6 +7,14 @@
 //! It "steers" which endpoints are used when, which payload is created when and hands these
 //! responsibilities off to the [`translator`](crate::publisher::translator) and
 //! [`api_client`](crate::publisher::api_client) modules respectively.
+
+pub mod api_client; // TODO make this non-public
+pub mod publisher_exceptions;
+pub mod trans_validation;
+pub mod translator;
+
+use api_client::update_interface;
+use publisher_exceptions::NetBoxApiError;
 use thanix_client::{
     types::{
         WritableDeviceWithConfigContextRequest, WritableIPAddressRequest, WritableInterfaceRequest,
@@ -18,16 +26,11 @@ use crate::{
     Machine,
     collectors::network_collector::NetworkInformation,
     configuration::config_parser::ConfigData,
-    publisher::{
-        api_client::{
-            create_device, create_interface, create_ip, search_device, search_interface, search_ip,
-            test_connection, update_device, update_ip,
-        },
-        translator,
+    publisher::api_client::{
+        create_device, create_interface, create_ip, search_device, search_interface, search_ip,
+        test_connection, update_device, update_ip,
     },
 };
-
-use super::{api_client::update_interface, publisher_exceptions::NetBoxApiError};
 
 /// Test connection to NetBox.
 ///
