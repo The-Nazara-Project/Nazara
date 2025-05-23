@@ -1,0 +1,21 @@
+-------------------------------------------------------------------
+Fri May 23 10:15:04 UTC 2025 - Marvin Friedrich <contact@marvinf.com>
+
+- 0.1.0_alpha.1
+  * Update to work with latest cargo_vendor version
+
+-------------------------------------------------------------------
+Tue Oct 01 12:00:00 UTC 2024 - Tiara Hock <tiara.dev@proton.me>
+
+- 0.0.1_pre-alpha.3
+  * Enable machine update
+  * Fix search of existing NetBox objects
+  * Update thanix_client dependency to v1.3.2
+
+-------------------------------------------------------------------
+Thu Sep 26 12:00:00 UTC 2024 - Tiara Hock <tiara.dev@proton.me>
+
+- 0.1.0_pre-alpha.2
+  * Enable in-bulk creation of network interfaces & IP addresses
+  * Finish machine registration feature
+  * Update thanix_client dependency to v1.3.1
