@@ -1,7 +1,7 @@
 #
-# spec file for package specRPM_CREATION_NAME
+# spec file for package Nazara
 #
-# Copyright (c) 2024 SUSE LLC
+# Copyright (c) 2025 SUSE LLC
 #
 # All modifications and additions to the file contributed by third parties
 # remain the property of their copyright owners, unless otherwise agreed
@@ -15,17 +15,14 @@
 # Please submit bugfixes or comments via https://bugs.opensuse.org/
 
 Name:           Nazara
-version:        0.1.0_alpha.1
+Version:        0.1.0_alpha.1
 Release:        0.1
 Summary:        Automated registration and update of machines and VMs in NetBox
-# FIXME: Select a correct license from https://github.com/openSUSE/spec-cleaner#spdx-licenses
 License:        GPL-3.0
-# FIXME: use correct group, see "https://en.opensuse.org/openSUSE:Package_group_guidelines"
-# Group:
+Group:          Development/Tools/Other
 URL:            https://github.com/The-Nazara-Project/Nazara
 Source0:        Nazara-%{version}.tar.gz
 Source1:        vendor.tar.gz
-Source2:        cargo_config
 BuildRequires:  git
 BuildRequires:  cargo
 BuildRequires:  cargo-packaging
@@ -35,11 +32,10 @@ BuildRequires:  cargo-packaging
 
 %description
 
-Nazara is a cli application written in Rust to register and update machines and VMs in NetBox automatically.
+Nazara is a CLI application written in Rust to register and update machines and VMs in NetBox automatically.
 
 %prep
 %autosetup -p1 -a1
-install -D -m 644 %{SOURCE2} .cargo/config
 
 %build
 %{cargo_build}
@@ -56,11 +52,3 @@ install -m 0755 %{_builddir}/%{name}-%{version}/target/release/%{bin_name} %{bui
 %doc README.md
 
 %changelog
-* Tue Oct 01 2024 Tiara Hock <tiara.dev@proton.me> - 0.0.1_pre-alpha.3
-- Enable machine update
-- Fix search of existing NetBox objects
-- Update thanix_client dependency to v1.3.2
-* Thu Sep 26 2024 Tiara Hock <tiara.dev@proton.me> - 0.1.0_pre-alpha.2
-- Enable in-bulk creation of network interfaces & IP addresses
-- Finish machine registration feature
-- Update thanix_client dependency to v1.3.1
