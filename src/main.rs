@@ -184,13 +184,11 @@ use collectors::{
     pluginhandler::execute,
 };
 use configuration::config_parser::set_up_configuration;
-use publisher::publisher::*;
+use publisher::*;
 use reqwest::blocking::Client;
 use serde_json::Value;
 use std::{collections::HashMap, process};
 use thanix_client::util::ThanixClient;
-
-use crate::collectors::pluginhandler;
 
 /// The Machine struct
 ///
