@@ -1,8 +1,7 @@
 # This file contains all Codeowners. The owners of the specified files are automaticaly requested
 # for review when a PR is openend
 
-*       @ByteOtter
-*       @BytePaws
+*       @ByteOtter @BytePaws
 
 
 ## More coming soon?
