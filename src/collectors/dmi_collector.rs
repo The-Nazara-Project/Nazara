@@ -82,11 +82,30 @@ pub struct CpuInformation {
     pub status: String,
 }
 
-/// Construct [DmiInformation](struct.DmiInformation) out of the collected information.
+/// Construct [DmiInformation](struct.DmiInformation) instance by parsing SMBIOS and DMI tables
+/// from the system.
+///
+/// This function reads raw data from SMBIOS entry points and DMI tables and parses it into these
+/// structs:
+///
+/// - [SystemInformation](struct.SystemInformation) (vendor, model, sertial number, UUID, etc.)
+/// - [ChassisInformation](struct.ChassisInformation) (chassis type, asset tag, chassis serial no,
+/// etc.)
+/// - [CpuInformation](struct.CpuInformation) (core count, threads, speed, voltage and status)
+///
+/// Only the first available structure of each required type is used. For CPUs, only the structure
+/// marked as `CentralProcessor` is considered.
 ///
 /// # Returns
 ///
 /// An instance of the DmiInformation struct containing the collected system, chassis and cpu information.
+///
+/// # Errors
+///
+/// Returns a `Box<dyn Error>` if:
+/// - The SMBIOS header or DMI table cannot be read from filesystem.
+/// - The DMI entry point search fails.
+/// - Any of the required structures (system, chassis, CPU) are missing or malformed.
 pub fn construct_dmi_information() -> Result<DmiInformation, Box<dyn Error>> {
     println!("Collecting DMI Information...");
 
