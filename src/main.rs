@@ -207,6 +207,7 @@ use thanix_client::util::ThanixClient;
 /// information.
 /// * `custom_information: `Option<HashMap<String, Value>>` - Custom Fields read from config file or
 /// via Plugins.
+#[derive(Debug)]
 pub struct Machine {
     pub name: Option<String>,
     pub dmi_information: DmiInformation,
@@ -223,17 +224,13 @@ pub struct Machine {
 /// ```
 ///
 /// These arguments override the ones defined in the `.nbs-config.toml`.
-///
-/// # Members
-///
-/// * `uri: String` - The URI to your Netbox instance.
-/// * `token: String` - The authentication token for the netbox URI.
-/// * `name: String` - The name of the device
-/// * `location: String` - The location of the device
-/// * `device_role: String` - The type of device (server, router, etc.)
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about=None)]
 struct Args {
+    /// Only prints collected information to stdout
+    #[arg(short, long)]
+    dry_run: bool,
+
     /// URI to your Netbox instance
     #[arg(short, long)]
     uri: Option<String>,
@@ -254,58 +251,34 @@ struct Args {
 fn main() -> Result<(), Box<dyn Error>> {
     let args: Args = Args::parse();
 
-    let ascii_art = r#"
+    const ASCII_ART: &str = r#"
     ███╗   ██╗ █████╗ ███████╗ █████╗ ██████╗  █████╗
     ████╗  ██║██╔══██╗╚══███╔╝██╔══██╗██╔══██╗██╔══██╗
     ██╔██╗ ██║███████║  ███╔╝ ███████║██████╔╝███████║
     ██║╚██╗██║██╔══██║ ███╔╝  ██╔══██║██╔══██╗██╔══██║
     ██║ ╚████║██║  ██║███████╗██║  ██║██║  ██║██║  ██║
     ╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝
+    (c) Tiara Hock aka ByteOtter. (github.com/ByteOtter)
+
+    Licensed under the terms of the GPL-v3.0 License.
+    Check github.com/The-Nazara-Project/Nazara/LICENSE for more info.
 "#;
 
     // Welcome Message.
-    println!(
-        "{} \n(c) Tiara Hock aka ByteOtter. (github.com/ByteOtter)\n
-         Licensed under the terms of the GPL-v3.0 License.\n\
-         Check github.com/The-Nazara-Project/Nazara/LICENSE for more info.\n",
-        ascii_art
-    );
+    println!("{}", ASCII_ART);
 
-    let config = match set_up_configuration(args.uri, args.token, args.name.clone()) {
-        Ok(conf) => conf,
-        Err(err) => {
-            err.abort(None);
-        }
-    };
-
-    let client: ThanixClient = ThanixClient {
-        base_url: config.get_netbox_uri().to_string(),
-        authentication_token: config.get_api_token().to_string(),
-        client: Client::new(),
-    };
-
-    match probe(&client) {
-        Ok(()) => {}
-        Err(err) => err.abort(None),
-    };
-
-    let dmi_information: dmi_collector::DmiInformation =
-        dmi_collector::construct_dmi_information()?;
-
-    let network_information: Vec<NetworkInformation> =
-        network_collector::construct_network_information()?;
-
-    let machine: Machine = Machine {
-        name: args.name,
-        dmi_information,
-        network_information,
+    // Collect machine information.
+    let machine = Machine {
+        name: args.name.clone(),
+        dmi_information: dmi_collector::construct_dmi_information()?,
+        network_information: network_collector::construct_network_information()?,
         custom_information: match execute(args.plugin) {
             Ok(info) => Some(info),
             Err(e) => panic!("{}", e.to_string()),
         },
     };
 
-    // Passing a name in any way is mandatory for a virtual machine
+    // Passing a name in any way is mandatory for a virtual machine.
     if machine.dmi_information.system_information.is_virtual && machine.name.is_none() {
         eprintln!(
             "[FATAL] No name has been provided for this virtual machine! Providing a name as search parameter is mandatory for virtual machines."
@@ -313,12 +286,38 @@ fn main() -> Result<(), Box<dyn Error>> {
         process::exit(1)
     }
 
-    // Register the machine or VM with NetBox
-    match register_machine(&client, machine, config) {
-        Ok(_) => {
-            println!("\x1b[32mAll done, have a nice day!\x1b[0m");
-            process::exit(0);
+    // If we only want to do a dry run, we only have to print the collected information.
+    if args.dry_run {
+        println!("Dry run results:");
+        dbg!(&machine);
+    } else {
+        let config = match set_up_configuration(args.uri, args.token, args.name.clone()) {
+            Ok(conf) => conf,
+            Err(err) => {
+                err.abort(None);
+            }
+        };
+
+        let client = ThanixClient {
+            base_url: config.get_netbox_uri().to_string(),
+            authentication_token: config.get_api_token().to_string(),
+            client: Client::new(),
+        };
+
+        match probe(&client) {
+            Ok(()) => {}
+            Err(err) => err.abort(None),
+        };
+
+        // Register the machine or VM with NetBox
+        match register_machine(&client, machine, config) {
+            Ok(_) => {
+                println!("\x1b[32mAll done, have a nice day!\x1b[0m");
+                process::exit(0);
+            }
+            Err(e) => e.abort(None),
         }
-        Err(e) => e.abort(None),
-    };
+    }
+
+    Ok(())
 }
