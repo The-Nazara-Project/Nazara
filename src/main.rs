@@ -187,7 +187,7 @@ use configuration::config_parser::set_up_configuration;
 use publisher::*;
 use reqwest::blocking::Client;
 use serde_json::Value;
-use std::{collections::HashMap, process};
+use std::{collections::HashMap, error::Error, process};
 use thanix_client::util::ThanixClient;
 
 /// The Machine struct
@@ -251,7 +251,7 @@ struct Args {
     plugin: Option<String>,
 }
 
-fn main() {
+fn main() -> Result<(), Box<dyn Error>> {
     let args: Args = Args::parse();
 
     let ascii_art = r#"
@@ -289,10 +289,11 @@ fn main() {
         Err(err) => err.abort(None),
     };
 
-    let dmi_information: dmi_collector::DmiInformation = dmi_collector::construct_dmi_information();
+    let dmi_information: dmi_collector::DmiInformation =
+        dmi_collector::construct_dmi_information()?;
 
     let network_information: Vec<NetworkInformation> =
-        network_collector::construct_network_information().unwrap();
+        network_collector::construct_network_information()?;
 
     let machine: Machine = Machine {
         name: args.name,

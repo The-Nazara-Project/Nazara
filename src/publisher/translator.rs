@@ -51,25 +51,6 @@ pub fn information_to_device(
 ) -> WritableDeviceWithConfigContextRequest {
     println!("Creating Device object...");
 
-    let wanted_platform: Option<String> = if let Some(arch) =
-        machine.dmi_information.cpu_information.arch.as_ref()
-    {
-        println!(
-            "\x1b[36m[info]\x1b[0m CPU architecture was collected. Used by default, overriding possible config options..."
-        );
-        Some(arch.clone())
-    } else if let Some(config_value) = config_data.system.platform_name.as_ref() {
-        println!(
-            "\x1b[36m[info]\x1b[0m Architecture was not collected. Using config specifications..."
-        );
-        Some(config_value.clone())
-    } else {
-        println!(
-            "[\x1b[33m[warning]\x1b[0m No cpu architecture specified. Proceeding with 'none'..."
-        );
-        None
-    };
-
     let mut payload: WritableDeviceWithConfigContextRequest =
         WritableDeviceWithConfigContextRequest::default();
 
@@ -77,10 +58,7 @@ pub fn information_to_device(
     payload.device_type = config_data.system.device_type;
     payload.role = config_data.system.device_role;
     payload.tenant = config_data.system.tenant;
-    payload.platform = match wanted_platform {
-        Some(platform_name) => get_platform_id(state, platform_name),
-        None => None,
-    };
+    payload.platform = get_platform_id(state, std::env::consts::ARCH.to_owned());
     payload.serial = machine.dmi_information.system_information.serial.clone();
     // payload.asset_tag = todo!();
     payload.site = match get_site_id(state, &config_data) {
