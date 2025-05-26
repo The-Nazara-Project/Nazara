@@ -177,7 +177,4 @@ pub fn construct_dmi_information() -> Result<DmiInformation, Box<dyn Error>> {
     })
 }
 
-#[cfg(test)]
-pub mod dmi_collector_tests {
-    // TODO
-}
+// NOTE: The dmidecode crate already handles malformed DMI information. Explicit tests are not needed.
