@@ -69,7 +69,7 @@
 //! # ...
 //! ```
 //!
-//! It will be created at ` ~/.nazara/.config.toml`.
+//! It will be created at ` $HOME/.nazara/.config.toml`.
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -229,7 +229,7 @@ pub struct NwiConfig {
 
 /// Set up configuration
 ///
-/// This function reads the configuration file located at `~/.nazara/config.toml`. If no file can be found, a warning is
+/// This function reads the configuration file located at `$HOME/.nazara/config.toml`. If no file can be found, a warning is
 /// displayed to the user and a default config file is written.
 /// If command line arguments are given, the parameters read from the file will be overwritten.
 ///
@@ -335,7 +335,7 @@ fn file_exists(path: &Path) -> bool {
 ///
 /// # Returns
 ///
-/// * config_file_path: `PathBuf` - The directory the config file is located (~/.nazara/config.toml)
+/// * config_file_path: `PathBuf` - The directory the config file is located ($HOME/.nazara/config.toml)
 ///
 /// # Panics
 ///
@@ -365,7 +365,7 @@ impl ConfigData {
     ///
     /// # Panics
     ///
-    /// If it is not able to create a new config file at `~/.nazara-config.toml` or if it cannot write the defaults
+    /// If it is not able to create a new config file at `$HOME/.nazara-config.toml` or if it cannot write the defaults
     /// to the file, the function panics as this is the main method of configuring the program.
     fn initialize_config_file(
         uri: &Option<String>,
