@@ -120,7 +120,12 @@ pub fn construct_dmi_information() -> Result<DmiInformation, Box<dyn Error>> {
 
     // Iterate over the DMI tables.
     for table in entry.structures(&dmi) {
-        match table? {
+        let Ok(t) = table else {
+            eprintln!("[warn] DMI tables contain malformed structure: {:?}", table);
+            continue;
+        };
+
+        match t {
             Structure::System(x) => {
                 system_information = Some(SystemInformation {
                     vendor: x.manufacturer.to_owned(),
