@@ -26,6 +26,7 @@ Source1:        vendor.tar.gz
 BuildRequires:  git
 BuildRequires:  cargo
 BuildRequires:  cargo-packaging
+BuildRequires:  pkgconfig(openssl)
 
 # the name of the actual binary
 %define bin_name nazara
