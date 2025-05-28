@@ -18,8 +18,9 @@ API. It enables the automatic creation of new machines in NetBox or population o
 > Furthermore, **Nazara currently does not support custom fields for any NetBox object**. Though, this is the next item on our agenda.
 
 > [!Warning]
-> The master build of Nazara is currently **only compatible with NetBox version v3.6.9** as this is the version we currently use.
-> We acknowledge this version of NetBox is outdated and will be rewriting the API connection logic to fit NetBox's new API once we are in the MVP stage.
+> This branch is fixed to be compatible to NetBox version `v3.6.9`.
+> More modern Versions of NetBox will be supported in the `main` branch and published releases.
+> Check the release announcement for compatibility info.
 
 - [Installation](#installation)
   - [Building from source](#building-from-source)
