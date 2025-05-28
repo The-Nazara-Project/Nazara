@@ -13,15 +13,8 @@ pub mod publisher_exceptions;
 pub mod trans_validation;
 pub mod translator;
 
-use api_client::update_interface;
-use publisher_exceptions::NetBoxApiError;
-use thanix_client::{
-    types::{
-        WritableDeviceWithConfigContextRequest, WritableIPAddressRequest, WritableInterfaceRequest,
-    },
-    util::ThanixClient,
-};
-
+use serde_json::Value;
+use crate::publisher::api_client::{create_mac_address, search_mac_address};
 use crate::{
     Machine,
     collectors::network_collector::NetworkInformation,
@@ -31,6 +24,16 @@ use crate::{
         test_connection, update_device, update_ip,
     },
 };
+use api_client::update_interface;
+use publisher_exceptions::NetBoxApiError;
+use thanix_client::types::{MACAddressRequest, PatchedMACAddressRequest, PatchedWritableInterfaceRequest};
+use thanix_client::{
+    types::{
+        WritableDeviceWithConfigContextRequest, WritableIPAddressRequest, WritableInterfaceRequest,
+    },
+    util::ThanixClient,
+};
+use thanix_client::paths::{dcim_interfaces_partial_update, dcim_mac_addresses_partial_update};
 
 /// Test connection to NetBox.
 ///
@@ -171,10 +174,43 @@ fn create_nwi(
     interface: &NetworkInformation,
     config_data: ConfigData,
 ) -> Result<i64, NetBoxApiError> {
-    let payload: WritableInterfaceRequest =
+    // Check if MAC exists before creating the interface, create the MAC if it doesn't exist
+    let mac = match search_mac_address(client, interface.mac_addr.clone().unwrap().as_str()) {
+        Some(x) => x,
+        None => {
+            create_mac_address(
+                client,
+                MACAddressRequest {
+                    mac_address: interface.mac_addr.clone().unwrap(),
+                    assigned_object_type: None,
+                    assigned_object_id: None,
+                    description: "".to_string(),
+                    comments: "".to_string(),
+                    tags: vec![],
+                    custom_fields: None,
+                },
+            )?
+        }
+    };
+
+    let mut payload =
         translator::information_to_interface(config_data, interface, &device_id);
 
-    create_interface(client, payload)
+    payload.primary_mac_address = None;
+    let intf_id = create_interface(client, payload)?;
+
+    // Assign Intf to MAC
+    let mut patch = PatchedMACAddressRequest::default();
+    patch.assigned_object_id = Some(intf_id as u64);
+    patch.assigned_object_type = Some("dcim.interface".to_string());
+    dcim_mac_addresses_partial_update(client, patch, mac).map_err(|x| NetBoxApiError::from(x))?;
+
+    // Update Intf with primary MAC
+    let mut intf_patch = PatchedWritableInterfaceRequest::default();
+    intf_patch.primary_mac_address = Some(Value::from(mac));
+    dcim_interfaces_partial_update(client, intf_patch, intf_id)?;
+
+    Ok(intf_id)
 }
 
 /// Update a given NWI.
@@ -204,10 +240,45 @@ fn update_nwi(
         "Updating interface '{}' belonging to device '{}'",
         interface_id, device_id
     );
-    let payload: WritableInterfaceRequest =
+
+    // Check if MAC exists before creating the interface, create the MAC if it doesn't exist
+    let mac = match search_mac_address(client, interface.mac_addr.clone().unwrap().as_str()) {
+        Some(x) => x,
+        None => {
+            create_mac_address(
+                client,
+                MACAddressRequest {
+                    mac_address: interface.mac_addr.clone().unwrap(),
+                    assigned_object_type: None,
+                    assigned_object_id: None,
+                    description: "".to_string(),
+                    comments: "".to_string(),
+                    tags: vec![],
+                    custom_fields: None,
+                },
+            )?
+        }
+    };
+
+    let mut payload =
         translator::information_to_interface(config_data, interface, &device_id);
 
-    update_interface(client, payload, *interface_id)
+    payload.primary_mac_address = None;
+    update_interface(client, payload, *interface_id)?;
+
+    // Assign Intf to MAC
+    let mut patch = PatchedMACAddressRequest::default();
+    patch.assigned_object_id = Some(*interface_id as u64);
+    patch.assigned_object_type = Some("dcim.interface".to_string());
+    dcim_mac_addresses_partial_update(client, patch, mac).map_err(|x| NetBoxApiError::from(x))?;
+
+    // Update Intf with primary MAC
+    let mut intf_patch = PatchedWritableInterfaceRequest::default();
+    intf_patch.primary_mac_address = Some(Value::from(mac));
+    dcim_interfaces_partial_update(client, intf_patch, *interface_id)?;
+
+    Ok(*interface_id)
+
 }
 
 /// Search for a pair of IP addresses.

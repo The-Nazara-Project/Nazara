@@ -2,14 +2,15 @@
 //!
 //! This module provides logic to collect and process Information about all network interfaces a device has.
 //!
-use network_interface::Addr::{V4, V6};
-use network_interface::{NetworkInterface, NetworkInterfaceConfig};
+use super::collector_exceptions::CollectorError;
+use futures::TryStreamExt;
+use rtnetlink::new_connection;
+use rtnetlink::packet_route::address::AddressAttribute;
+use rtnetlink::packet_route::link::LinkAttribute;
 use serde::Serialize;
 use std::fs;
 use std::io::Read;
-use std::net::IpAddr;
-
-use super::collector_exceptions::CollectorError;
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
 /// ## Network Information
 ///
@@ -29,7 +30,7 @@ use super::collector_exceptions::CollectorError;
 /// * is_physical - `bool` whether this device is a physical or virtual interface.
 /// * is_connected - `bool` whether the interface is connected. Determined by if it has an address or not.
 /// * interface_speed - `u32` the speed of the interface.
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Default)]
 pub struct NetworkInformation {
     pub name: String,
     pub interface_speed: Option<u32>,
@@ -54,30 +55,74 @@ pub struct NetworkInformation {
 /// ### Aborts
 ///
 /// This function aborts the program, if `NetworkInterface::show()` returns an Error leading to no interfaces being collected.
-pub fn collect_network_information() -> Result<Vec<NetworkInterface>, CollectorError> {
-    /*
-     * Collect information about all available network interfaces.
-     *
-     * Will return a Vector containing a JSON-like data format.
-     */
-    let network_interfaces_result: Result<Vec<NetworkInterface>, network_interface::Error> =
-        NetworkInterface::show();
+pub fn collect_network_information() -> Result<Vec<NetworkInformation>, CollectorError> {
+    let mut result = Vec::new();
+    let my_fut = async {
+        let (connection, handle, _) = new_connection().unwrap();
+        tokio::spawn(connection);
+        let mut links = handle.link().get().execute();
+        while let Some(msg) = links.try_next().await.unwrap() {
+            let mut net_int = NetworkInformation::default();
+            net_int.index = Some(msg.header.index);
+            for nla in msg.attributes.into_iter() {
+                match nla {
+                    LinkAttribute::IfName(name) => {
+                        net_int.name = name;
+                    }
+                    LinkAttribute::Address(addr) => {
+                        net_int.mac_addr = Some(format!(
+                            "{:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}",
+                            addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]
+                        ));
+                    }
+                    _ => (),
+                }
+            }
+            result.push(net_int);
+        }
+        let mut addresses = handle.address().get().execute();
+        while let Some(msg) = addresses.try_next().await.unwrap() {
+            let target_intf = result
+                .iter_mut()
+                .find(|x| x.index.unwrap() == msg.header.index)
+                .unwrap();
+            for nia in msg.attributes.into_iter() {
+                match nia {
+                    AddressAttribute::Address(addr) => {
+                        dbg!(msg.header.prefix_len);
+                        if addr.is_ipv4() {
+                            target_intf.v4ip = Some(addr);
 
-    match network_interfaces_result {
-        Ok(network_interfaces) => {
-            if network_interfaces.is_empty() {
-                Err(CollectorError::NoNetworkInterfacesError(
-                    "\x1b[31m[error]\x1b[0m No network interfaces found!".to_string(),
-                ))
-            } else {
-                Ok(network_interfaces)
+                            let bits = !(1u32 << (u32::BITS - msg.header.prefix_len as u32)).wrapping_sub(1);
+                            target_intf.v4netmask = Some(IpAddr::from(Ipv4Addr::from_bits(bits)));
+                        }
+                        if addr.is_ipv6() {
+                            target_intf.v6ip = Some(addr);
+                            
+                            let bits = !(1u128 << (u128::BITS - msg.header.prefix_len as u32)).wrapping_sub(1);
+                            target_intf.v6netmask = Some(IpAddr::from(Ipv6Addr::from_bits(bits)));
+                        }
+                    }
+                    AddressAttribute::Broadcast(addr) => {
+                        target_intf.v4broadcast = Some(IpAddr::from(addr));
+                    }
+                    AddressAttribute::Anycast(addr) => {
+                        target_intf.v6broadcast = Some(IpAddr::from(addr));
+                    }
+                    _ => {
+                        dbg!(msg.header.index, nia);
+                    }
+                }
             }
         }
-        Err(e) => {
-            let exc: CollectorError = CollectorError::UnableToCollectDataError(e.to_string());
-            exc.abort(None);
-        }
-    }
+    };
+    tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .unwrap()
+        .block_on(my_fut);
+    dbg!(&result);
+    Ok(result)
 }
 
 /// Constructs instances of the NetworkInformation struct.
@@ -97,7 +142,7 @@ pub fn construct_network_information() -> Result<Vec<NetworkInformation>, Collec
      */
     println!("Collecting Network Information...");
 
-    let raw_information: Vec<NetworkInterface> = match collect_network_information() {
+    let raw_information: Vec<NetworkInformation> = match collect_network_information() {
         Ok(information) => information,
         Err(e) => return Err(CollectorError::NoNetworkInterfacesError(e.to_string())),
     };
@@ -105,6 +150,7 @@ pub fn construct_network_information() -> Result<Vec<NetworkInformation>, Collec
     let mut interfaces: Vec<NetworkInformation> = Vec::new();
     let mut network_information: NetworkInformation;
 
+    /*
     for network_interface in raw_information {
         // Skip loopback device.
         if network_interface.name == "lo" {
@@ -131,7 +177,7 @@ pub fn construct_network_information() -> Result<Vec<NetworkInformation>, Collec
                 } else if network_interface.addr.len() == 1 {
                     // Match if the only set of ip addresses is ipv4 or ipv6
                     match network_interface.addr[0] {
-                        V4(_ip) => {
+                        Addr::V4(_ip) => {
                             network_information = NetworkInformation {
                                 name: network_interface.name.clone(),
                                 v4ip: Some(network_interface.addr[0].ip()),
@@ -147,7 +193,7 @@ pub fn construct_network_information() -> Result<Vec<NetworkInformation>, Collec
                                 interface_speed: validate_network_speed(&network_interface.name),
                             }
                         }
-                        V6(_ip) => {
+                        Addr::V6(_ip) => {
                             network_information = NetworkInformation {
                                 name: network_interface.name.clone(),
                                 v4ip: None,
@@ -196,6 +242,7 @@ pub fn construct_network_information() -> Result<Vec<NetworkInformation>, Collec
         }
         interfaces.push(network_information)
     }
+    */
     println!("\x1b[32m[success]\x1b[0m Network Interface collection completed.");
     Ok(interfaces)
 }

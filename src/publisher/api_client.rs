@@ -7,8 +7,11 @@
 //! Errors are escalated upwards.
 extern crate thanix_client;
 
+use super::publisher_exceptions::{self, NetBoxApiError};
 use reqwest::Error as ReqwestError;
 use serde_json::Value;
+use thanix_client::paths::{DcimMacAddressesListQuery, DcimMacAddressesListResponse, dcim_mac_addresses_create, dcim_mac_addresses_list, extras_bookmarks_retrieve, dcim_mac_addresses_update};
+use thanix_client::types::MACAddressRequest;
 use thanix_client::{
     paths::{
         DcimDevicesCreateResponse, DcimDevicesListQuery, DcimDevicesUpdateResponse,
@@ -24,8 +27,6 @@ use thanix_client::{
     },
     util::ThanixClient,
 };
-
-use super::publisher_exceptions::{self, NetBoxApiError};
 
 /// Tests connection to the NetBox API and verifies if your `thanix_client` version is compatible
 /// with your NetBox version.
@@ -160,10 +161,10 @@ pub fn search_device(client: &ThanixClient, name: &String, serial: &String) -> O
     match dcim_devices_list(client, payload) {
         Ok(response) => match response {
             thanix_client::paths::DcimDevicesListResponse::Http200(device_list) => {
-                if device_list.results.len() == 1 {
-                    return Some(device_list.results[0].id);
+                if device_list.results.as_ref()?.len() == 1 {
+                    return Some(device_list.results?.get(0)?.id);
                 }
-                if device_list.results.is_empty() {
+                if device_list.results?.is_empty() {
                     return None;
                 }
                 let err = NetBoxApiError::Other("Ambiguous search result. Device listed more than once. Please check your data.".to_owned());
@@ -268,6 +269,92 @@ pub fn update_device(
         },
         Err(err) => {
             let exc: NetBoxApiError = NetBoxApiError::Reqwest(err);
+            Err(exc)
+        }
+    }
+}
+
+pub fn search_mac_address(client: &ThanixClient, mac_address: &str) -> Option<i64> {
+    println!("Searching for mac address...");
+
+    let mut payload = DcimMacAddressesListQuery::default();
+    payload.mac_address__ic = Some(vec![mac_address.to_string()]);
+
+    match dcim_mac_addresses_list(client, payload) {
+        Ok(response) => match response {
+            DcimMacAddressesListResponse::Http200(mut mac_addresses) => {
+                if mac_addresses.results.as_mut().unwrap().len() == 1 {
+                    let result = mac_addresses.results.unwrap();
+                    return Some(result[0].id);
+                }
+                if mac_addresses.results?.is_empty() {
+                    return None;
+                }
+                let err = NetBoxApiError::Other(
+                    "Ambiguous search result. MAC Address listed more then once.".to_owned(),
+                );
+                err.abort(None);
+            }
+            DcimMacAddressesListResponse::Other(other) => {
+                let err: NetBoxApiError = NetBoxApiError::Other(other.text().unwrap());
+                err.abort(None)
+            }
+        },
+        Err(e) => {
+            let err: NetBoxApiError = NetBoxApiError::Reqwest(e);
+            err.abort(None);
+        }
+    }
+}
+
+pub fn create_mac_address(
+    client: &ThanixClient,
+    payload: MACAddressRequest,
+) -> Result<i64, NetBoxApiError> {
+    println!("Creating MAC address in NetBox...");
+
+    match dcim_mac_addresses_create(client, payload) {
+        Ok(response) => match response {
+            thanix_client::paths::DcimMacAddressesCreateResponse::Http201(result) => {
+                println!(
+                    "\x1b[32m[success]\x1b[0m MAC Address created successfully. New MAC Address-ID: '{}'",
+                    result.id
+                );
+                Ok(result.id)
+            }
+            thanix_client::paths::DcimMacAddressesCreateResponse::Other(other_response) => {
+                let exc: NetBoxApiError = NetBoxApiError::Other(other_response.text().unwrap());
+                Err(exc)
+            }
+        },
+        Err(e) => {
+            let exc = NetBoxApiError::Reqwest(e);
+            Err(exc)
+        }
+    }
+}
+
+pub fn update_mac_address(
+    client: &ThanixClient,
+    payload: MACAddressRequest,
+    mac_address_id: i64,
+) -> Result<i64, NetBoxApiError> {
+    match dcim_mac_addresses_update(client, payload, mac_address_id) {
+        Ok(response) => match response {
+            thanix_client::paths::DcimMacAddressesUpdateResponse::Http200(result) => {
+                println!(
+                    "\x1b[32m[success]\x1b[0m MAC Address '{}' updated successfully.",
+                    result.id
+                );
+                Ok(result.id)
+            }
+            thanix_client::paths::DcimMacAddressesUpdateResponse::Other(other) => {
+                let exc: NetBoxApiError = NetBoxApiError::Other(other.text().unwrap());
+                Err(exc)
+            }
+        },
+        Err(e) => {
+            let exc = NetBoxApiError::Reqwest(e);
             Err(exc)
         }
     }
@@ -418,10 +505,10 @@ pub fn search_ip(client: &ThanixClient, address: &String, device_id: &i64) -> Op
     match ipam_ip_addresses_list(client, payload) {
         Ok(response) => match response {
             IpamIpAddressesListResponse::Http200(addresses) => {
-                if addresses.results.len() == 1 {
-                    return Some(addresses.results[0].id);
+                if addresses.results.as_ref()?.len() == 1 {
+                    return Some(addresses.results?.get(0)?.id);
                 }
-                if addresses.results.is_empty() {
+                if addresses.results?.is_empty() {
                     return None;
                 }
                 let err = NetBoxApiError::Other("Ambiguous search result. IP address listed more than once. Please check your data.".to_owned());
@@ -602,7 +689,7 @@ pub fn get_interface_by_name(
 ) -> Result<Interface, NetBoxApiError> {
     println!(
         "Trying to retrieve interface by name '{}'...",
-        payload.name.as_ref().unwrap()
+        &payload.name
     );
 
     match dcim_interfaces_list(state, DcimInterfacesListQuery::default()) {
@@ -618,13 +705,13 @@ pub fn get_interface_by_name(
             };
 
             for interface in interface_list {
-                if interface.name == payload.name {
+                if interface.name == Some(payload.clone().name) {
                     return Ok(interface);
                 }
             }
             Err(NetBoxApiError::Other(format!(
                 "No Inteface '{}' with name found. Creation possibly failed.",
-                payload.name.as_ref().unwrap()
+                &payload.name
             )))
         }
         Err(e) => {
