@@ -17,10 +17,6 @@ API. It enables the automatic creation of new machines in NetBox or population o
 >
 > Furthermore, **Nazara currently does not support custom fields for any NetBox object**. Though, this is the next item on our agenda.
 
-> [!Warning]
-> The master build of Nazara is currently **only compatible with NetBox version v3.6.9** as this is the version we currently use.
-> We acknowledge this version of NetBox is outdated and will be rewriting the API connection logic to fit NetBox's new API once we are in the MVP stage.
-
 - [Installation](#installation)
   - [Building from source](#building-from-source)
     - [Installation via `crates.io`](#installation-via-cratesio)
@@ -104,8 +100,8 @@ You recognize them by their line not being commented out.
 When providing CLI parameters, Nazara will write them into the config file for you.
 
 > [!Note]
-> Currently, configuration by config file is the proper way to use Nazara given the amount of data required to reigster a machine.
-> We are investigating possibilities to make this less of a hastle. In the meantime, we suggest you copy-paste the config between machines of the same
+> Currently, configuration by config file is the proper way to use Nazara given the amount of data required to register a machine.
+> We are investigating possibilities to make this less of a hassle. In the meantime, we suggest you copy-paste the config between machines of the same
 > type and function.
 
 ```toml
