@@ -13,7 +13,6 @@ pub mod publisher_exceptions;
 pub mod trans_validation;
 pub mod translator;
 
-use serde_json::Value;
 use crate::publisher::api_client::{create_mac_address, search_mac_address};
 use crate::{
     Machine,
@@ -26,14 +25,17 @@ use crate::{
 };
 use api_client::update_interface;
 use publisher_exceptions::NetBoxApiError;
-use thanix_client::types::{MACAddressRequest, PatchedMACAddressRequest, PatchedWritableInterfaceRequest};
+use serde_json::Value;
+use thanix_client::paths::{dcim_interfaces_partial_update, dcim_mac_addresses_partial_update};
+use thanix_client::types::{
+    MACAddressRequest, PatchedMACAddressRequest, PatchedWritableInterfaceRequest,
+};
 use thanix_client::{
     types::{
         WritableDeviceWithConfigContextRequest, WritableIPAddressRequest, WritableInterfaceRequest,
     },
     util::ThanixClient,
 };
-use thanix_client::paths::{dcim_interfaces_partial_update, dcim_mac_addresses_partial_update};
 
 /// Test connection to NetBox.
 ///
@@ -177,24 +179,21 @@ fn create_nwi(
     // Check if MAC exists before creating the interface, create the MAC if it doesn't exist
     let mac = match search_mac_address(client, interface.mac_addr.clone().unwrap().as_str()) {
         Some(x) => x,
-        None => {
-            create_mac_address(
-                client,
-                MACAddressRequest {
-                    mac_address: interface.mac_addr.clone().unwrap(),
-                    assigned_object_type: None,
-                    assigned_object_id: None,
-                    description: "".to_string(),
-                    comments: "".to_string(),
-                    tags: vec![],
-                    custom_fields: None,
-                },
-            )?
-        }
+        None => create_mac_address(
+            client,
+            MACAddressRequest {
+                mac_address: interface.mac_addr.clone().unwrap(),
+                assigned_object_type: None,
+                assigned_object_id: None,
+                description: "".to_string(),
+                comments: "".to_string(),
+                tags: vec![],
+                custom_fields: None,
+            },
+        )?,
     };
 
-    let mut payload =
-        translator::information_to_interface(config_data, interface, &device_id);
+    let mut payload = translator::information_to_interface(config_data, interface, &device_id);
 
     payload.primary_mac_address = None;
     let intf_id = create_interface(client, payload)?;
@@ -244,24 +243,21 @@ fn update_nwi(
     // Check if MAC exists before creating the interface, create the MAC if it doesn't exist
     let mac = match search_mac_address(client, interface.mac_addr.clone().unwrap().as_str()) {
         Some(x) => x,
-        None => {
-            create_mac_address(
-                client,
-                MACAddressRequest {
-                    mac_address: interface.mac_addr.clone().unwrap(),
-                    assigned_object_type: None,
-                    assigned_object_id: None,
-                    description: "".to_string(),
-                    comments: "".to_string(),
-                    tags: vec![],
-                    custom_fields: None,
-                },
-            )?
-        }
+        None => create_mac_address(
+            client,
+            MACAddressRequest {
+                mac_address: interface.mac_addr.clone().unwrap(),
+                assigned_object_type: None,
+                assigned_object_id: None,
+                description: "".to_string(),
+                comments: "".to_string(),
+                tags: vec![],
+                custom_fields: None,
+            },
+        )?,
     };
 
-    let mut payload =
-        translator::information_to_interface(config_data, interface, &device_id);
+    let mut payload = translator::information_to_interface(config_data, interface, &device_id);
 
     payload.primary_mac_address = None;
     update_interface(client, payload, *interface_id)?;
@@ -278,7 +274,6 @@ fn update_nwi(
     dcim_interfaces_partial_update(client, intf_patch, *interface_id)?;
 
     Ok(*interface_id)
-
 }
 
 /// Search for a pair of IP addresses.

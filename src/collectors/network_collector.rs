@@ -93,13 +93,15 @@ pub fn collect_network_information() -> Result<Vec<NetworkInformation>, Collecto
                         if addr.is_ipv4() {
                             target_intf.v4ip = Some(addr);
 
-                            let bits = !(1u32 << (u32::BITS - msg.header.prefix_len as u32)).wrapping_sub(1);
+                            let bits = !(1u32 << (u32::BITS - msg.header.prefix_len as u32))
+                                .wrapping_sub(1);
                             target_intf.v4netmask = Some(IpAddr::from(Ipv4Addr::from_bits(bits)));
                         }
                         if addr.is_ipv6() {
                             target_intf.v6ip = Some(addr);
-                            
-                            let bits = !(1u128 << (u128::BITS - msg.header.prefix_len as u32)).wrapping_sub(1);
+
+                            let bits = !(1u128 << (u128::BITS - msg.header.prefix_len as u32))
+                                .wrapping_sub(1);
                             target_intf.v6netmask = Some(IpAddr::from(Ipv6Addr::from_bits(bits)));
                         }
                     }

@@ -10,7 +10,10 @@ extern crate thanix_client;
 use super::publisher_exceptions::{self, NetBoxApiError};
 use reqwest::Error as ReqwestError;
 use serde_json::Value;
-use thanix_client::paths::{DcimMacAddressesListQuery, DcimMacAddressesListResponse, dcim_mac_addresses_create, dcim_mac_addresses_list, extras_bookmarks_retrieve, dcim_mac_addresses_update};
+use thanix_client::paths::{
+    DcimMacAddressesListQuery, DcimMacAddressesListResponse, dcim_mac_addresses_create,
+    dcim_mac_addresses_list, dcim_mac_addresses_update, extras_bookmarks_retrieve,
+};
 use thanix_client::types::MACAddressRequest;
 use thanix_client::{
     paths::{

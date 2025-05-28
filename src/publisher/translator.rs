@@ -12,7 +12,7 @@
 //! This approach has been chosen, so the collectors and configuration parser can remain relatively
 //! unchanged in case NetBox significantly redesigns their API.
 use core::net::IpAddr;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use std::collections::HashMap;
 use std::process;
 use std::str::FromStr;
@@ -177,7 +177,7 @@ pub fn information_to_interface(
     payload.bridge = nwi_config.as_ref().and_then(|nwi| nwi.bridge);
     payload.lag = nwi_config.as_ref().and_then(|nwi| nwi.lag);
     payload.mtu = nwi_config.as_ref().and_then(|nwi| nwi.mtu);
-    
+
     if let Some(x) = &interface.mac_addr {
         payload.primary_mac_address = Some(json!({"mac_address": x}));
     }
