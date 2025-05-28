@@ -12,6 +12,7 @@
 //! This approach has been chosen, so the collectors and configuration parser can remain relatively
 //! unchanged in case NetBox significantly redesigns their API.
 use core::net::IpAddr;
+use serde_json::Value;
 use std::collections::HashMap;
 use std::process;
 use std::str::FromStr;
@@ -55,14 +56,19 @@ pub fn information_to_device(
         WritableDeviceWithConfigContextRequest::default();
 
     payload.name = Some(config_data.system.name.clone());
-    payload.device_type = config_data.system.device_type;
-    payload.role = config_data.system.device_role;
-    payload.tenant = config_data.system.tenant;
-    payload.platform = get_platform_id(state, std::env::consts::ARCH.to_owned());
+    payload.device_type = Value::from(config_data.system.device_type);
+    payload.role = Value::from(config_data.system.device_role);
+    if config_data.system.tenant.is_some() {
+        payload.tenant = Some(Value::from(config_data.system.tenant));
+    }
+    let platform_id = get_platform_id(state, std::env::consts::ARCH.to_owned());
+    if platform_id.is_some() {
+        payload.platform = Some(Value::from(platform_id));
+    }
     payload.serial = machine.dmi_information.system_information.serial.clone();
     // payload.asset_tag = todo!();
     payload.site = match get_site_id(state, &config_data) {
-        Some(site_id) => site_id,
+        Some(site_id) => Value::from(site_id),
         None => {
             eprintln!(
                 "\x1b[31m[error]\x1b[0m An Error occured while validating the site ID or name."
@@ -70,20 +76,22 @@ pub fn information_to_device(
             process::exit(1);
         }
     };
-    payload.rack = config_data.system.rack;
-    payload.face = config_data.system.face;
+    if config_data.system.rack.is_some() {
+        payload.rack = Some(Value::from(config_data.system.rack));
+    }
+    payload.face = Some(config_data.system.face);
     // payload.position = todo!();
     // payload.longitude = todo!();
     // payload.latitude = todo!();
     payload.status = config_data.system.status;
-    payload.airflow = config_data.system.airflow;
+    payload.airflow = Some(config_data.system.airflow);
     payload.comments = config_data.system.comments;
     // payload.config_template = todo!();
     payload.custom_fields = machine.custom_information.clone();
     payload.description = config_data.system.description;
     // payload.local_context_data = todo!();
     // payload.oob_ip = todo!();
-    payload.primary_ip4 = get_primary_addresses(
+    let primary_ipv4 = get_primary_addresses(
         state,
         machine,
         config_data
@@ -92,17 +100,27 @@ pub fn information_to_device(
             .clone()
             .unwrap(),
     );
-    payload.primary_ip6 = get_primary_addresses(
+    if primary_ipv4.is_some() {
+        payload.primary_ip4 = Some(Value::from(primary_ipv4));
+    }
+    let primary_ipv6 = get_primary_addresses(
         state,
         machine,
         config_data.system.primary_network_interface.unwrap(),
     );
+    if primary_ipv6.is_some() {
+        payload.primary_ip6 = Some(Value::from(primary_ipv6));
+    }
     // payload.tags = todo!();
     // payload.virtual_chassis = todo!();
     // payload.vc_position = todo!();
     // payload.vc_priority = todo!();
-    payload.tenant = config_data.system.tenant;
-    payload.location = config_data.system.location;
+    if config_data.system.tenant.is_some() {
+        payload.tenant = Some(Value::from(config_data.system.tenant));
+    }
+    if config_data.system.location.is_some() {
+        payload.location = Some(Value::from(config_data.system.location));
+    }
 
     payload
 }
@@ -152,7 +170,7 @@ pub fn information_to_interface(
 
     let mut payload: WritableInterfaceRequest = WritableInterfaceRequest::default();
 
-    payload.device = Some(device_id.to_owned());
+    payload.device = Some(Value::from(device_id.to_owned()));
     payload.name = Some(interface.name.clone());
 
     // Get NwiConfig for the given interface
@@ -176,7 +194,7 @@ pub fn information_to_interface(
     payload.lag = nwi_config.as_ref().and_then(|nwi| nwi.lag);
     payload.mtu = nwi_config.as_ref().and_then(|nwi| nwi.mtu);
 
-    payload.mac_address = Some(interface.mac_addr.clone().unwrap_or_default());
+    payload.primary_mac_address = Some(Value::from(interface.mac_addr.clone().unwrap_or_default()));
     payload.speed = Some(interface.interface_speed.unwrap_or_default());
     payload.description = Some(
         nwi_config
