@@ -6,10 +6,10 @@
 //! for existing ones.
 //!
 //! > Note: Nazara is currently in an alpha state. Bugs are bound to happen. If you encounter any,
-//! please [report them](https://github.com/The-Nazara-Project/Nazara/issues)
+//!> please [report them](https://github.com/The-Nazara-Project/Nazara/issues)
 //! >
 //! > Furthermore, *Nazara currently does not fully support custom fields for any NetBox object*.
-//! Though this is the next item on our agenda.
+//!> Though this is the next item on our agenda.
 //!
 //! # Installation
 //!
@@ -260,7 +260,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 "#;
 
     // Welcome Message.
-    println!("{}", ASCII_ART);
+    println!("{ASCII_ART}");
 
     // Collect machine information.
     let machine = Machine {

@@ -34,26 +34,25 @@ impl fmt::Display for ConfigError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
             ConfigError::FileOpError(ref err) => {
-                write!(f, "\x1b[31m[error]\x1b[0m File operation failed: {}", err)
+                write!(f, "\x1b[31m[error]\x1b[0m File operation failed: {err}")
             }
             ConfigError::NoConfigFileError(ref err) => {
-                write!(f, "\x1b[31m[error]\x1b[0m No config file found: {}", err)
+                write!(f, "\x1b[31m[error]\x1b[0m No config file found: {err}")
             }
             ConfigError::MissingConfigOptionError(ref err) => {
                 write!(
                     f,
-                    "\x1b[31m[error]\x1b[0m Missing required config parameter: {}",
-                    err
+                    "\x1b[31m[error]\x1b[0m Missing required config parameter: {err}"
                 )
             }
             ConfigError::DeserializationError(ref err) => {
-                write!(f, "\x1b[31m[error]\x1b[0m Invalid config file: {}", err)
+                write!(f, "\x1b[31m[error]\x1b[0m Invalid config file: {err}")
             }
             ConfigError::SerializationError(ref err) => {
-                write!(f, "\x1b[31m[error]\x1b[0m Serialization error: {}", err)
+                write!(f, "\x1b[31m[error]\x1b[0m Serialization error: {err}")
             }
             ConfigError::Other(ref err) => {
-                write!(f, "\x1b[31m[error]\x1b[0m Config Parser error: {}", err)
+                write!(f, "\x1b[31m[error]\x1b[0m Config Parser error: {err}")
             }
         }
     }

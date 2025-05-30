@@ -74,7 +74,7 @@ pub fn execute(
 fn validate(output: &str) -> Result<(), CollectorError> {
     serde_json::from_str::<Value>(output)
         .map(|_| ())
-        .map_err(|e| CollectorError::InvalidPluginOutput(e))
+        .map_err(CollectorError::InvalidPluginOutput)
 }
 
 #[cfg(test)]
@@ -96,7 +96,7 @@ mod tests {
         // Create a new file at the specified path
         let mut file = File::create(&path)?;
         // Write the provided content into the file
-        writeln!(file, "{}", content)?;
+        writeln!(file, "{content}")?;
 
         // Make the script executable (Unix/Linux)
         #[cfg(unix)]

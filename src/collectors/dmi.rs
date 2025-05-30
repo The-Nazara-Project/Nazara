@@ -83,7 +83,7 @@ pub fn construct_dmi_information() -> Result<DmiInformation, Box<dyn Error>> {
     // Iterate over the DMI tables.
     for table in entry.structures(&dmi) {
         let Ok(t) = table else {
-            eprintln!("[warn] DMI tables contain malformed structure: {:?}", table);
+            eprintln!("[warn] DMI tables contain malformed structure: {table:?}");
             continue;
         };
 
@@ -95,7 +95,7 @@ pub fn construct_dmi_information() -> Result<DmiInformation, Box<dyn Error>> {
                     // If we have a UUID, construct one from the buffer, otherwise an empty string.
                     uuid: x
                         .uuid
-                        .map_or_else(|| String::new(), |f| uuid::Uuid::from_bytes(f).to_string()),
+                        .map_or_else(String::new, |f| uuid::Uuid::from_bytes(f).to_string()),
                     serial: x.serial.to_owned(),
                     // TODO
                     is_virtual: false,

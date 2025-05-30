@@ -26,36 +26,34 @@ impl fmt::Display for CollectorError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
             CollectorError::Dmi(ref err) => {
-                write!(f, "\x1b[31m[error]\x1b[0m Dmi Error: {}", err)
+                write!(f, "\x1b[31m[error]\x1b[0m Dmi Error: {err}")
             }
             CollectorError::UnableToCollectData(ref err) => {
-                write!(f, "\x1b[31m[error]\x1b[0m Collector Error: {}", err)
+                write!(f, "\x1b[31m[error]\x1b[0m Collector Error: {err}")
             }
             CollectorError::InvalidNetworkInterface(ref err) => {
-                write!(f, "\x1b[31m[error]\x1b[0m Network Collector Error: {}", err)
+                write!(f, "\x1b[31m[error]\x1b[0m Network Collector Error: {err}")
             }
             CollectorError::NoNetworkInterfaces(ref err) => {
-                write!(f, "\x1b[31m[error]\x1b[0m Network Collector Error: {}", err)
+                write!(f, "\x1b[31m[error]\x1b[0m Network Collector Error: {err}")
             }
             CollectorError::UnableToParseUTF8(ref err) => {
                 write!(
                     f,
-                    "\x1b[31m[error]\x1b[0m Unable to parse stdout from UTF8 to string: {}",
-                    err
+                    "\x1b[31m[error]\x1b[0m Unable to parse stdout from UTF8 to string: {err}"
                 )
             }
             CollectorError::InvalidPluginOutput(ref err) => {
                 write!(
                     f,
-                    "\x1b[31m[error]\x1b[0m Plugin returned invalid JSON: {}",
-                    err
+                    "\x1b[31m[error]\x1b[0m Plugin returned invalid JSON: {err}"
                 )
             }
             CollectorError::PluginExecution(ref err) => {
-                write!(f, "\x1b[31m[error]\x1b[0m Plugin execution failed: {}", err)
+                write!(f, "\x1b[31m[error]\x1b[0m Plugin execution failed: {err}")
             }
             CollectorError::Other(ref err) => {
-                write!(f, "\x1b[31m[error]\x1b[0m Collector Error: {}", err)
+                write!(f, "\x1b[31m[error]\x1b[0m Collector Error: {err}")
             }
         }
     }

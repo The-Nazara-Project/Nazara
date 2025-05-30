@@ -93,8 +93,8 @@ pub fn information_to_device(
     if let Some(x) = &config_data.system.primary_network_interface {
         let primary_ipv4 = get_primary_addresses(state, machine, x);
         let primary_ipv6 = get_primary_addresses(state, machine, x);
-        payload.primary_ip4 = primary_ipv4.map(|x| Value::from(x));
-        payload.primary_ip6 = primary_ipv6.map(|x| Value::from(x));
+        payload.primary_ip4 = primary_ipv4.map(Value::from);
+        payload.primary_ip6 = primary_ipv6.map(Value::from);
     };
     // payload.tags = todo!();
     // payload.virtual_chassis = todo!();
@@ -267,16 +267,7 @@ pub fn information_to_interface(
 pub fn information_to_ip(interface_address: IpAddr, interface_id: i64) -> WritableIPAddressRequest {
     println!("Creating IP Address payload...");
 
-    let payload = WritableIPAddressRequest {
-        address: format!("{}", interface_address),
-        status: String::from("active"),
-        assigned_object_type: Some(String::from("dcim.interface")),
-        assigned_object_id: Some(interface_id as u64),
-        description: String::from("This Address was automatically created by Nazara."),
-        comments: String::from("Automatically created by Nazara."),
-        custom_fields: Some(HashMap::new()),
-        ..Default::default()
-    };
+    
 
     // payload.vrf = todo!();
     // payload.tenant = todo!();
@@ -284,7 +275,16 @@ pub fn information_to_ip(interface_address: IpAddr, interface_id: i64) -> Writab
     // payload.nat_inside = todo!();
     // payload.dns_name = todo!();
     // payload.tags = todo!();
-    payload
+    WritableIPAddressRequest {
+        address: format!("{interface_address}"),
+        status: String::from("active"),
+        assigned_object_type: Some(String::from("dcim.interface")),
+        assigned_object_id: Some(interface_id as u64),
+        description: String::from("This Address was automatically created by Nazara."),
+        comments: String::from("Automatically created by Nazara."),
+        custom_fields: Some(HashMap::new()),
+        ..Default::default()
+    }
 }
 
 /// Returns the ID of the platform this machine uses.
@@ -301,7 +301,7 @@ pub fn information_to_ip(interface_address: IpAddr, interface_id: i64) -> Writab
 ///
 /// If the netBox connection fails, this may terimnate the process.
 fn get_platform_id(state: &ThanixClient, platform_name: String) -> Option<i64> {
-    println!("Searching for id of platform '{}' ... ", platform_name);
+    println!("Searching for id of platform '{platform_name}' ... ");
 
     let platform_list = match paths::dcim_platforms_list(state, DcimPlatformsListQuery::default()) {
         Ok(response) => {
@@ -318,8 +318,7 @@ fn get_platform_id(state: &ThanixClient, platform_name: String) -> Option<i64> {
         }
         Err(e) => {
             eprintln!(
-                "[\x1b[31m[error]\x1b[0m Failure while receiving list of platforms.\n{}",
-                e
+                "[\x1b[31m[error]\x1b[0m Failure while receiving list of platforms.\n{e}"
             );
             process::exit(1);
         }
@@ -368,8 +367,7 @@ fn get_primary_addresses(
         key_nwi = nwi_match;
     } else {
         eprintln!(
-            "\x1b[31m[error] Specified Network Interface '{}' not found!",
-            preferred_nwi
+            "\x1b[31m[error] Specified Network Interface '{preferred_nwi}' not found!"
         );
         process::exit(1);
     };
@@ -395,8 +393,7 @@ fn get_primary_addresses(
         }
         Err(e) => {
             eprintln!(
-                "\x1b[31m[error]\x1b[0m Failure while retrieving list of IPv4 Adresses.\n --- Unexpected response: {} ---",
-                e
+                "\x1b[31m[error]\x1b[0m Failure while retrieving list of IPv4 Adresses.\n --- Unexpected response: {e} ---"
             );
             process::exit(1);
         }
@@ -464,8 +461,7 @@ fn get_site_id(state: &ThanixClient, config_data: &ConfigData) -> Option<i64> {
             },
             Err(e) => {
                 eprintln!(
-                    "\x1b[31m[error]\x1b[0m Error while searching for site.\n{}",
-                    e
+                    "\x1b[31m[error]\x1b[0m Error while searching for site.\n{e}"
                 );
                 process::exit(1);
             }
@@ -488,19 +484,18 @@ fn get_site_id(state: &ThanixClient, config_data: &ConfigData) -> Option<i64> {
         },
         Err(e) => {
             eprintln!(
-                "\x1b[31m[error]\x1b[0m Error while performing site list query.\n{}",
-                e
+                "\x1b[31m[error]\x1b[0m Error while performing site list query.\n{e}"
             );
             process::exit(1);
         }
     }
     let target = config_data.system.site_name.clone().unwrap();
 
-    return Some(
+    Some(
         site_list
             .iter()
             .find(|&site| site.name.as_ref().is_some_and(|x| *x == target))
             .unwrap()
             .id,
-    );
+    )
 }

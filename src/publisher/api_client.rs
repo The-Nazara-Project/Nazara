@@ -161,7 +161,7 @@ pub fn search_device(client: &ThanixClient, name: &String, serial: &String) -> O
         Ok(response) => match response {
             thanix_client::paths::DcimDevicesListResponse::Http200(device_list) => {
                 if device_list.results.as_ref()?.len() == 1 {
-                    return Some(device_list.results?.get(0)?.id);
+                    return Some(device_list.results?.first()?.id);
                 }
                 if device_list.results?.is_empty() {
                     return None;
@@ -371,7 +371,7 @@ pub fn update_mac_address(
 /// * The request returns an unexpected response code.
 /// * The request fails (e.g the connection fails).
 pub fn search_interface(client: &ThanixClient, device_id: &i64, name: &String) -> Option<i64> {
-    println!("Searching for interface '{}'...", name);
+    println!("Searching for interface '{name}'...");
 
     let payload: DcimInterfacesListQuery = DcimInterfacesListQuery {
         device_id: Some(vec![*device_id]),
@@ -481,7 +481,7 @@ pub fn update_interface(
 }
 
 pub fn search_ip(client: &ThanixClient, address: &String, device_id: &i64) -> Option<i64> {
-    println!("Searching for IP Address '{}'...", address);
+    println!("Searching for IP Address '{address}'...");
     let payload: IpamIpAddressesListQuery = IpamIpAddressesListQuery {
         address: Some(vec![address.clone()]),
         device_id: Some(vec![*device_id]),
@@ -491,7 +491,7 @@ pub fn search_ip(client: &ThanixClient, address: &String, device_id: &i64) -> Op
     match ipam_ip_addresses_list(client, payload).unwrap() {
         IpamIpAddressesListResponse::Http200(addresses) => {
             if addresses.results.as_ref()?.len() == 1 {
-                return Some(addresses.results?.get(0)?.id);
+                return Some(addresses.results?.first()?.id);
             }
             if addresses.results?.is_empty() {
                 return None;
@@ -542,8 +542,7 @@ pub fn create_ip(
         },
         Err(e) => {
             eprintln!(
-                "\x1b[33m[warning]\x1b[0m Error while decoding NetBox response while creating IP address. This probably is still fine and a problem with NetBox.\nError: {}",
-                e
+                "\x1b[33m[warning]\x1b[0m Error while decoding NetBox response while creating IP address. This probably is still fine and a problem with NetBox.\nError: {e}"
             );
             let exc = NetBoxApiError::Other(e.to_string());
             Err(exc)

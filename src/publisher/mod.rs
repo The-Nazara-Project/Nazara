@@ -179,7 +179,7 @@ fn create_nwi(
     let mut patch = PatchedMACAddressRequest::default();
     patch.assigned_object_id = Some(intf_id as u64);
     patch.assigned_object_type = Some("dcim.interface".to_string());
-    dcim_mac_addresses_partial_update(client, patch, mac).map_err(|x| NetBoxApiError::from(x))?;
+    dcim_mac_addresses_partial_update(client, patch, mac).map_err(NetBoxApiError::from)?;
 
     // Update Intf with primary MAC
     let mut intf_patch = PatchedWritableInterfaceRequest::default();
@@ -213,8 +213,7 @@ fn update_nwi(
     interface_id: &i64,
 ) -> Result<i64, NetBoxApiError> {
     println!(
-        "Updating interface '{}' belonging to device '{}'",
-        interface_id, device_id
+        "Updating interface '{interface_id}' belonging to device '{device_id}'"
     );
 
     // Check if MAC exists before creating the interface, otherwise create the MAC.
@@ -243,7 +242,7 @@ fn update_nwi(
     let mut patch = PatchedMACAddressRequest::default();
     patch.assigned_object_id = Some(*interface_id as u64);
     patch.assigned_object_type = Some("dcim.interface".to_string());
-    dcim_mac_addresses_partial_update(client, patch, mac).map_err(|x| NetBoxApiError::from(x))?;
+    dcim_mac_addresses_partial_update(client, patch, mac).map_err(NetBoxApiError::from)?;
 
     // Update Intf with primary MAC
     let mut intf_patch = PatchedWritableInterfaceRequest::default();

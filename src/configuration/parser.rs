@@ -333,8 +333,7 @@ fn get_config_dir() -> PathBuf {
         Ok(val) => val,
         Err(err) => {
             panic!(
-                "\x1b[31m[FATAL]\x1b[0m No $XDG_CONFIG_HOME variable found! ({})",
-                err
+                "\x1b[31m[FATAL]\x1b[0m No $XDG_CONFIG_HOME variable found! ({err})"
             )
         }
     };
@@ -480,9 +479,9 @@ impl ConfigData {
         let mut contents = String::new();
         file.read_to_string(&mut contents).unwrap();
 
-        let config_data = toml::from_str(&contents).unwrap();
+        
 
-        config_data
+        toml::from_str(&contents).unwrap()
     }
 
     /// Return NetBox URL. Necessary for payload generation.
