@@ -252,13 +252,10 @@ pub fn set_up_configuration(
 
     conf_data = ConfigData::read_config_file();
 
-    if let Some(uri) = uri
-        && let Some(token) = token
-        && let Some(name) = name
-    {
-        conf_data.netbox.netbox_uri = uri.to_owned();
-        conf_data.netbox.netbox_api_token = token.to_owned();
-        conf_data.system.name = name.to_owned();
+    if uri.is_some() && token.is_some() && token.is_some() {
+        conf_data.netbox.netbox_uri = uri.unwrap().to_owned();
+        conf_data.netbox.netbox_api_token = token.unwrap().to_owned();
+        conf_data.system.name = name.unwrap().to_owned();
     }
 
     println!("\x1b[32m[success]\x1b[0m Configuration loaded.\x1b[0m");

@@ -289,6 +289,7 @@ pub fn create_mac_address(
     }
 }
 
+#[allow(unused)]
 pub fn update_mac_address(
     client: &ThanixClient,
     payload: MACAddressRequest,
@@ -522,6 +523,7 @@ pub fn update_ip(
 ///
 /// - `state`: The API client instance to use.
 /// - `payload`: The payload to use.
+#[allow(unused)]
 pub fn get_interface(state: &ThanixClient, id: i64) -> Result<Interface, NetBoxApiError> {
     println!("Trying to get interface '{}'...", &id);
 
@@ -548,6 +550,7 @@ pub fn get_interface(state: &ThanixClient, id: i64) -> Result<Interface, NetBoxA
 /// Gets a list of Interfaces.
 ///
 /// - `state`: The API client instance to use.
+#[allow(unused)]
 pub fn get_interface_list(state: &ThanixClient) -> Result<Option<Vec<Interface>>, NetBoxApiError> {
     println!("Retrieving list of interfaces...");
 
@@ -575,6 +578,7 @@ pub fn get_interface_list(state: &ThanixClient) -> Result<Option<Vec<Interface>>
 ///
 /// - `state`: The API client instance to use.
 /// - `payload`: The payload to send.
+#[allow(unused)]
 pub fn get_interface_by_name(
     state: &ThanixClient,
     payload: &WritableInterfaceRequest,
