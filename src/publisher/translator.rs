@@ -11,6 +11,9 @@
 //!
 //! This approach has been chosen, so the collectors and configuration parser can remain relatively
 //! unchanged in case NetBox significantly redesigns their API.
+
+use crate::collectors::network::NetworkInformation;
+use crate::{Machine, configuration::parser::ConfigData};
 use core::net::IpAddr;
 use serde_json::{Value, json};
 use std::collections::HashMap;
@@ -20,13 +23,10 @@ use thanix_client::paths::{
     self, DcimPlatformsListQuery, DcimSitesListQuery, IpamIpAddressesListQuery,
 };
 use thanix_client::types::{
-    IPAddress, Platform, Site, WritableDeviceWithConfigContextRequest, WritableIPAddressRequest,
+    IPAddress, WritableDeviceWithConfigContextRequest, WritableIPAddressRequest,
     WritableInterfaceRequest, WritableVirtualMachineWithConfigContextRequest,
 };
 use thanix_client::util::ThanixClient;
-
-use crate::collectors::network_collector::NetworkInformation;
-use crate::{Machine, configuration::config_parser::ConfigData};
 
 /// Translate the machine information to a `WritableDeviceWithConfigContextRequest` required by
 /// NetBox's API.
@@ -52,8 +52,7 @@ pub fn information_to_device(
 ) -> WritableDeviceWithConfigContextRequest {
     println!("Creating Device object...");
 
-    let mut payload: WritableDeviceWithConfigContextRequest =
-        WritableDeviceWithConfigContextRequest::default();
+    let mut payload = WritableDeviceWithConfigContextRequest::default();
 
     payload.name = Some(config_data.system.name.clone());
     payload.device_type = Value::from(config_data.system.device_type);
@@ -145,7 +144,7 @@ pub fn information_to_vm(
 /// * payload: `WritableInterfaceRequest` - Payload for creating an interface.
 #[allow(clippy::field_reassign_with_default)]
 pub fn information_to_interface(
-    config_data: ConfigData,
+    config_data: &ConfigData,
     interface: &NetworkInformation,
     device_id: &i64,
 ) -> WritableInterfaceRequest {
@@ -154,7 +153,7 @@ pub fn information_to_interface(
         &interface.name
     );
 
-    let mut payload: WritableInterfaceRequest = WritableInterfaceRequest::default();
+    let mut payload = WritableInterfaceRequest::default();
 
     payload.device = Value::from(device_id.to_owned());
     payload.name = interface.name.clone();
@@ -268,7 +267,7 @@ pub fn information_to_interface(
 pub fn information_to_ip(interface_address: IpAddr, interface_id: i64) -> WritableIPAddressRequest {
     println!("Creating IP Address payload...");
 
-    let payload: WritableIPAddressRequest = WritableIPAddressRequest {
+    let payload = WritableIPAddressRequest {
         address: format!("{}", interface_address),
         status: String::from("active"),
         assigned_object_type: Some(String::from("dcim.interface")),
@@ -304,10 +303,7 @@ pub fn information_to_ip(interface_address: IpAddr, interface_id: i64) -> Writab
 fn get_platform_id(state: &ThanixClient, platform_name: String) -> Option<i64> {
     println!("Searching for id of platform '{}' ... ", platform_name);
 
-    let platform_list: Vec<Platform> = match paths::dcim_platforms_list(
-        state,
-        DcimPlatformsListQuery::default(),
-    ) {
+    let platform_list = match paths::dcim_platforms_list(state, DcimPlatformsListQuery::default()) {
         Ok(response) => {
             println!("List received. Analyzing...");
 
@@ -362,7 +358,7 @@ fn get_primary_addresses(
     preferred_nwi: &str,
 ) -> Option<i64> {
     println!("Retrieving list of Addresses...");
-    let key_nwi: &NetworkInformation;
+    let key_nwi;
 
     if let Some(nwi_match) = machine
         .network_information
@@ -409,7 +405,11 @@ fn get_primary_addresses(
     let mut result: Option<i64> = None;
 
     for (idx, addr) in ip_list.iter().enumerate() {
-        print! {"Searching for matching IP Adress... ({:?}/{:?})\r", idx+1, ip_list.len()};
+        print!(
+            "Searching for matching IP Adress... ({:?}/{:?})\r",
+            idx + 1,
+            ip_list.len()
+        );
         let ip = IpAddr::from_str(addr.address.clone()?.split("/").next().unwrap()).unwrap(); // TODO: Errorhandling
         match ip {
             IpAddr::V4(x) => match key_nwi.v4ip {
@@ -474,7 +474,7 @@ fn get_site_id(state: &ThanixClient, config_data: &ConfigData) -> Option<i64> {
         return Some(target);
     }
     println!("\x1b[36m[info]\x1b[0m No 'site_id' specified. Searching by name...");
-    let site_list: Vec<Site>;
+    let site_list;
     match paths::dcim_sites_list(state, DcimSitesListQuery::default()) {
         Ok(response) => match response {
             paths::DcimSitesListResponse::Http200(sites) => site_list = sites.results?,
@@ -494,7 +494,7 @@ fn get_site_id(state: &ThanixClient, config_data: &ConfigData) -> Option<i64> {
             process::exit(1);
         }
     }
-    let target: String = config_data.system.site_name.clone().unwrap();
+    let target = config_data.system.site_name.clone().unwrap();
 
     return Some(
         site_list

@@ -7,12 +7,12 @@
 //! Errors are escalated upwards.
 extern crate thanix_client;
 
-use super::publisher_exceptions::{self, NetBoxApiError};
+use super::error::{self, NetBoxApiError};
 use reqwest::Error as ReqwestError;
 use serde_json::Value;
 use thanix_client::paths::{
     DcimMacAddressesListQuery, DcimMacAddressesListResponse, dcim_mac_addresses_create,
-    dcim_mac_addresses_list, dcim_mac_addresses_update, extras_bookmarks_retrieve,
+    dcim_mac_addresses_list, dcim_mac_addresses_update,
 };
 use thanix_client::types::MACAddressRequest;
 use thanix_client::{
@@ -44,7 +44,7 @@ use thanix_client::{
 /// compatible with the used NetBox version.
 /// Returns an `Err` with `publisher_exceptions::NetBoxApiError` if the connection fails or the
 /// `thanix_client``version is not compatible with your NetBox version.
-pub fn test_connection(client: &ThanixClient) -> Result<(), publisher_exceptions::NetBoxApiError> {
+pub fn test_connection(client: &ThanixClient) -> Result<(), error::NetBoxApiError> {
     let url: String = format!("{}/api/status/", client.base_url);
 
     let response: Result<reqwest::blocking::Response, ReqwestError> = client
@@ -69,26 +69,22 @@ pub fn test_connection(client: &ThanixClient) -> Result<(), publisher_exceptions
                         );
                         Ok(())
                     } else {
-                        Err(publisher_exceptions::NetBoxApiError::VersionMismatch(
-                            String::from(
-                                "Client version incompatible with NetBox version! Use client v1.x for NetBox v3.6.x and above, and v2.x for NetBox 4.x.",
-                            ),
-                        ))
+                        Err(error::NetBoxApiError::VersionMismatch(String::from(
+                            "Client version incompatible with NetBox version! Use client v1.x for NetBox v3.6.x and above, and v2.x for NetBox 4.x.",
+                        )))
                     }
                 } else {
-                    Err(publisher_exceptions::NetBoxApiError::MissingVersion(
-                        String::from(
-                            "NetBox version missing from response. Please check your installation.",
-                        ),
-                    ))
+                    Err(error::NetBoxApiError::MissingVersion(String::from(
+                        "NetBox version missing from response. Please check your installation.",
+                    )))
                 }
             } else {
-                Err(publisher_exceptions::NetBoxApiError::Reqwest(
+                Err(error::NetBoxApiError::Reqwest(
                     resp.error_for_status().unwrap_err(),
                 ))
             }
         }
-        Err(e) => Err(publisher_exceptions::NetBoxApiError::Reqwest(e)),
+        Err(e) => Err(error::NetBoxApiError::Reqwest(e)),
     }
 }
 
@@ -170,17 +166,16 @@ pub fn search_device(client: &ThanixClient, name: &String, serial: &String) -> O
                 if device_list.results?.is_empty() {
                     return None;
                 }
-                let err = NetBoxApiError::Other("Ambiguous search result. Device listed more than once. Please check your data.".to_owned());
-                err.abort(None);
+                panic!(
+                    "Ambiguous search result. Device listed more than once. Please check your data."
+                );
             }
             thanix_client::paths::DcimDevicesListResponse::Other(other) => {
-                let exc: NetBoxApiError = NetBoxApiError::Other(other.text().unwrap());
-                exc.abort(None);
+                panic!("{}", other.text().unwrap());
             }
         },
         Err(e) => {
-            let err: NetBoxApiError = NetBoxApiError::Reqwest(e);
-            err.abort(None);
+            panic!("{}", e);
         }
     }
 }
@@ -217,11 +212,10 @@ pub fn create_device(
                 Ok(created_device.id)
             }
             DcimDevicesCreateResponse::Other(other_response) => {
-                let exc: NetBoxApiError = NetBoxApiError::Other(format!(
+                panic!(
                     "Unexpected response code '{}' when trying to create a device!",
                     other_response.status()
-                ));
-                exc.abort(Some(35));
+                );
             }
         },
         Err(err) => {
@@ -263,11 +257,10 @@ pub fn update_device(
                 Ok(updated_device.id)
             }
             DcimDevicesUpdateResponse::Other(other_response) => {
-                let exc: NetBoxApiError = NetBoxApiError::Other(format!(
+                panic!(
                     "Unexpected response code '{}' when trying to update device!",
                     other_response.status()
-                ));
-                exc.abort(Some(35));
+                );
             }
         },
         Err(err) => {
@@ -293,19 +286,14 @@ pub fn search_mac_address(client: &ThanixClient, mac_address: &str) -> Option<i6
                 if mac_addresses.results?.is_empty() {
                     return None;
                 }
-                let err = NetBoxApiError::Other(
-                    "Ambiguous search result. MAC Address listed more then once.".to_owned(),
-                );
-                err.abort(None);
+                panic!("Ambiguous search result. MAC Address listed more then once.");
             }
             DcimMacAddressesListResponse::Other(other) => {
-                let err: NetBoxApiError = NetBoxApiError::Other(other.text().unwrap());
-                err.abort(None)
+                panic!("{}", other.text().unwrap());
             }
         },
         Err(e) => {
-            let err: NetBoxApiError = NetBoxApiError::Reqwest(e);
-            err.abort(None);
+            panic!("{}", e);
         }
     }
 }
@@ -401,22 +389,17 @@ pub fn search_interface(client: &ThanixClient, device_id: &i64, name: &String) -
                 if interfaces.results.unwrap().is_empty() {
                     return None;
                 }
-                let err = NetBoxApiError::Other(
-                    "Ambiguous search result. Interface listed more than once.".to_owned(),
-                );
-                err.abort(None);
+                panic!("Ambiguous search result. Interface listed more than once.");
             }
             DcimInterfacesListResponse::Other(res) => {
-                let err: NetBoxApiError = NetBoxApiError::Other(format!(
+                panic!(
                     "Unexpected response code '{}' when trying to search for interface!",
                     res.status()
-                ));
-                err.abort(None);
+                );
             }
         },
         Err(e) => {
-            let err: NetBoxApiError = NetBoxApiError::Reqwest(e);
-            err.abort(None);
+            panic!("{}", e);
         }
     }
 }
@@ -505,29 +488,23 @@ pub fn search_ip(client: &ThanixClient, address: &String, device_id: &i64) -> Op
         ..Default::default()
     };
 
-    match ipam_ip_addresses_list(client, payload) {
-        Ok(response) => match response {
-            IpamIpAddressesListResponse::Http200(addresses) => {
-                if addresses.results.as_ref()?.len() == 1 {
-                    return Some(addresses.results?.get(0)?.id);
-                }
-                if addresses.results?.is_empty() {
-                    return None;
-                }
-                let err = NetBoxApiError::Other("Ambiguous search result. IP address listed more than once. Please check your data.".to_owned());
-                err.abort(None);
+    match ipam_ip_addresses_list(client, payload).unwrap() {
+        IpamIpAddressesListResponse::Http200(addresses) => {
+            if addresses.results.as_ref()?.len() == 1 {
+                return Some(addresses.results?.get(0)?.id);
             }
-            IpamIpAddressesListResponse::Other(res) => {
-                let err: NetBoxApiError = NetBoxApiError::Other(format!(
-                    "Unexpected response code '{}' when trying to search for IP addresses!",
-                    res.status()
-                ));
-                err.abort(None);
+            if addresses.results?.is_empty() {
+                return None;
             }
-        },
-        Err(e) => {
-            let err: NetBoxApiError = NetBoxApiError::Reqwest(e);
-            err.abort(None);
+            panic!(
+                "Ambiguous search result. IP address listed more than once. Please check your data."
+            );
+        }
+        IpamIpAddressesListResponse::Other(res) => {
+            panic!(
+                "Unexpected response code '{}' when trying to search for IP addresses!",
+                res.status()
+            );
         }
     }
 }
@@ -697,7 +674,7 @@ pub fn get_interface_by_name(
 
     match dcim_interfaces_list(state, DcimInterfacesListQuery::default()) {
         Ok(response) => {
-            let interface_list: Vec<Interface> = match response {
+            let interface_list = match response {
                 thanix_client::paths::DcimInterfacesListResponse::Http200(interfaces) => {
                     interfaces.results.unwrap()
                 }
@@ -713,7 +690,7 @@ pub fn get_interface_by_name(
                 }
             }
             Err(NetBoxApiError::Other(format!(
-                "No Inteface '{}' with name found. Creation possibly failed.",
+                "No interface '{}' with name found. Creation possibly failed.",
                 &payload.name
             )))
         }

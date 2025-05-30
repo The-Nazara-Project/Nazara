@@ -80,7 +80,7 @@ use std::io::prelude::*;
 use std::path::Path;
 use std::{fs, path::PathBuf};
 
-use super::config_exceptions::ConfigError;
+use super::error::ConfigError;
 
 /// Configuration State set by the configuration file.
 ///
@@ -227,24 +227,16 @@ pub struct NwiConfig {
     pub custom_fields: Option<HashMap<String, Value, RandomState>>,
 }
 
-/// Set up configuration
-///
 /// This function reads the configuration file located at `$HOME/.nazara/config.toml`. If no file can be found, a warning is
 /// displayed to the user and a default config file is written.
 /// If command line arguments are given, the parameters read from the file will be overwritten.
 ///
-/// # Returns
-///
-/// * `Ok(ConfigData)` - A `ConfigData` object containing the netbox URI and API token.
-/// * `Err` - Prints an Error if the file cannot be validated.
-///
 /// # Panics
 ///
 /// The function panics under these conditions:
-///
-/// * If the initialization of the config file raises an error.
-/// * When using a default (empty) configuration file and not providing all required CLI arguments.
-/// * If the configuration file cannot be read.
+/// - If the initialization of the config file raises an error.
+/// - When using a default (empty) configuration file and not providing all required CLI arguments.
+/// - If the configuration file cannot be read.
 pub fn set_up_configuration(
     uri: Option<String>,
     token: Option<String>,
@@ -284,16 +276,14 @@ pub fn set_up_configuration(
 
     println!("\x1b[36m[info]\x1b[0m No config file found. Creating default...");
 
-    match ConfigData::initialize_config_file(&uri, &token, &name) {
-        Ok(_) => {
-            println!("\x1b[32m[success]\x1b[0m Default configuration file created successfully.")
-        }
-        Err(e) => e.abort(None),
-    }
+    ConfigData::initialize_config_file(&uri, &token, &name).unwrap();
+    println!("\x1b[32m[success]\x1b[0m Default configuration file created successfully.");
 
     if uri.is_none() || token.is_none() {
-        let err = ConfigError::MissingConfigOptionError(String::from("netbox_uri, netbox_token"));
-        err.abort(None)
+        panic!(
+            "{}",
+            ConfigError::MissingConfigOptionError(String::from("netbox_uri, netbox_token"))
+        );
     }
 
     conf_data = ConfigData::read_config_file();
@@ -330,8 +320,6 @@ fn file_exists(path: &Path) -> bool {
 /// Construct path of config directory.
 ///
 /// This function will pull the path to the home directory from the `$XDG_CONFIG_HOME` environment variable.
-///
-/// `NOTE: This operation only works on Unix systems. This will need to be rewritten for other operating systems.`
 ///
 /// # Returns
 ///
@@ -487,30 +475,12 @@ impl ConfigData {
     ///
     /// This function pay terminate the process if it cannot read the cofnig file.
     fn read_config_file() -> ConfigData {
-        let mut file = match File::open(get_config_dir()) {
-            Ok(file) => file,
-            Err(err) => {
-                let exc: ConfigError = ConfigError::FileOpError(err);
-                exc.abort(None);
-            }
-        };
+        let mut file = File::open(get_config_dir()).unwrap();
 
         let mut contents = String::new();
-        match file.read_to_string(&mut contents) {
-            Ok(u) => u,
-            Err(err) => {
-                let exc = ConfigError::FileOpError(err);
-                exc.abort(None);
-            }
-        };
+        file.read_to_string(&mut contents).unwrap();
 
-        let config_data: ConfigData = match toml::from_str(&contents) {
-            Ok(t) => t,
-            Err(err) => {
-                let exc = ConfigError::DeserializationError(err);
-                exc.abort(None);
-            }
-        };
+        let config_data = toml::from_str(&contents).unwrap();
 
         config_data
     }

@@ -9,31 +9,29 @@
 //! [`api_client`](crate::publisher::api_client) modules respectively.
 
 pub mod api_client; // TODO make this non-public
-pub mod publisher_exceptions;
+pub mod error;
 pub mod trans_validation;
 pub mod translator;
 
 use crate::publisher::api_client::{create_mac_address, search_mac_address};
 use crate::{
     Machine,
-    collectors::network_collector::NetworkInformation,
-    configuration::config_parser::ConfigData,
+    collectors::network::NetworkInformation,
+    configuration::parser::ConfigData,
     publisher::api_client::{
         create_device, create_interface, create_ip, search_device, search_interface, search_ip,
         test_connection, update_device, update_ip,
     },
 };
 use api_client::update_interface;
-use publisher_exceptions::NetBoxApiError;
+use error::NetBoxApiError;
 use serde_json::Value;
 use thanix_client::paths::{dcim_interfaces_partial_update, dcim_mac_addresses_partial_update};
 use thanix_client::types::{
     MACAddressRequest, PatchedMACAddressRequest, PatchedWritableInterfaceRequest,
 };
 use thanix_client::{
-    types::{
-        WritableDeviceWithConfigContextRequest, WritableIPAddressRequest, WritableInterfaceRequest,
-    },
+    types::{WritableDeviceWithConfigContextRequest, WritableIPAddressRequest},
     util::ThanixClient,
 };
 
@@ -88,10 +86,7 @@ pub fn register_machine(
             &machine.dmi_information.system_information.serial,
         ) {
             Some(device_id) => {
-                let updated_id = match update_device(client, device_payload, device_id) {
-                    Ok(id) => id,
-                    Err(e) => e.abort(None),
-                };
+                let updated_id = update_device(client, device_payload, device_id).unwrap();
 
                 let mut nwi_id: i64;
                 for interface in &machine.network_information {
@@ -106,47 +101,29 @@ pub fn register_machine(
                             )?;
                         }
                         None => {
-                            nwi_id =
-                                create_nwi(client, updated_id, interface, config_data.clone())?;
+                            nwi_id = create_nwi(client, updated_id, interface, &config_data)?;
                         }
                     }
 
-                    match search_ips(client, interface, updated_id) {
-                        Ok((Some(ipv4), Some(ipv6))) => {
-                            update_ips(client, interface, nwi_id, Some(ipv4), Some(ipv6))?;
-                        }
-                        Ok((Some(ipv4), None)) => {
-                            update_ips(client, interface, nwi_id, Some(ipv4), None)?;
-                        }
-                        Ok((None, Some(ipv6))) => {
-                            update_ips(client, interface, nwi_id, None, Some(ipv6))?;
-                        }
-                        Ok((None, None)) => {
+                    match search_ips(client, interface, updated_id).unwrap() {
+                        (None, None) => {
                             create_ips(client, interface, nwi_id)?;
                         }
-                        Err(e) => {
-                            e.abort(None);
+                        (ipv4, ipv6) => {
+                            update_ips(client, interface, nwi_id, ipv4, ipv6)?;
                         }
                     }
                 }
                 println!("\x1b[32m[success]\x1b[0m Update process completed!");
             }
             None => {
-                let device_id = match create_device(client, device_payload) {
-                    Ok(id) => id,
-                    Err(e) => {
-                        e.abort(None);
-                    }
-                };
+                let device_id = create_device(client, device_payload).unwrap();
 
                 // Create new interface object if no interface ID is given, or the given ID does
                 // not exist.
                 for interface in &machine.network_information {
                     let interface_id =
-                        match create_nwi(client, device_id, interface, config_data.clone()) {
-                            Ok(id) => id,
-                            Err(e) => e.abort(None),
-                        };
+                        create_nwi(client, device_id, interface, &config_data).unwrap();
 
                     create_ips(client, interface, interface_id)?;
                 }
@@ -174,7 +151,7 @@ fn create_nwi(
     client: &ThanixClient,
     device_id: i64,
     interface: &NetworkInformation,
-    config_data: ConfigData,
+    config_data: &ConfigData,
 ) -> Result<i64, NetBoxApiError> {
     // Check if MAC exists before creating the interface, create the MAC if it doesn't exist
     let mac = match search_mac_address(client, interface.mac_addr.clone().unwrap().as_str()) {
@@ -240,7 +217,7 @@ fn update_nwi(
         interface_id, device_id
     );
 
-    // Check if MAC exists before creating the interface, create the MAC if it doesn't exist
+    // Check if MAC exists before creating the interface, otherwise create the MAC.
     let mac = match search_mac_address(client, interface.mac_addr.clone().unwrap().as_str()) {
         Some(x) => x,
         None => create_mac_address(
@@ -257,7 +234,7 @@ fn update_nwi(
         )?,
     };
 
-    let mut payload = translator::information_to_interface(config_data, interface, &device_id);
+    let mut payload = translator::information_to_interface(&config_data, interface, &device_id);
 
     payload.primary_mac_address = None;
     update_interface(client, payload, *interface_id)?;

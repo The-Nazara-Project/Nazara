@@ -179,19 +179,17 @@ pub mod publisher;
 
 use clap::Parser;
 use collectors::{
-    dmi_collector::{self, DmiInformation},
-    network_collector::{self, NetworkInformation},
-    pluginhandler::execute,
+    dmi::{self, DmiInformation},
+    network::{self, NetworkInformation},
+    plugin::execute,
 };
-use configuration::config_parser::set_up_configuration;
+use configuration::parser::set_up_configuration;
 use publisher::*;
 use reqwest::blocking::Client;
 use serde_json::Value;
 use std::{collections::HashMap, error::Error, process};
 use thanix_client::util::ThanixClient;
 
-/// The Machine struct
-///
 /// This struct represents your machine.
 /// It holds all information collected and allows for sharing this
 /// information between Nazara's modules.
@@ -199,19 +197,15 @@ use thanix_client::util::ThanixClient;
 /// It is used in places where it is necessary to have access to various
 /// pieces of collected information from a single source of truth.
 /// It will also be translated into the proper API type by the translator.
-///
-/// # Members
-/// * `name: Option<String>` - The name of the system to register. Read from the CLI.
-/// * `dmi_information: DmiInformation` - Information collected by `dmidecode`.
-/// * `network_information: Vec<NetworkInformation>` - List of Network Interfaces with associated
-/// information.
-/// * `custom_information: `Option<HashMap<String, Value>>` - Custom Fields read from config file or
-/// via Plugins.
 #[derive(Debug)]
 pub struct Machine {
+    /// The name of the system to register. Read from the CLI.
     pub name: Option<String>,
+    /// Information collected by `dmidecode`.
     pub dmi_information: DmiInformation,
+    /// List of network interfaces.
     pub network_information: Vec<NetworkInformation>,
+    /// Custom fields read from config file or via plugins.
     pub custom_information: Option<HashMap<String, Value>>,
 }
 
@@ -248,6 +242,7 @@ struct Args {
     plugin: Option<String>,
 }
 
+#[cfg(target_os = "linux")]
 fn main() -> Result<(), Box<dyn Error>> {
     let args: Args = Args::parse();
 
@@ -270,8 +265,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Collect machine information.
     let machine = Machine {
         name: args.name.clone(),
-        dmi_information: dmi_collector::construct_dmi_information()?,
-        network_information: network_collector::construct_network_information()?,
+        dmi_information: dmi::construct_dmi_information()?,
+        network_information: network::construct_network_information()?,
         custom_information: match execute(args.plugin) {
             Ok(info) => Some(info),
             Err(e) => panic!("{}", e.to_string()),
@@ -291,12 +286,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         println!("Dry run results:");
         dbg!(&machine);
     } else {
-        let config = match set_up_configuration(args.uri, args.token, args.name.clone()) {
-            Ok(conf) => conf,
-            Err(err) => {
-                err.abort(None);
-            }
-        };
+        let config = set_up_configuration(args.uri, args.token, args.name.clone()).unwrap();
 
         let client = ThanixClient {
             base_url: config.get_netbox_uri().to_string(),
@@ -304,19 +294,11 @@ fn main() -> Result<(), Box<dyn Error>> {
             client: Client::new(),
         };
 
-        match probe(&client) {
-            Ok(()) => {}
-            Err(err) => err.abort(None),
-        };
+        probe(&client).unwrap();
 
         // Register the machine or VM with NetBox
-        match register_machine(&client, machine, config) {
-            Ok(_) => {
-                println!("\x1b[32mAll done, have a nice day!\x1b[0m");
-                process::exit(0);
-            }
-            Err(e) => e.abort(None),
-        }
+        register_machine(&client, machine, config).unwrap();
+        println!("\x1b[32mAll done, have a nice day!\x1b[0m");
     }
 
     Ok(())

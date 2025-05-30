@@ -4,14 +4,12 @@
 //!
 //! Currently, Nazara is set to handle `bash`, `python` and `Lua` scripts.
 
-use std::collections::{HashMap, HashSet};
+use crate::collectors::errors::CollectorError;
+use serde_json::{self, Value};
+use std::collections::HashMap;
 use std::hash::RandomState;
-use std::path::PathBuf;
 use std::process::Command;
 use std::{error::Error, path::Path};
-
-use crate::collectors::collector_exceptions::CollectorError;
-use serde_json::{self, Value};
 
 /// Execute a given script.
 ///
@@ -49,7 +47,7 @@ pub fn execute(
     let output = Command::new("bash").arg(script_path).output()?;
 
     if !output.status.success() {
-        let err = CollectorError::PluginExecutionError(
+        let err = CollectorError::PluginExecution(
             "Either you have a syntax error in your code or the file does not exist.".to_string(),
         );
         return Err(err.into());
@@ -76,13 +74,11 @@ pub fn execute(
 fn validate(output: &str) -> Result<(), CollectorError> {
     serde_json::from_str::<Value>(output)
         .map(|_| ())
-        .map_err(|e| CollectorError::InvalidPluginOutputError(e))
+        .map_err(|e| CollectorError::InvalidPluginOutput(e))
 }
 
 #[cfg(test)]
 mod tests {
-    use serde_json::{Value, json};
-    use std::collections::HashMap;
     use std::error::Error;
     use std::fs::File;
     use std::io::Write;
@@ -116,7 +112,7 @@ mod tests {
 
         let result = validate(invalid_json);
         assert!(result.is_err());
-        if let Err(CollectorError::InvalidPluginOutputError(e)) = result {
+        if let Err(CollectorError::InvalidPluginOutput(e)) = result {
             // Convert the error to a string and check its content
             let error_message = e.to_string();
             assert!(
