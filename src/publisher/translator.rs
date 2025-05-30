@@ -258,7 +258,7 @@ pub fn information_to_interface(
 ///
 /// # Parameters
 ///
-///	* `interface_address: IpAddr` - The IpAddress of the interface to register.
+///    * `interface_address: IpAddr` - The IpAddress of the interface to register.
 /// * `interface_id: i64` - ID of the network interface this IP belongs to.
 ///
 /// # Returns
@@ -266,8 +266,6 @@ pub fn information_to_interface(
 /// * `WritableIpAddressRequest` - The payload for the API call.
 pub fn information_to_ip(interface_address: IpAddr, interface_id: i64) -> WritableIPAddressRequest {
     println!("Creating IP Address payload...");
-
-    
 
     // payload.vrf = todo!();
     // payload.tenant = todo!();
@@ -317,9 +315,7 @@ fn get_platform_id(state: &ThanixClient, platform_name: String) -> Option<i64> {
             }
         }
         Err(e) => {
-            eprintln!(
-                "[\x1b[31m[error]\x1b[0m Failure while receiving list of platforms.\n{e}"
-            );
+            eprintln!("[\x1b[31m[error]\x1b[0m Failure while receiving list of platforms.\n{e}");
             process::exit(1);
         }
     };
@@ -366,9 +362,7 @@ fn get_primary_addresses(
     {
         key_nwi = nwi_match;
     } else {
-        eprintln!(
-            "\x1b[31m[error] Specified Network Interface '{preferred_nwi}' not found!"
-        );
+        eprintln!("\x1b[31m[error] Specified Network Interface '{preferred_nwi}' not found!");
         process::exit(1);
     };
 
@@ -460,9 +454,7 @@ fn get_site_id(state: &ThanixClient, config_data: &ConfigData) -> Option<i64> {
                 }
             },
             Err(e) => {
-                eprintln!(
-                    "\x1b[31m[error]\x1b[0m Error while searching for site.\n{e}"
-                );
+                eprintln!("\x1b[31m[error]\x1b[0m Error while searching for site.\n{e}");
                 process::exit(1);
             }
         };
@@ -483,9 +475,7 @@ fn get_site_id(state: &ThanixClient, config_data: &ConfigData) -> Option<i64> {
             }
         },
         Err(e) => {
-            eprintln!(
-                "\x1b[31m[error]\x1b[0m Error while performing site list query.\n{e}"
-            );
+            eprintln!("\x1b[31m[error]\x1b[0m Error while performing site list query.\n{e}");
             process::exit(1);
         }
     }

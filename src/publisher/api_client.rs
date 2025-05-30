@@ -104,7 +104,7 @@ pub fn test_connection(client: &ThanixClient) -> Result<(), error::NetBoxApiErro
 /// # Returns
 ///
 /// * `bool` depending if the `thanix_client` dependency is compatible with the running NetBox
-/// version.
+///   version.
 fn check_version_compatiblity(netbox_version: &str, thanix_version: &str) -> bool {
     println!("Checking API client compatibility with used NetBox version...");
     let netbox_major = get_major_verison(netbox_version);
@@ -149,11 +149,11 @@ fn get_major_verison(version: &str) -> Option<u32> {
 /// * Search results are indecisive. E.g more than one result.
 /// * The API request returns an unexpected response code.
 /// * The API request fails (e.g the connection fails).
-pub fn search_device(client: &ThanixClient, name: &String, serial: &String) -> Option<i64> {
+pub fn search_device(client: &ThanixClient, name: &str, serial: &str) -> Option<i64> {
     println!("Checking if device is already registered...");
     let payload: DcimDevicesListQuery = DcimDevicesListQuery {
-        name: Some(vec![name.clone()]),
-        serial: Some(vec![serial.clone()]),
+        name: Some(vec![name.to_owned()]),
+        serial: Some(vec![serial.to_owned()]),
         ..Default::default()
     };
 
@@ -186,7 +186,7 @@ pub fn search_device(client: &ThanixClient, name: &String, serial: &String) -> O
 ///
 /// * `client: &ThanixClient` - The `ThanixClient` instance to use for communication.
 /// * `payload: &WritableDeviceWithConfigContextRequest` - The information about the device serving
-/// as a request body.
+///   as a request body.
 ///
 /// # Returns
 ///

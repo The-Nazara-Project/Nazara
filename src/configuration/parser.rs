@@ -119,11 +119,11 @@ pub struct NetboxConfig {
 /// * status: `String` - Status of the device. (Default: `active`)
 /// * airflow: `String` - Airflow orientation of the device.
 /// * primary_network_interface: `Option<String>` - Name of the network interface you want to set as
-/// primary.
+///   primary.
 /// * custom_fields: `Option<HashMap<String, Value, RandomState>>` - Unsorted, unfiltered list of
-/// information that will be handed to NetBox as-is.
+///   information that will be handed to NetBox as-is.
 /// * platform_name: `Option<String>` - Name of the processor architecture used as a fallback if collection by `uname`
-/// fails. *Must be present in your NetBox instance!*
+///   fails. *Must be present in your NetBox instance!*
 /// * tenant_group: `Option<i64>` - ID of the tenant group this device belongs to. (e.g: department)
 /// * tenant: `Option<i64>` - ID of tenant this device belongs to. (e.g: team or individual)
 /// * rack: `Option<i64>` - ID of the rack this device is located in.
@@ -159,7 +159,7 @@ pub struct SystemConfig {
 ///
 /// * name: `String` - The name of the interface.
 /// * id: `Option<i64>` - The ID of the interface, if it already exists. Mutually exclusive with
-/// name.
+///   name.
 /// * vdcs: `Option<Vec<i64>>`
 /// * module: `Option<i64>` - The module assigned to this interface.
 /// * label: `Option<String>` - The phyiscal label of this device if any.
@@ -186,13 +186,13 @@ pub struct SystemConfig {
 /// * rf_channel_width: `Option<f64>`
 /// * tx_power: `Option<u8>`
 /// * untagged_vlans: `Option<Vec<i64>>` - List of IDs of untagged VLANs assigned to this
-/// interface.
+///   interface.
 /// * tagged_vlans: `Option<Vec<i64>>` - List of IDs of tagged VLANs assigned to this interface.
 /// * mark_connected: `bool` - Whether this interface is connected. Default: `True`.
 /// * wireless_lans: `Option<Vec<i64>>`
 /// * vrf: `Option<i64>`
 /// * custom_fields: `Option<Hashmap<String, Value, RandomState>>` - Any Custom fields you wish to
-/// add in form a of a Key-Value list.
+///   add in form a of a Key-Value list.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct NwiConfig {
     pub name: Option<String>,
@@ -332,9 +332,7 @@ fn get_config_dir() -> PathBuf {
     let home_dir: String = match std::env::var("HOME") {
         Ok(val) => val,
         Err(err) => {
-            panic!(
-                "\x1b[31m[FATAL]\x1b[0m No $XDG_CONFIG_HOME variable found! ({err})"
-            )
+            panic!("\x1b[31m[FATAL]\x1b[0m No $XDG_CONFIG_HOME variable found! ({err})")
         }
     };
 
@@ -478,8 +476,6 @@ impl ConfigData {
 
         let mut contents = String::new();
         file.read_to_string(&mut contents).unwrap();
-
-        
 
         toml::from_str(&contents).unwrap()
     }

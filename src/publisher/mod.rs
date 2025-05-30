@@ -212,9 +212,7 @@ fn update_nwi(
     config_data: ConfigData,
     interface_id: &i64,
 ) -> Result<i64, NetBoxApiError> {
-    println!(
-        "Updating interface '{interface_id}' belonging to device '{device_id}'"
-    );
+    println!("Updating interface '{interface_id}' belonging to device '{device_id}'");
 
     // Check if MAC exists before creating the interface, otherwise create the MAC.
     let mac = match search_mac_address(client, interface.mac_addr.clone().unwrap().as_str()) {
@@ -266,8 +264,8 @@ fn update_nwi(
 /// # Returns
 ///
 /// * `Ok((Option<i64>, Option<i64>))` - A tuple of the IDs of each the IPv4 and IPv6 addresses if
-/// they are registered. The first field represents the IPv4 Address, the second the IPv6 address.
-/// If one or both are not already registered the value will be `None`.
+///   they are registered. The first field represents the IPv4 Address, the second the IPv6 address.
+///   If one or both are not already registered the value will be `None`.
 /// * `Err(NetBoxApiError)` - In case something unforseen happens.
 fn search_ips(
     client: &ThanixClient,

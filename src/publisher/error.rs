@@ -27,10 +27,7 @@ impl fmt::Display for NetBoxApiError {
                 write!(f, "\x1b[31m[error]\x1b[0m Request error: {err}")
             }
             NetBoxApiError::VersionMismatch(ref err) => {
-                write!(
-                    f,
-                    "\x1b[31m[error]\x1b[0m API Client version error: {err}"
-                )
+                write!(f, "\x1b[31m[error]\x1b[0m API Client version error: {err}")
             }
             NetBoxApiError::MissingVersion(ref err) => {
                 write!(
