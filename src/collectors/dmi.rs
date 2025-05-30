@@ -61,10 +61,7 @@ pub struct CpuInformation {
 }
 
 /// Parses SMBIOS and DMI tables from the sysfs.
-///
-/// # Errors
-///
-/// Returns a an error if:
+/// Returns an error if:
 /// - The SMBIOS header or DMI table cannot be read from filesystem.
 /// - The DMI entry point search fails.
 /// - Any of the required structures (system, chassis, CPU) are missing or malformed.

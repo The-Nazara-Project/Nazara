@@ -24,35 +24,35 @@ pub enum CollectorError {
 
 impl fmt::Display for CollectorError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
-            CollectorError::Dmi(ref err) => {
+        match self {
+            CollectorError::Dmi(err) => {
                 write!(f, "\x1b[31m[error]\x1b[0m Dmi Error: {err}")
             }
-            CollectorError::UnableToCollectData(ref err) => {
+            CollectorError::UnableToCollectData(err) => {
                 write!(f, "\x1b[31m[error]\x1b[0m Collector Error: {err}")
             }
-            CollectorError::InvalidNetworkInterface(ref err) => {
+            CollectorError::InvalidNetworkInterface(err) => {
                 write!(f, "\x1b[31m[error]\x1b[0m Network Collector Error: {err}")
             }
-            CollectorError::NoNetworkInterfaces(ref err) => {
+            CollectorError::NoNetworkInterfaces(err) => {
                 write!(f, "\x1b[31m[error]\x1b[0m Network Collector Error: {err}")
             }
-            CollectorError::UnableToParseUTF8(ref err) => {
+            CollectorError::UnableToParseUTF8(err) => {
                 write!(
                     f,
                     "\x1b[31m[error]\x1b[0m Unable to parse stdout from UTF8 to string: {err}"
                 )
             }
-            CollectorError::InvalidPluginOutput(ref err) => {
+            CollectorError::InvalidPluginOutput(err) => {
                 write!(
                     f,
                     "\x1b[31m[error]\x1b[0m Plugin returned invalid JSON: {err}"
                 )
             }
-            CollectorError::PluginExecution(ref err) => {
+            CollectorError::PluginExecution(err) => {
                 write!(f, "\x1b[31m[error]\x1b[0m Plugin execution failed: {err}")
             }
-            CollectorError::Other(ref err) => {
+            CollectorError::Other(err) => {
                 write!(f, "\x1b[31m[error]\x1b[0m Collector Error: {err}")
             }
         }
@@ -61,9 +61,9 @@ impl fmt::Display for CollectorError {
 
 impl Error for CollectorError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        match *self {
-            CollectorError::UnableToParseUTF8(ref err) => Some(err),
-            CollectorError::InvalidPluginOutput(ref err) => Some(err),
+        match self {
+            CollectorError::UnableToParseUTF8(err) => Some(err),
+            CollectorError::InvalidPluginOutput(err) => Some(err),
             _ => None,
         }
     }

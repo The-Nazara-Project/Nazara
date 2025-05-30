@@ -1,4 +1,3 @@
-//! # Pluginhandler
 //! This module is responsible for executing plugin scripts which collect the user's
 //! `custom_fields` attributes for their Devices, Interfaces and IPAddresses.
 //!
@@ -11,17 +10,10 @@ use std::hash::RandomState;
 use std::process::Command;
 use std::{error::Error, path::Path};
 
-/// Execute a given script.
+/// Executes a given script.
+/// Returns a HashMap if the plugin script returns valid JSON.
 ///
-/// # Parameters
-///
-/// * `path: Option<String>` - The Path of the script to execute relative to the CWD. (If none, plugins
-///   directory will be searched.)
-///
-/// # Returns
-///
-/// * `Ok(HashMap<String, Value, RandomState>)` - Returns a HashMap if the plugin script returns valid JSON.
-/// * `Error` - If the execution of the plugin fails or it does not return a valid JSON.
+/// - `path`: The Path of the script to execute relative to the CWD. (If none, the plugins directory will be searched).
 pub fn execute(
     path: Option<String>,
 ) -> Result<HashMap<String, Value, RandomState>, Box<dyn Error>> {
@@ -61,16 +53,10 @@ pub fn execute(
     Ok(json_output)
 }
 
-/// Validate the output of the given plugin to ensure it is valid JSON.
+/// Validates the output of the given plugin to ensure it is valid JSON.
+/// Returns a [`CollectorError::InvalidPluginOutput`] if the output is not valid JSON.
 ///
-/// # Parameters
-///
-/// * `output: &str` - The output string to validate.
-///
-/// # Returns
-///
-/// * `Ok(())` if the output is valid JSON.
-/// * `Err(CollectorError::InvalidPluginOutputError)` if the output is not valid JSON.
+/// - `output`: The output string to validate.
 fn validate(output: &str) -> Result<(), CollectorError> {
     serde_json::from_str::<Value>(output)
         .map(|_| ())

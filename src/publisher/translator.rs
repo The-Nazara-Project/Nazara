@@ -4,9 +4,9 @@
 //! [`api_client`](crate::publisher::api_client) module to register the machine in NetBox.
 //!
 //! The information comes from the two collectors (both
-//! [`dmi_collector`](crate::collectors::dmi_collector) and
-//! [`network_collector`](crate::collectors::network_collector)) as well as the
-//! [`configuration`](crate::configuration::config_parser) module.
+//! [`crate::collectors::dmi`] and
+//! [`crate::collectors::network`] as well as the
+//! [`crate::configuration::parser`] module.
 //! It is then formed into data structures that NetBox can understand.
 //!
 //! This approach has been chosen, so the collectors and configuration parser can remain relatively
@@ -28,22 +28,16 @@ use thanix_client::types::{
 };
 use thanix_client::util::ThanixClient;
 
-/// Translate the machine information to a `WritableDeviceWithConfigContextRequest` required by
-/// NetBox's API.
+/// Translates the machine information to a [`WritableDeviceWithConfigContextRequest`]
+/// as required by NetBox's API.
 ///
-/// *Certain information provided in the config file, like the CPU platform, will be overwritten
-/// if another one is detected by the collector!*
+/// # Note
 ///
-/// # Parameters
+/// Certain information provided in the config file will be overwritten if a different one is detected by the collector!
 ///
-/// - state: `&ThanixClient` - API Client instance used for search and validation.
-/// - machine: `&Machine` - Collected information about the device.
-/// - config_data: `ConfigData` - Additional information about the device provided by config file
-///   or CLI.
-///
-/// # Returns
-///
-/// - device: `WritableDeviceWithConfigContextRequest` - Payload for machine creation request
+/// - `state`: API Client instance used for search and validation.
+/// - `machine`:  Collected information about the device.
+/// - `config_data`:  Additional information about the device provided by config file or CLI.
 #[allow(clippy::field_reassign_with_default)]
 pub fn information_to_device(
     state: &ThanixClient,
@@ -111,17 +105,11 @@ pub fn information_to_device(
 }
 
 /// Translate gathered information about the virtual machine into a usable Payload.
+/// Returns a payload for the VM POST or UPDATE request.
 ///
-/// # Parameters
-///
-/// * state: `&ThanixClient` - The client instance to be used for communication.
-/// * machine: `&Machine` - The collected information about the virtual machine.
-/// * config_data: `&ConfigData` - Data parsed from the `nazar-config.toml`.
-///
-/// # Returns
-///
-/// * payload: `WritableVirtualMachineWithConfigContextRequest` - Payload for the VM POST or UPDATE
-///   request.
+/// - `state`: The client instance to be used for communication.
+/// - `machine`: The collected information about the virtual machine.
+/// - `config_data`: Data parsed from the `nazar-config.toml`.
 #[allow(unused)]
 pub fn information_to_vm(
     state: &ThanixClient,
@@ -131,17 +119,11 @@ pub fn information_to_vm(
     todo!("Translation of collected information to VM not implemented yet!")
 }
 
-/// Translate gathered information into a `WritableInterfaceRequest` payload.
+/// Translates gathered information into a payload.
 ///
-/// # Parameters
-///
-/// * interface: `&NetworkInformation` - The interface to be translated into a payload.
-/// * config_data: `ConfigData` - The configuration data.
-/// * device_id: `&i64` - The ID of the device that this interface belongs to.
-///
-/// # Returns
-///
-/// * payload: `WritableInterfaceRequest` - Payload for creating an interface.
+/// - `interface`: The interface to be translated into a payload.
+/// - `config_data`: The configuration data.
+/// - `device_id`: The ID of the device that this interface belongs to.
 #[allow(clippy::field_reassign_with_default)]
 pub fn information_to_interface(
     config_data: &ConfigData,
@@ -256,14 +238,8 @@ pub fn information_to_interface(
 
 /// Returns the payload necessary to create a new IP address.
 ///
-/// # Parameters
-///
-///    * `interface_address: IpAddr` - The IpAddress of the interface to register.
-/// * `interface_id: i64` - ID of the network interface this IP belongs to.
-///
-/// # Returns
-///
-/// * `WritableIpAddressRequest` - The payload for the API call.
+/// - `interface_address`: The IpAddress of the interface to register.
+/// - `interface_id`: ID of the network interface this IP belongs to.
 pub fn information_to_ip(interface_address: IpAddr, interface_id: i64) -> WritableIPAddressRequest {
     println!("Creating IP Address payload...");
 
@@ -287,17 +263,11 @@ pub fn information_to_ip(interface_address: IpAddr, interface_id: i64) -> Writab
 
 /// Returns the ID of the platform this machine uses.
 ///
-/// # Parameters
+/// - `state`: The client required for searching for the platform.
 ///
-/// * state: `&ThanixClient` - The client required for searching for the platform.
+/// # Panics
 ///
-/// # Returns
-///
-/// Returns `Some(i64)` if the specified platform exists, else returns `None`.
-///
-/// # Aborts
-///
-/// If the netBox connection fails, this may terimnate the process.
+/// If the NetBox connection fails, this thread will panic.
 fn get_platform_id(state: &ThanixClient, platform_name: String) -> Option<i64> {
     println!("Searching for id of platform '{platform_name}' ... ");
 
@@ -334,19 +304,13 @@ fn get_platform_id(state: &ThanixClient, platform_name: String) -> Option<i64> {
 ///
 /// The function will retrieve a list of IPv4 Adresses from NetBox,
 /// then search this list for the IP Adress Nazara collected.
-///
-/// The `primary_network_interface` paramter specified in the `nazara_config.toml`
+/// The `primary_network_interface` parameter specified in the `nazara_config.toml`
 /// will be used to specify which adress to search for.
 ///
-/// # Parameters
-///
-/// * state: `&ThanixClient` - The client required for making API requests.
-/// * machine: `&Machine` - The collected machine information.
-///
-/// # Returns
-///
 /// Returns the ID of the IP address object `i64` if a match has been found.
-/// Else returns `None`.
+///
+/// - `state`: The client required for making API requests.
+/// - `machine`: The collected machine information.
 fn get_primary_addresses(
     state: &ThanixClient,
     machine: &Machine,
@@ -425,19 +389,10 @@ fn get_primary_addresses(
 }
 
 /// Search for the site specified in the config file by ID or by name.
+/// Returns the ID of the site if found.
 ///
-/// # Parameters
-///
-/// * state: `&ThanixClient` - The client required for performing API requests.
-/// * config_data: `&ConfigData` - The configuration data found in the config file.
-///
-/// # Returns
-///
-/// * site_id: `i64` - The ID of the site if found. If not found, returns 0.
-///
-/// # Aborts
-///
-/// Unexpected API responses may terminate the process.
+/// - `state`: The client required for performing API requests.
+/// - `config_data`: The configuration data found in the config file.
 fn get_site_id(state: &ThanixClient, config_data: &ConfigData) -> Option<i64> {
     println!("Searching for site...");
     if config_data.system.site_id.is_some() {

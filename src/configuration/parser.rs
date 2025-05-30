@@ -82,153 +82,117 @@ use std::{fs, path::PathBuf};
 
 use super::error::ConfigError;
 
-/// Configuration State set by the configuration file.
-///
-/// # Members
-/// * netbox: `NetBoxConfig` - Configuration parameters for the NetBox connection.
-/// * system: `SystemConfig` - Parameters abouth the system.
+/// Configuration state set by the configuration file.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ConfigData {
+    /// Configuration parameters for the NetBox connection.
     pub netbox: NetboxConfig,
+    /// Parameters about the system.
     pub system: SystemConfig,
     pub nwi: Option<Vec<NwiConfig>>,
 }
 
-/// Configuration Parameters relevant for NetBox connection.
-///
-/// # Members
-/// * netbox_api_token: `String` - The API token required for authentication.
-/// * netbox_uri: `String` - The base URL of your NetBox instance. (e.g https://netbox.yourorg.com)
+/// Configuration parameters relevant for a NetBox connection.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct NetboxConfig {
+    /// The API token required for authentication.
     pub netbox_api_token: String,
+    /// The base URL of your NetBox instance. (e.g <https://netbox.yourorg.com>)
     pub netbox_uri: String,
 }
 
 /// Additional information about the system.
-///
-/// # Members
-///
-/// * name: `String` - Name of the device. *Required for virtual machines! Must be unique!*
-/// * site_id: `i64` - ID of the site the device is located in.
-/// * description: `String` - Short description of the device.
-/// * comments: `String` - Comment field.
-/// * device_type: `i64` - ID of the device type.
-/// * device_role: `i64` - ID of the device role.
-/// * face: `String` - Tag of the orientation of the device.
-/// * status: `String` - Status of the device. (Default: `active`)
-/// * airflow: `String` - Airflow orientation of the device.
-/// * primary_network_interface: `Option<String>` - Name of the network interface you want to set as
-///   primary.
-/// * custom_fields: `Option<HashMap<String, Value, RandomState>>` - Unsorted, unfiltered list of
-///   information that will be handed to NetBox as-is.
-/// * platform_name: `Option<String>` - Name of the processor architecture used as a fallback if collection by `uname`
-///   fails. *Must be present in your NetBox instance!*
-/// * tenant_group: `Option<i64>` - ID of the tenant group this device belongs to. (e.g: department)
-/// * tenant: `Option<i64>` - ID of tenant this device belongs to. (e.g: team or individual)
-/// * rack: `Option<i64>` - ID of the rack this device is located in.
-/// * position: `Option<i64>` - Position of the device within a rack if any.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct SystemConfig {
+    /// Name of the device. *Required for virtual machines! Must be unique!*
     pub name: String,
+    /// ID of the site the device is located in.
     pub site_id: Option<i64>,
     pub site_name: Option<String>,
+    /// Short description of the device.
     pub description: String,
+    /// Comment field.
     pub comments: String,
+    /// ID of the device type.
     pub device_type: i64,
+    /// ID of the device role.
     pub device_role: i64,
+    /// Tag of the orientation of the device.
     pub face: String,
+    /// Status of the device. (Default: `active`)
     pub status: String,
+    /// Airflow orientation of the device.
     pub airflow: String,
+    /// Name of the network interface you want to set as primary.
     pub primary_network_interface: Option<String>,
+    /// Unsorted, unfiltered list of information that will be handed to NetBox as-is.
     pub custom_fields: Option<HashMap<String, Value, RandomState>>,
-    pub platform_name: Option<String>,
-    // optional System information
+    /// ID of the tenant group this device belongs to (e.g: department).
     pub tenant_group: Option<i64>,
     pub tenant_group_name: Option<String>,
+    /// ID of tenant this device belongs to (e.g: team or individual).
     pub tenant: Option<i64>,
     pub tenant_name: Option<i64>,
     pub location: Option<i64>,
+    /// ID of the rack this device is located in.
     pub rack: Option<i64>,
+    /// Position of the device within a rack if any.
     pub position: Option<i64>,
 }
 
 /// Information about the system's interface.
-///
-/// # Members
-///
-/// * name: `String` - The name of the interface.
-/// * id: `Option<i64>` - The ID of the interface, if it already exists. Mutually exclusive with
-///   name.
-/// * vdcs: `Option<Vec<i64>>`
-/// * module: `Option<i64>` - The module assigned to this interface.
-/// * label: `Option<String>` - The phyiscal label of this device if any.
-/// * r#type: `String` - The type of the interface (e.g. "bridge")
-/// * enabled: `bool` - Whether this device is enabled or not. Default: `True`.
-/// * parent: `Option<i64>` - ID of the parent interface if applicable.
-/// * bridge: `Option<i64>` - ID of the bridge device for this interface if applicable.
-/// * lag: `Option<i64>`
-/// * mtu: `Option<u32>`
-/// * duplex: `Option<String>`
-/// * wwn: `Option<String>`
-/// * mgmt_only: `bool` - Whether this interface may only be used for management. Default: `False`.
-/// * description: `Option<String>` - Optional description of the device.
-/// * mode: `Option<String>` - The mode this interface operates in.
-/// * rf_role: `Option<String>`
-/// * rf_channel: `Option<String>`
-/// * poe_mode: `Option<String>`
-/// * poe_type: `Option<String>`
-/// * rf_channel_frequency: `Option<f64>`
-/// * rf_channel_width: `Option<f64>`
-/// * poe_mode: `Option<String>` - The PoE mode of the interface.
-/// * poe_type: `Option<String>`
-/// * rf_channel_frequency: `Option<f64>`
-/// * rf_channel_width: `Option<f64>`
-/// * tx_power: `Option<u8>`
-/// * untagged_vlans: `Option<Vec<i64>>` - List of IDs of untagged VLANs assigned to this
-///   interface.
-/// * tagged_vlans: `Option<Vec<i64>>` - List of IDs of tagged VLANs assigned to this interface.
-/// * mark_connected: `bool` - Whether this interface is connected. Default: `True`.
-/// * wireless_lans: `Option<Vec<i64>>`
-/// * vrf: `Option<i64>`
-/// * custom_fields: `Option<Hashmap<String, Value, RandomState>>` - Any Custom fields you wish to
-///   add in form a of a Key-Value list.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct NwiConfig {
+    /// The name of the interface.
     pub name: Option<String>,
+    /// The ID of the interface, if it already exists. Mutually exclusive with name.
     pub id: Option<i64>,
     pub vdcs: Option<Vec<i64>>,
+    /// The module assigned to this interface.
     pub module: Option<i64>,
+    /// The phyiscal label of this device if any.
     pub label: Option<String>,
     #[serde(rename = "rtype")]
+    /// The type of the interface (e.g. "bridge")
     pub r#type: Option<String>, // I hate this field name, but that's what the openAPI schema said.
+    /// Whether this device is enabled or not. Default: `True`.
     pub enabled: Option<bool>,
+    /// ID of the parent interface if applicable.
     pub parent: Option<i64>,
+    /// ID of the bridge device for this interface if applicable.
     pub bridge: Option<i64>,
     pub lag: Option<i64>,
     pub mtu: Option<u32>,
     pub duplex: Option<String>,
     pub wwn: Option<String>,
+    /// Whether this interface may only be used for management. Default: `False`.
     pub mgmt_only: Option<bool>,
+    /// Optional description of the device.
     pub description: Option<String>,
+    /// The mode this interface operates in.
     pub mode: Option<String>,
     pub rf_role: Option<String>,
     pub rf_channel: Option<String>,
+    /// The PoE mode of the interface.
     pub poe_mode: Option<String>,
     pub poe_type: Option<String>,
     pub rf_channel_frequency: Option<f64>,
     pub rf_channel_width: Option<f64>,
     pub tx_power: Option<u8>,
+    /// List of IDs of untagged VLANs assigned to this interface.
     pub untagged_vlans: Option<Vec<i64>>,
+    /// List of IDs of tagged VLANs assigned to this interface.
     pub tagged_vlans: Option<Vec<i64>>,
+    /// Whether this interface is connected. Default: `True`.
     pub mark_connected: Option<bool>,
     pub wireless_lans: Option<Vec<i64>>,
     pub vrf: Option<i64>,
+    /// Any Custom fields you wish to add in form a of a Key-Value list.
     pub custom_fields: Option<HashMap<String, Value, RandomState>>,
 }
 
-/// This function reads the configuration file located at `$HOME/.nazara/config.toml`. If no file can be found, a warning is
-/// displayed to the user and a default config file is written.
+/// This function reads the configuration file located at `$HOME/.nazara/config.toml`.
+/// If no file can be found, a warning is displayed to the user and a default config file is written.
 /// If command line arguments are given, the parameters read from the file will be overwritten.
 ///
 /// # Panics
@@ -238,11 +202,11 @@ pub struct NwiConfig {
 /// - When using a default (empty) configuration file and not providing all required CLI arguments.
 /// - If the configuration file cannot be read.
 pub fn set_up_configuration(
-    uri: Option<String>,
-    token: Option<String>,
-    name: Option<String>,
+    uri: Option<&str>,
+    token: Option<&str>,
+    name: Option<&str>,
 ) -> Result<ConfigData, ConfigError> {
-    let mut conf_data: ConfigData;
+    let mut conf_data;
 
     println!("Checking for existing configuration file...");
 
@@ -256,16 +220,16 @@ pub fn set_up_configuration(
                 );
                 conf_data = ConfigData::read_config_file();
 
-                if uri.is_some() {
-                    conf_data.netbox.netbox_uri = uri.unwrap();
+                if let Some(x) = uri {
+                    conf_data.netbox.netbox_uri = x.to_owned();
                 }
 
-                if token.is_some() {
-                    conf_data.netbox.netbox_api_token = token.unwrap();
+                if let Some(x) = token {
+                    conf_data.netbox.netbox_api_token = x.to_owned();
                 }
 
-                if name.is_some() {
-                    conf_data.system.name = name.unwrap();
+                if let Some(x) = name {
+                    conf_data.system.name = x.to_owned();
                 }
 
                 return Ok(conf_data);
@@ -276,7 +240,7 @@ pub fn set_up_configuration(
 
     println!("\x1b[36m[info]\x1b[0m No config file found. Creating default...");
 
-    ConfigData::initialize_config_file(&uri, &token, &name).unwrap();
+    ConfigData::initialize_config_file(uri, token, name).unwrap();
     println!("\x1b[32m[success]\x1b[0m Default configuration file created successfully.");
 
     if uri.is_none() || token.is_none() {
@@ -288,27 +252,21 @@ pub fn set_up_configuration(
 
     conf_data = ConfigData::read_config_file();
 
-    if uri.is_some() && token.is_some() && name.is_some() {
-        conf_data.netbox.netbox_uri = uri.unwrap();
-        conf_data.netbox.netbox_api_token = token.unwrap();
-        conf_data.system.name = name.unwrap();
+    if let Some(uri) = uri
+        && let Some(token) = token
+        && let Some(name) = name
+    {
+        conf_data.netbox.netbox_uri = uri.to_owned();
+        conf_data.netbox.netbox_api_token = token.to_owned();
+        conf_data.system.name = name.to_owned();
     }
 
     println!("\x1b[32m[success]\x1b[0m Configuration loaded.\x1b[0m");
     Ok(conf_data)
 }
 
-/// Check if config file exists at default path.
-///
-/// If true there a new config file will not be created.
-///
-/// # Arguments
-///
-/// * path: `&str` - The path to the config file.
-///
-/// # Returns
-///
-/// * `bool` - True or False depending on the file's existence.
+/// Checks if a config file exists at a given path.
+/// Returns true if the file exists.
 fn file_exists(path: &Path) -> bool {
     if let Ok(metadata) = fs::metadata(path) {
         metadata.is_file()
@@ -317,54 +275,37 @@ fn file_exists(path: &Path) -> bool {
     }
 }
 
-/// Construct path of config directory.
-///
-/// This function will pull the path to the home directory from the `$XDG_CONFIG_HOME` environment variable.
-///
-/// # Returns
-///
-/// * config_file_path: `PathBuf` - The directory the config file is located ($HOME/.nazara/config.toml)
+/// Constructs a path to the config directory.
+/// This function will fetch the path to the home directory from the `$HOME` environment variable.
 ///
 /// # Panics
 ///
-/// This function panics if no `$XDF_CONFIG_HOME` variable can be found.
+/// This function panics if no `$HOME` variable can be found.
 fn get_config_dir() -> PathBuf {
-    let home_dir: String = match std::env::var("HOME") {
-        Ok(val) => val,
-        Err(err) => {
-            panic!("\x1b[31m[FATAL]\x1b[0m No $XDG_CONFIG_HOME variable found! ({err})")
-        }
-    };
-
-    let config_file_path: PathBuf = Path::new(&home_dir).join(".nazara/config.toml");
-
-    config_file_path
+    let home_dir = std::env::var("HOME").expect("\x1b[31m[FATAL]\x1b[0m No $HOME variable found!");
+    Path::new(&home_dir).join(".nazara/config.toml")
 }
 
 impl ConfigData {
     /// Initializes a new default configuration file if none exists.
-    ///
-    /// # Returns
-    ///
-    /// An empty `Ok()` to indicate the operation's success.
     ///
     /// # Panics
     ///
     /// If it is not able to create a new config file at `$HOME/.nazara-config.toml` or if it cannot write the defaults
     /// to the file, the function panics as this is the main method of configuring the program.
     fn initialize_config_file(
-        uri: &Option<String>,
-        token: &Option<String>,
-        name: &Option<String>,
+        uri: Option<&str>,
+        token: Option<&str>,
+        name: Option<&str>,
     ) -> Result<(), ConfigError> {
-        let template_path: &Path = Path::new("src/configuration/config_template.toml");
-        let mut file: File = match File::open(template_path) {
+        let mut file = match File::open(Path::new("src/configuration/config_template.toml")) {
             Ok(file) => file,
             Err(err) => {
                 return Err(ConfigError::FileOpError(err));
             }
         };
-        let mut contents: String = String::new();
+
+        let mut contents = String::new();
         match file.read_to_string(&mut contents) {
             Ok(x) => x,
             Err(err) => {
@@ -384,46 +325,26 @@ impl ConfigData {
         }
 
         // Path to the output file
-        let output_path = get_config_dir();
-        let mut output_file = match File::create(&output_path) {
-            Ok(file) => file,
-            Err(err) => {
-                panic!("{}", err)
-            }
-        };
-        match output_file.write_all(contents.as_bytes()) {
-            Ok(()) => {}
-            Err(err) => {
-                panic!("{}", err)
-            }
-        };
+        let mut output_file =
+            File::create(get_config_dir()).map_err(|e| ConfigError::FileOpError(e))?;
+        output_file
+            .write_all(contents.as_bytes())
+            .map_err(|e| ConfigError::FileOpError(e))?;
 
         Ok(())
     }
 
-    /// Look for a config file at the standard location and check if it is valid. If it is not or does not exists, an Err
-    /// is returned.
-    ///
-    /// # Returns
-    ///
-    /// * `Ok(())` - When the config file is valid.
-    /// * `Err(String)` - When the config file is invalid.s
+    /// Looks for a config file at the standard location and check if it is valid.
+    /// If it is not or does not exists, an error is returned.
     fn validate_config_file() -> Result<(), ConfigError> {
         // TODO improve this
-        let mut file = match File::open(get_config_dir()) {
-            Ok(f) => f,
-            Err(e) => return Err(ConfigError::FileOpError(e)),
-        };
+        let mut file = File::open(get_config_dir()).map_err(|e| ConfigError::FileOpError(e))?;
         let mut contents = String::new();
-        match file.read_to_string(&mut contents) {
-            Ok(_) => {}
-            Err(e) => return Err(ConfigError::FileOpError(e)),
-        }
+        file.read_to_string(&mut contents)
+            .map_err(|e| ConfigError::FileOpError(e))?;
 
-        let config_data: ConfigData = match toml::from_str(&contents) {
-            Ok(data) => data,
-            Err(e) => return Err(ConfigError::DeserializationError(e)),
-        };
+        let config_data: ConfigData =
+            toml::from_str(&contents).map_err(|e| ConfigError::DeserializationError(e))?;
 
         if config_data.netbox.netbox_uri.is_empty() {
             return Err(ConfigError::MissingConfigOptionError(String::from(
@@ -461,16 +382,12 @@ impl ConfigData {
         Ok(())
     }
 
-    /// Opens and reads the config file and writes the set parameters into a [`ConfigData`](struct.ConfigData) Object
-    /// which is then returned.
+    /// Opens and reads the config file and writes the set parameters into a
+    /// [`ConfigData`] object, which is then returned.
     ///
-    /// # Returns
+    /// # Panics
     ///
-    /// * config: `ConfigData` - A [`ConfigData`] object.
-    ///
-    /// # Aborts
-    ///
-    /// This function pay terminate the process if it cannot read the cofnig file.
+    /// This function will panic if it cannot read the config file.
     fn read_config_file() -> ConfigData {
         let mut file = File::open(get_config_dir()).unwrap();
 
@@ -480,20 +397,12 @@ impl ConfigData {
         toml::from_str(&contents).unwrap()
     }
 
-    /// Return NetBox URL. Necessary for payload generation.
-    ///
-    /// # Returns
-    ///
-    /// * system_location: `&str` - The location of the system to be created/updated as read from the config file.
+    /// Returns NetBox URL. Necessary for payload generation.
     pub fn get_netbox_uri(&self) -> &str {
         &self.netbox.netbox_uri
     }
 
-    /// Return API auth token. Necessary for payload generation.
-    ///
-    /// # Returns
-    ///
-    /// * system_location: `String` - The location of the system to be created/updated as read from the config file.
+    /// Returns API auth token. Necessary for payload generation.
     pub fn get_api_token(&self) -> &str {
         &self.netbox.netbox_api_token
     }

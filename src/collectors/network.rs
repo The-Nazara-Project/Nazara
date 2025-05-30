@@ -1,7 +1,5 @@
-//! ## Network Collector Module
-//!
 //! This module provides logic to collect and process Information about all network interfaces a device has.
-//!
+
 use super::errors::CollectorError;
 use futures::TryStreamExt;
 use rtnetlink::new_connection;
@@ -10,51 +8,38 @@ use rtnetlink::packet_route::link::LinkAttribute;
 use serde::Serialize;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
-/// ## Network Information
-///
 /// This object contains information about one specific network interface.
-///
-/// ### Members
-///
-/// * name - `String` containing the name of a network interface.
-/// * v4ip - `IpAddr` the IPv4 address of this interface.
-/// * v4broadcast - `IpAddr` the IPv4 broadcast address of this interface.
-/// * v4netmask - `IpAddr` the IPv4 netmask of this interface.
-/// * v6ip - `IpAddr` the IPv6 address of this interface.
-/// * v6broadcast - `IpAddr` the IPv6 broadcast address of this interface.
-/// * v6netmask - `IpAddr` the IPv6 netmask of this interface.
-/// * mac_addr - `String` the mac address of this interface.
-/// * index - `u32` the index of this interface.
-/// * is_physical - `bool` whether this device is a physical or virtual interface.
-/// * is_connected - `bool` whether the interface is connected. Determined by if it has an address or not.
-/// * interface_speed - `u32` the speed of the interface.
 #[derive(Serialize, Debug, Default)]
 pub struct NetworkInformation {
+    /// The name of a network interface.
     pub name: String,
+    /// The speed of the interface.
     pub interface_speed: Option<u32>,
+    /// The IPv4 address of this interface.
     pub v4ip: Option<IpAddr>,
+    /// The IPv4 broadcast address of this interface.
     pub v4broadcast: Option<IpAddr>,
+    /// The IPv4 netmask of this interface.
     pub v4netmask: Option<IpAddr>,
+    /// The IPv6 address of this interface.
     pub v6ip: Option<IpAddr>,
+    /// The IPv6 broadcast address of this interface.
     pub v6broadcast: Option<IpAddr>,
+    /// The IPv6 netmask of this interface.
     pub v6netmask: Option<IpAddr>,
+    /// The mac address of this interface.
     pub mac_addr: Option<String>,
+    /// The index of this interface.
     pub index: Option<u32>,
+    /// Whether this device is a physical or virtual interface.
     pub is_physical: bool,
+    /// Whether the interface is connected. Determined by if it has an address or not.
     pub is_connected: bool,
 }
 
-/// Constructs instances of the NetworkInformation struct.
-///
-/// Loopback device collected by `collect_network_information` is skipped.
-///
-/// ### Returns
-///
-/// A list of NetworkInformation objects including information about whether a network is virtual or physical.
+/// Returns a list of network interfaces.
+/// Any collected loopback device is skipped.
 pub fn construct_network_information() -> Result<Vec<NetworkInformation>, CollectorError> {
-    /*
-     * Deconstruct NetworkInterface vector and construct NetworkInformation objects from it.
-     */
     println!("Collecting Network Information...");
 
     let mut result = Vec::new();

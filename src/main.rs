@@ -225,7 +225,7 @@ struct Args {
     #[arg(short, long)]
     dry_run: bool,
 
-    /// URI to your Netbox instance
+    /// URI to your NetBox instance
     #[arg(short, long)]
     uri: Option<String>,
 
@@ -286,7 +286,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         println!("Dry run results:");
         dbg!(&machine);
     } else {
-        let config = set_up_configuration(args.uri, args.token, args.name.clone()).unwrap();
+        let config = set_up_configuration(
+            args.uri.as_deref(),
+            args.token.as_deref(),
+            args.name.as_deref(),
+        )
+        .unwrap();
 
         let client = ThanixClient {
             base_url: config.get_netbox_uri().to_string(),

@@ -5,10 +5,10 @@
 //! requests.
 //!
 //! It "steers" which endpoints are used when, which payload is created when and hands these
-//! responsibilities off to the [`translator`](crate::publisher::translator) and
-//! [`api_client`](crate::publisher::api_client) modules respectively.
+//! responsibilities off to the [`crate::publisher::translator`] and
+//! [`crate::publisher::api_client`] modules respectively.
 
-pub mod api_client; // TODO make this non-public
+mod api_client;
 pub mod error;
 pub mod trans_validation;
 pub mod translator;
@@ -37,13 +37,7 @@ use thanix_client::{
 
 /// Test connection to NetBox.
 ///
-/// # Paramters
-///
-/// - `client: &ThanixClient` - Reference to a `thanix_client` instance
-///
-/// # Returns
-///
-/// - `Result<(), NetBoxApiError` - Either returns an empty Ok() or a new instance of `NetBoxApiError`
+/// - `client`: Reference to a `thanix_client` instance.
 pub fn probe(client: &ThanixClient) -> Result<(), NetBoxApiError> {
     println!("Probing connection to NetBox...");
 
@@ -58,15 +52,9 @@ pub fn probe(client: &ThanixClient) -> Result<(), NetBoxApiError> {
 
 /// Register this machine or VM in NetBox.
 ///
-/// # Parameters
-///
-/// - `client: &ThanixClient` - Reference to a `thanix_client` instance.
-/// - `machine: Machine` - Information about the host machine collected by the `collector` module.
-/// - `config_data: ConfigData` - Nazara's configuration.
-///
-/// # Returns
-///
-/// Empty Result object upon successful completeion. Otherwise a `NetBoxApiError`.
+/// - `client`: A client instance.
+/// - `machine`: Information about the host machine collected by the [`super::collectors`] module.
+/// - `config_data`: Nazara's configuration.
 pub fn register_machine(
     client: &ThanixClient,
     machine: Machine,
@@ -88,9 +76,9 @@ pub fn register_machine(
             Some(device_id) => {
                 let updated_id = update_device(client, device_payload, device_id).unwrap();
 
-                let mut nwi_id: i64;
+                let mut nwi_id;
                 for interface in &machine.network_information {
-                    match search_interface(client, &updated_id, &interface.name) {
+                    match search_interface(client, updated_id, &interface.name) {
                         Some(interface_id) => {
                             nwi_id = update_nwi(
                                 client,
@@ -135,18 +123,12 @@ pub fn register_machine(
 }
 
 /// Create new Network Interface object in NetBox.
+/// Returns the ID of the newly created interface.
 ///
-/// # Parameters
-///
-/// * `client: &ThanixClient` - The API client instance to use.
-/// * `device_id: i64` - The device this interface belongs to.
-/// * `interface: &NetworkInformation` - The interface to create.
-/// * `config_data: ConfigData` - The configuration read from the config file.
-///
-/// # Returns
-///
-/// * `Ok(i64)` - The ID of the newly created interface.
-/// * `Err(NetBoxApiError)` - In case the API request fails.
+/// - `client`: The API client instance to use.
+/// - `device_id`: The device this interface belongs to.
+/// - `interface`: The interface to create.
+/// - `config_data`: The configuration read from the config file.
 fn create_nwi(
     client: &ThanixClient,
     device_id: i64,
@@ -190,21 +172,14 @@ fn create_nwi(
 }
 
 /// Update a given NWI.
-///
 /// Creates a new Interface API payload and invokes the API call to update the interface.
+/// Returns the ID of the interface.
 ///
-/// # Parameters
-///
-/// * `client: &ThanixClient` - The API client instance to use.
-/// * `device_id: i64` - The ID of the device this NWI belongs to.
-/// * `interface: &NetworkInformation` - The information of the interface to update.
-/// * `config_data: ConfigData` - The configuration data.
-/// * `interface_id: i64` - The ID of the interface to update.
-///
-/// # Returns
-///
-/// * `Ok(i64)` - The ID of the updated interface.
-/// * `Err(NetboxApiError)` - In case the connection or API request fails.
+/// - `client`: The API client instance to use.
+/// - `device_id`: The ID of the device this NWI belongs to.
+/// - `interface`: The information of the interface to update.
+/// - `config_data`: The configuration data.
+/// - `interface_id`: The ID of the interface to update.
 fn update_nwi(
     client: &ThanixClient,
     device_id: i64,
@@ -255,18 +230,13 @@ fn update_nwi(
 /// Checks if the `ipv4` and/or `ìpv6` addresses of the given `NetworkInformation` are set and
 /// invokes `search_ip` on each or both of these addresses.
 ///
-/// # Parameters
+/// Returns a tuple of the IDs of each the IPv4 and IPv6 addresses if they are registered.
+/// The first field represents the IPv4 Address, the second the IPv6 address.
+/// If one or both are not already registered the value will be `None`.
 ///
-/// * `client, &ThanixClient` - The API client instance to use.
-/// * `interface: &NetworkInformation` - The interface this address belongs to.
-/// * `device_id: i64` - The ID of the device these Addresses are linked to.
-///
-/// # Returns
-///
-/// * `Ok((Option<i64>, Option<i64>))` - A tuple of the IDs of each the IPv4 and IPv6 addresses if
-///   they are registered. The first field represents the IPv4 Address, the second the IPv6 address.
-///   If one or both are not already registered the value will be `None`.
-/// * `Err(NetBoxApiError)` - In case something unforseen happens.
+/// - `client`: The API client instance to use.
+/// - `interface`: The interface this address belongs to.
+/// - `device_id`: The ID of the device these Addresses are linked to.
 fn search_ips(
     client: &ThanixClient,
     interface: &NetworkInformation,
@@ -291,16 +261,9 @@ fn search_ips(
 
 /// Creates the given interface's IPv4 and/or IPv6 address(es).
 ///
-/// # Parameters
-///
-/// * `client: &ThanixClient` - The API client instance to use.
-/// * `interface: &NetworkInformation` - The interface to get the IP Addresses from.
-/// * `interface_id: i64` - The ID of the interface these addresses belong to.
-///
-/// # Returns
-///
-/// * `Ok(())` - If the registration has successfully been completed.
-/// * `Err(NetboxApiError)` - If the creation failed.
+/// - `client`: The API client instance to use.
+/// - `interface`: The interface to get the IP Addresses from.
+/// - `interface_id`: The ID of the interface these addresses belong to.
 fn create_ips(
     client: &ThanixClient,
     interface: &NetworkInformation,
@@ -324,16 +287,9 @@ fn create_ips(
 
 /// Update all IPs of a given interface.
 ///
-/// # Parameters
-///
-/// * `client, &ThanixClient` - The API client instance to use.
-/// * `interface: &NetworkInformation` - The interface this address belongs to.
-/// * `interface_id: i64` - The ID of the interface object in NetBox.
-///
-/// # Returns
-///
-/// * `Ok(())` - If the operation was successful.
-/// * `Err(NetBoxApiError)` - In case something unforseen happens.
+/// - `client`: The API client instance to use.
+/// - `interface`: The interface this address belongs to.
+/// - `interface_id`: The ID of the interface object in NetBox..
 fn update_ips(
     client: &ThanixClient,
     interface: &NetworkInformation,

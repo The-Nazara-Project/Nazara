@@ -2,7 +2,6 @@
 
 use reqwest::Error as ReqwestError;
 use serde_json::Error as SerdeJsonError;
-
 use std::{error::Error, fmt};
 
 /// Variants of all Errors the API can encounter on Nazara's end.
@@ -22,38 +21,35 @@ pub enum NetBoxApiError {
 
 impl fmt::Display for NetBoxApiError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
-            NetBoxApiError::Reqwest(ref err) => {
+        match self {
+            NetBoxApiError::Reqwest(err) => {
                 write!(f, "\x1b[31m[error]\x1b[0m Request error: {err}")
             }
-            NetBoxApiError::VersionMismatch(ref err) => {
+            NetBoxApiError::VersionMismatch(err) => {
                 write!(f, "\x1b[31m[error]\x1b[0m API Client version error: {err}")
             }
-            NetBoxApiError::MissingVersion(ref err) => {
+            NetBoxApiError::MissingVersion(err) => {
                 write!(
                     f,
                     "\x1b[31m[error]x1b[0m API Client missing version error: {err}"
                 )
             }
-            NetBoxApiError::JsonParse(ref err) => {
+            NetBoxApiError::JsonParse(err) => {
                 write!(f, "\x1b[31m[error]\x1b[0m JSON parsing error: {err}")
             }
-            NetBoxApiError::Other(ref err) => write!(f, "\x1b[31m[error]\x1b[0m {err}"),
+            NetBoxApiError::Other(err) => write!(f, "\x1b[31m[error]\x1b[0m {err}"),
         }
     }
 }
 
-/// Needed for `NetBoxApiError::Reqwest` and `NetBoxApiError::JsonParse` as these contain other
-/// error types from dependencies.
+/// Needed for [`NetBoxApiError::Reqwest`] and [`NetBoxApiError::JsonParse`] as these contain error types from dependencies.
 /// Others are ignored as they originate in Nazara.
 impl Error for NetBoxApiError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        match *self {
-            NetBoxApiError::Reqwest(ref err) => Some(err),
-            NetBoxApiError::JsonParse(ref err) => Some(err),
-            NetBoxApiError::MissingVersion(_) => None,
-            NetBoxApiError::VersionMismatch(_) => None,
-            NetBoxApiError::Other(_) => None,
+        match self {
+            NetBoxApiError::Reqwest(err) => Some(err),
+            NetBoxApiError::JsonParse(err) => Some(err),
+            _ => None,
         }
     }
 }
