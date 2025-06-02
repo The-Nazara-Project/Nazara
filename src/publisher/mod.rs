@@ -199,12 +199,8 @@ fn create_nwi(
             client,
             MACAddressRequest {
                 mac_address: interface.mac_addr.clone().unwrap(),
-                assigned_object_type: None,
-                assigned_object_id: None,
-                description: "".to_string(),
-                comments: "".to_string(),
-                tags: vec![],
-                custom_fields: None,
+                custom_fields: Some(HashMap::new()),
+                ..Default::default()
             },
         )?,
     };
@@ -253,12 +249,8 @@ fn update_nwi(
             client,
             MACAddressRequest {
                 mac_address: interface.mac_addr.clone().unwrap(),
-                assigned_object_type: None,
-                assigned_object_id: None,
-                description: "".to_string(),
-                comments: "".to_string(),
-                tags: vec![],
-                custom_fields: None,
+                custom_fields: Some(HashMap::new()),
+                ..Default::default()
             },
         )?,
     };
