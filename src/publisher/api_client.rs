@@ -11,10 +11,11 @@ use super::error::{self, NetBoxApiError};
 use reqwest::Error as ReqwestError;
 use serde_json::Value;
 use thanix_client::paths::{
-    DcimMacAddressesListQuery, DcimMacAddressesListResponse, dcim_mac_addresses_create,
-    dcim_mac_addresses_list, dcim_mac_addresses_update,
+    DcimMacAddressesListQuery, DcimMacAddressesListResponse, IpamIpAddressesPartialUpdateResponse,
+    dcim_mac_addresses_create, dcim_mac_addresses_list, dcim_mac_addresses_update,
+    ipam_ip_addresses_partial_update,
 };
-use thanix_client::types::MACAddressRequest;
+use thanix_client::types::{MACAddressRequest, PatchedWritableIPAddressRequest};
 use thanix_client::{
     paths::{
         DcimDevicesCreateResponse, DcimDevicesListQuery, DcimDevicesUpdateResponse,
@@ -22,7 +23,6 @@ use thanix_client::{
         IpamIpAddressesListResponse, dcim_devices_create, dcim_devices_list, dcim_devices_update,
         dcim_interfaces_create, dcim_interfaces_list, dcim_interfaces_retrieve,
         dcim_interfaces_update, ipam_ip_addresses_create, ipam_ip_addresses_list,
-        ipam_ip_addresses_update,
     },
     types::{
         Interface, WritableDeviceWithConfigContextRequest, WritableIPAddressRequest,
@@ -427,11 +427,11 @@ pub fn update_interface(
     }
 }
 
-pub fn search_ip(client: &ThanixClient, address: &String, device_id: &i64) -> Option<i64> {
+pub fn search_ip(client: &ThanixClient, address: &String, device_id: Option<i64>) -> Option<i64> {
     println!("Searching for IP Address '{address}'...");
     let payload: IpamIpAddressesListQuery = IpamIpAddressesListQuery {
         address: Some(vec![address.clone()]),
-        device_id: Some(vec![*device_id]),
+        device_id: device_id.map(|x| vec![x]),
         ..Default::default()
     };
 
@@ -491,31 +491,27 @@ pub fn create_ip(
     }
 }
 
-/// Updates a given IP address object.
+/// Patches a given IP address object.
 /// Returns the ID of the updated object.
 ///
 /// - `client`: The API client instance to use.
 /// - `payload`: The API call payload.
 /// - `id`: The ID of the IP Address to update.
-pub fn update_ip(
+pub fn patch_ip(
     client: &ThanixClient,
-    payload: WritableIPAddressRequest,
+    payload: PatchedWritableIPAddressRequest,
     id: i64,
 ) -> Result<i64, NetBoxApiError> {
-    println!("Updating IPs for given interface...");
+    println!("Patching IPs for given interface...");
 
-    match ipam_ip_addresses_update(client, payload, id) {
+    match ipam_ip_addresses_partial_update(client, payload, id) {
         Ok(response) => match response {
-            thanix_client::paths::IpamIpAddressesUpdateResponse::Http200(result) => Ok(result.id),
-            thanix_client::paths::IpamIpAddressesUpdateResponse::Other(other) => {
-                let exc: NetBoxApiError = NetBoxApiError::Other(other.text().unwrap());
-                Err(exc)
+            IpamIpAddressesPartialUpdateResponse::Http200(result) => Ok(result.id),
+            IpamIpAddressesPartialUpdateResponse::Other(other) => {
+                Err(NetBoxApiError::Other(other.text().unwrap()))
             }
         },
-        Err(e) => {
-            let exc: NetBoxApiError = NetBoxApiError::Reqwest(e);
-            Err(exc)
-        }
+        Err(e) => Err(NetBoxApiError::Reqwest(e)),
     }
 }
 

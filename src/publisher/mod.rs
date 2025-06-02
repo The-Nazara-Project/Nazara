@@ -13,22 +13,28 @@ pub mod error;
 pub mod trans_validation;
 pub mod translator;
 
-use crate::publisher::api_client::{create_mac_address, search_mac_address};
+use std::collections::HashMap;
+
+use crate::publisher::api_client::{create_mac_address, patch_ip, search_mac_address};
 use crate::{
     Machine,
     collectors::network::NetworkInformation,
     configuration::parser::ConfigData,
     publisher::api_client::{
         create_device, create_interface, create_ip, search_device, search_interface, search_ip,
-        test_connection, update_device, update_ip,
+        test_connection, update_device,
     },
 };
 use api_client::update_interface;
 use error::NetBoxApiError;
 use serde_json::Value;
-use thanix_client::paths::{dcim_interfaces_partial_update, dcim_mac_addresses_partial_update};
+use thanix_client::paths::{
+    IpamIpAddressesRetrieveResponse, dcim_interfaces_partial_update,
+    dcim_mac_addresses_partial_update, ipam_ip_addresses_retrieve,
+};
 use thanix_client::types::{
-    MACAddressRequest, PatchedMACAddressRequest, PatchedWritableInterfaceRequest,
+    MACAddressRequest, PatchedMACAddressRequest, PatchedWritableIPAddressRequest,
+    PatchedWritableInterfaceRequest,
 };
 use thanix_client::{
     types::{WritableDeviceWithConfigContextRequest, WritableIPAddressRequest},
@@ -74,7 +80,7 @@ pub fn register_machine(
             &machine.dmi_information.system_information.serial,
         ) {
             Some(device_id) => {
-                let updated_id = update_device(client, device_payload, device_id).unwrap();
+                let updated_id = update_device(client, device_payload, device_id)?;
 
                 let mut nwi_id;
                 for interface in &machine.network_information {
@@ -92,26 +98,77 @@ pub fn register_machine(
                             nwi_id = create_nwi(client, updated_id, interface, &config_data)?;
                         }
                     }
+                    let (ipv4, ipv6) = search_ips(client, interface, None)?;
 
-                    match search_ips(client, interface, updated_id).unwrap() {
-                        (None, None) => {
-                            create_ips(client, interface, nwi_id)?;
+                    // If the collected interface reports an IP address, the address must exist in NetBox.
+                    // If it is not assigned an ID, claim it to this interface.
+                    // If it is assigned an ID, it *must* be our interface ID. If it is not, the data is bogus.
+                    // Updating interfaces that don't belong to us is undefined behavior because it may interfere with
+                    // external services that provide these IP addresses.
+
+                    if let Some(ip) = interface.v4ip {
+                        let ipv4 = ipv4.expect(&format!(
+                            "IPv4 address \"{}\" was not registered in NetBox",
+                            ip
+                        ));
+
+                        if let IpamIpAddressesRetrieveResponse::Http200(a) =
+                            ipam_ip_addresses_retrieve(client, ipv4)?
+                        {
+                            if let Some(b) = a.assigned_object_id {
+                                assert_eq!(b, nwi_id as u64);
+                            } else {
+                                patch_ip(
+                                    client,
+                                    PatchedWritableIPAddressRequest {
+                                        status: "active".to_string(),
+                                        assigned_object_type: Some("dcim.interface".to_string()),
+                                        assigned_object_id: Some(nwi_id as u64),
+                                        custom_fields: Some(HashMap::new()),
+                                        ..Default::default()
+                                    },
+                                    ipv4,
+                                )?;
+                            }
                         }
-                        (ipv4, ipv6) => {
-                            update_ips(client, interface, nwi_id, ipv4, ipv6)?;
+                    }
+
+                    if let Some(ip) = interface.v6ip {
+                        let ipv6 = ipv6.expect(&format!(
+                            "IPv6 address \"{}\" was not registered in NetBox",
+                            ip
+                        ));
+
+                        if let IpamIpAddressesRetrieveResponse::Http200(a) =
+                            ipam_ip_addresses_retrieve(client, ipv6)?
+                        {
+                            if let Some(b) = a.assigned_object_id {
+                                assert_eq!(b, nwi_id as u64);
+                            } else {
+                                patch_ip(
+                                    client,
+                                    PatchedWritableIPAddressRequest {
+                                        status: "active".to_string(),
+                                        assigned_object_type: Some("dcim.interface".to_string()),
+                                        assigned_object_id: Some(nwi_id as u64),
+                                        custom_fields: Some(HashMap::new()),
+                                        ..Default::default()
+                                    },
+                                    ipv6,
+                                )?;
+                            }
                         }
                     }
                 }
                 println!("\x1b[32m[success]\x1b[0m Update process completed!");
             }
             None => {
-                let device_id = create_device(client, device_payload).unwrap();
+                let device_id = create_device(client, device_payload)?;
 
                 // Create new interface object if no interface ID is given, or the given ID does
                 // not exist.
                 for interface in &machine.network_information {
-                    let interface_id =
-                        create_nwi(client, device_id, interface, &config_data).unwrap();
+                    let interface_id = create_nwi(client, device_id, interface, &config_data)?;
 
                     create_ips(client, interface, interface_id)?;
                 }
@@ -240,12 +297,12 @@ fn update_nwi(
 fn search_ips(
     client: &ThanixClient,
     interface: &NetworkInformation,
-    device_id: i64,
+    device_id: Option<i64>,
 ) -> Result<(Option<i64>, Option<i64>), NetBoxApiError> {
     let mut result: (Option<i64>, Option<i64>) = (None, None);
     if let Some(ipv4_address) = interface.v4ip {
         result = (
-            search_ip(client, &ipv4_address.to_string(), &device_id),
+            search_ip(client, &ipv4_address.to_string(), device_id),
             result.1,
         );
     }
@@ -253,7 +310,7 @@ fn search_ips(
     if let Some(ipv6_address) = interface.v6ip {
         result = (
             result.0,
-            search_ip(client, &ipv6_address.to_string(), &device_id),
+            search_ip(client, &ipv6_address.to_string(), device_id),
         );
     }
     Ok(result)
@@ -282,57 +339,5 @@ fn create_ips(
 
         create_ip(client, ipv6_payload)?;
     };
-    Ok(())
-}
-
-/// Update all IPs of a given interface.
-///
-/// - `client`: The API client instance to use.
-/// - `interface`: The interface this address belongs to.
-/// - `interface_id`: The ID of the interface object in NetBox..
-fn update_ips(
-    client: &ThanixClient,
-    interface: &NetworkInformation,
-    interface_id: i64,
-    ip_id_v4: Option<i64>,
-    ip_id_v6: Option<i64>,
-) -> Result<(), NetBoxApiError> {
-    match (interface.v4ip, interface.v6ip) {
-        (Some(ipv4_address), Some(ipv6_address)) => {
-            // Update both IPv4 and IPv6 addresses
-            if let Some(ipv4) = ip_id_v4 {
-                let ipv4_payload = translator::information_to_ip(ipv4_address, interface_id);
-                update_ip(client, ipv4_payload, ipv4)?;
-            }
-
-            if let Some(ipv6) = ip_id_v6 {
-                let ipv6_payload = translator::information_to_ip(ipv6_address, interface_id);
-                update_ip(client, ipv6_payload, ipv6)?;
-            }
-        }
-        (Some(ipv4_address), None) => {
-            // Only update IPv4
-            if let Some(ipv4) = ip_id_v4 {
-                let ipv4_payload = translator::information_to_ip(ipv4_address, interface_id);
-                update_ip(client, ipv4_payload, ipv4)?;
-            }
-        }
-        (None, Some(ipv6_address)) => {
-            // Only update IPv6
-            if let Some(ipv6) = ip_id_v6 {
-                let ipv6_payload = translator::information_to_ip(ipv6_address, interface_id);
-                update_ip(client, ipv6_payload, ipv6)?;
-            }
-        }
-        (None, None) => {
-            // No IPs to update
-            create_ips(client, interface, interface_id)?;
-        }
-    }
-
-    println!(
-        "\x1b[32m[success]\x1b[0m IP Addresses of interface '{} (ID: '{}')' updated successfully!",
-        interface.name, interface_id
-    );
     Ok(())
 }
