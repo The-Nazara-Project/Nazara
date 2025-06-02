@@ -121,10 +121,11 @@ pub fn register_machine(
                                 patch_ip(
                                     client,
                                     PatchedWritableIPAddressRequest {
-                                        status: "active".to_string(),
-                                        assigned_object_type: Some("dcim.interface".to_string()),
-                                        assigned_object_id: Some(nwi_id as u64),
-                                        custom_fields: Some(HashMap::new()),
+                                        status: Some("active".to_string()),
+                                        assigned_object_type: Some(Some(
+                                            "dcim.interface".to_string(),
+                                        )),
+                                        assigned_object_id: Some(Some(nwi_id as u64)),
                                         ..Default::default()
                                     },
                                     ipv4,
@@ -148,10 +149,11 @@ pub fn register_machine(
                                 patch_ip(
                                     client,
                                     PatchedWritableIPAddressRequest {
-                                        status: "active".to_string(),
-                                        assigned_object_type: Some("dcim.interface".to_string()),
-                                        assigned_object_id: Some(nwi_id as u64),
-                                        custom_fields: Some(HashMap::new()),
+                                        status: Some("active".to_string()),
+                                        assigned_object_type: Some(Some(
+                                            "dcim.interface".to_string(),
+                                        )),
+                                        assigned_object_id: Some(Some(nwi_id as u64)),
                                         ..Default::default()
                                     },
                                     ipv6,
@@ -212,13 +214,14 @@ fn create_nwi(
 
     // Assign Intf to MAC
     let mut patch = PatchedMACAddressRequest::default();
-    patch.assigned_object_id = Some(intf_id as u64);
-    patch.assigned_object_type = Some("dcim.interface".to_string());
+    patch.mac_address = Some(interface.mac_addr.clone().unwrap());
+    patch.assigned_object_id = Some(Some(intf_id as u64));
+    patch.assigned_object_type = Some(Some("dcim.interface".to_string()));
     dcim_mac_addresses_partial_update(client, patch, mac).map_err(NetBoxApiError::from)?;
 
     // Update Intf with primary MAC
     let mut intf_patch = PatchedWritableInterfaceRequest::default();
-    intf_patch.primary_mac_address = Some(Value::from(mac));
+    intf_patch.primary_mac_address = Some(Some(Value::from(mac)));
     dcim_interfaces_partial_update(client, intf_patch, intf_id)?;
 
     Ok(intf_id)
@@ -249,6 +252,8 @@ fn update_nwi(
             client,
             MACAddressRequest {
                 mac_address: interface.mac_addr.clone().unwrap(),
+                assigned_object_id: Some(device_id as u64),
+                assigned_object_type: Some("dcim.interface".to_string()),
                 custom_fields: Some(HashMap::new()),
                 ..Default::default()
             },
@@ -262,13 +267,13 @@ fn update_nwi(
 
     // Assign Intf to MAC
     let mut patch = PatchedMACAddressRequest::default();
-    patch.assigned_object_id = Some(*interface_id as u64);
-    patch.assigned_object_type = Some("dcim.interface".to_string());
+    patch.assigned_object_id = Some(Some(*interface_id as u64));
+    patch.assigned_object_type = Some(Some("dcim.interface".to_string()));
     dcim_mac_addresses_partial_update(client, patch, mac).map_err(NetBoxApiError::from)?;
 
     // Update Intf with primary MAC
     let mut intf_patch = PatchedWritableInterfaceRequest::default();
-    intf_patch.primary_mac_address = Some(Value::from(mac));
+    intf_patch.primary_mac_address = Some(Some(Value::from(mac)));
     dcim_interfaces_partial_update(client, intf_patch, *interface_id)?;
 
     Ok(*interface_id)
