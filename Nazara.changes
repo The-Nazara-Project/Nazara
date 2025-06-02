@@ -1,7 +1,7 @@
 -------------------------------------------------------------------
 Fri May 30 14:17:03 UTC 2025 - Marvin Friedrich <me@mrvn.sh>
 
-- 0.1.0
+- 0.1.0_beta.1
   * Update Nazara to work with the latest NetBox Version v4.3.x
   * Correctly handle collection of interfaces
   * Greatly improve collection performance
