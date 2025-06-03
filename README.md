@@ -13,7 +13,7 @@ API. It enables the automatic creation of new machines in NetBox or population o
 **Nazara is in the early stages of its development. Please note that the information listed below is subject to change.**
 
 > [!Note]
-> Nazara is currently in an alpha state. Bugs are bound to happen. If you encounter any, please [report them](https://github.com/The-Nazara-Project/Nazara/issues).
+> Nazara is currently in a beta state. Bugs are bound to happen. If you encounter any, please [report them](https://github.com/The-Nazara-Project/Nazara/issues).
 >
 > Furthermore, **Nazara currently does not support custom fields for any NetBox object**. Though, this is the next item on our agenda.
 
@@ -28,6 +28,16 @@ API. It enables the automatic creation of new machines in NetBox or population o
 - [Contributing](#contributing)
 - [License](#license)
 
+# Compatibility
+
+We strive to make sure to stay compatible with the most recent NetBox version. Here you can see which version of Nazar is compatible with which version of NetBox.
+When major Ports to newer NetBox versions happen - which usually include breaking changes - the old version of Nazara will be moved to its own branch and tagged accordingly.
+Maintenance work on these older versions is not planned.
+
+|Nazara Version|NetBox Version|Branch|maintained?|
+|-|-|-|-|
+|`v0.1.0_beta.1`|`v4.3.x`|`main`|:white_check_mark:|
+|`v0.1.0_alpha.2|`v3.6.x`|`version/alpha-2`|:x:|
 
 # Installation
 
@@ -66,7 +76,7 @@ configuring all of these parameters inside the [configuration file](#configuring
 After that, simply run
 
 ```bash
-nazara
+sudo nazara
 ```
 
 in your terminal. Nazara will automatically collect all required system information and decide whether to create a new device, or update an existing entry.
