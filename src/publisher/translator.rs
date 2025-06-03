@@ -4,14 +4,18 @@
 //! [`api_client`](crate::publisher::api_client) module to register the machine in NetBox.
 //!
 //! The information comes from the two collectors (both
-//! [`dmi_collector`](crate::collectors::dmi_collector) and
-//! [`network_collector`](crate::collectors::network_collector)) as well as the
-//! [`configuration`](crate::configuration::config_parser) module.
+//! [`crate::collectors::dmi`] and
+//! [`crate::collectors::network`] as well as the
+//! [`crate::configuration::parser`] module.
 //! It is then formed into data structures that NetBox can understand.
 //!
 //! This approach has been chosen, so the collectors and configuration parser can remain relatively
 //! unchanged in case NetBox significantly redesigns their API.
+
+use crate::collectors::network::NetworkInformation;
+use crate::{Machine, configuration::parser::ConfigData};
 use core::net::IpAddr;
+use serde_json::{Value, json};
 use std::collections::HashMap;
 use std::process;
 use std::str::FromStr;
@@ -19,30 +23,26 @@ use thanix_client::paths::{
     self, DcimPlatformsListQuery, DcimSitesListQuery, IpamIpAddressesListQuery,
 };
 use thanix_client::types::{
-    IPAddress, Platform, Site, WritableDeviceWithConfigContextRequest, WritableIPAddressRequest,
+    IPAddress, WritableDeviceWithConfigContextRequest, WritableIPAddressRequest,
     WritableInterfaceRequest, WritableVirtualMachineWithConfigContextRequest,
 };
 use thanix_client::util::ThanixClient;
 
-use crate::collectors::network_collector::NetworkInformation;
-use crate::{Machine, configuration::config_parser::ConfigData};
-
-/// Translate the machine information to a `WritableDeviceWithConfigContextRequest` required by
-/// NetBox's API.
+/// Translates the machine information to a [`WritableDeviceWithConfigContextRequest`]
+/// as required by NetBox's API.
 ///
-/// *Certain information provided in the config file, like the CPU platform, will be overwritten
-/// if another one is detected by the collector!*
+/// # Note
+///
+/// Certain information provided in the config file will be overwritten if a different one is detected by the collector!
 ///
 /// # Parameters
-///
-/// - state: `&ThanixClient` - API Client instance used for search and validation.
-/// - machine: `&Machine` - Collected information about the device.
-/// - config_data: `ConfigData` - Additional information about the device provided by config file
-///   or CLI.
+/// - `state: &ThanixClient` - API Client instance used for search and validation.
+/// - `machine: &Machine` -  Collected information about the device.
+/// - `config_data: ConfigData` -  Additional information about the device provided by config file or CLI.
 ///
 /// # Returns
 ///
-/// - device: `WritableDeviceWithConfigContextRequest` - Payload for machine creation request
+/// - `WritableDeviceWithConfigContextRequest` - A device payload.
 #[allow(clippy::field_reassign_with_default)]
 pub fn information_to_device(
     state: &ThanixClient,
@@ -51,18 +51,22 @@ pub fn information_to_device(
 ) -> WritableDeviceWithConfigContextRequest {
     println!("Creating Device object...");
 
-    let mut payload: WritableDeviceWithConfigContextRequest =
-        WritableDeviceWithConfigContextRequest::default();
+    let mut payload = WritableDeviceWithConfigContextRequest::default();
 
     payload.name = Some(config_data.system.name.clone());
-    payload.device_type = config_data.system.device_type;
-    payload.role = config_data.system.device_role;
-    payload.tenant = config_data.system.tenant;
-    payload.platform = get_platform_id(state, std::env::consts::ARCH.to_owned());
+    payload.device_type = Value::from(config_data.system.device_type);
+    payload.role = Value::from(config_data.system.device_role);
+    if config_data.system.tenant.is_some() {
+        payload.tenant = Some(Value::from(config_data.system.tenant));
+    }
+    let platform_id = get_platform_id(state, std::env::consts::ARCH.to_owned());
+    if platform_id.is_some() {
+        payload.platform = Some(Value::from(platform_id));
+    }
     payload.serial = machine.dmi_information.system_information.serial.clone();
     // payload.asset_tag = todo!();
     payload.site = match get_site_id(state, &config_data) {
-        Some(site_id) => site_id,
+        Some(site_id) => Value::from(site_id),
         None => {
             eprintln!(
                 "\x1b[31m[error]\x1b[0m An Error occured while validating the site ID or name."
@@ -70,55 +74,41 @@ pub fn information_to_device(
             process::exit(1);
         }
     };
-    payload.rack = config_data.system.rack;
-    payload.face = config_data.system.face;
+    if config_data.system.rack.is_some() {
+        payload.rack = Some(Value::from(config_data.system.rack));
+    }
+    payload.face = Some(config_data.system.face);
     // payload.position = todo!();
     // payload.longitude = todo!();
     // payload.latitude = todo!();
     payload.status = config_data.system.status;
-    payload.airflow = config_data.system.airflow;
+    payload.airflow = Some(config_data.system.airflow);
     payload.comments = config_data.system.comments;
     // payload.config_template = todo!();
     payload.custom_fields = machine.custom_information.clone();
     payload.description = config_data.system.description;
     // payload.local_context_data = todo!();
     // payload.oob_ip = todo!();
-    payload.primary_ip4 = get_primary_addresses(
-        state,
-        machine,
-        config_data
-            .system
-            .primary_network_interface
-            .clone()
-            .unwrap(),
-    );
-    payload.primary_ip6 = get_primary_addresses(
-        state,
-        machine,
-        config_data.system.primary_network_interface.unwrap(),
-    );
     // payload.tags = todo!();
     // payload.virtual_chassis = todo!();
     // payload.vc_position = todo!();
     // payload.vc_priority = todo!();
-    payload.tenant = config_data.system.tenant;
-    payload.location = config_data.system.location;
+    if config_data.system.tenant.is_some() {
+        payload.tenant = Some(Value::from(config_data.system.tenant));
+    }
+    if config_data.system.location.is_some() {
+        payload.location = Some(Value::from(config_data.system.location));
+    }
 
     payload
 }
 
 /// Translate gathered information about the virtual machine into a usable Payload.
+/// Returns a payload for the VM POST or UPDATE request.
 ///
-/// # Parameters
-///
-/// * state: `&ThanixClient` - The client instance to be used for communication.
-/// * machine: `&Machine` - The collected information about the virtual machine.
-/// * config_data: `&ConfigData` - Data parsed from the `nazar-config.toml`.
-///
-/// # Returns
-///
-/// * payload: `WritableVirtualMachineWithConfigContextRequest` - Payload for the VM POST or UPDATE
-///   request.
+/// - `state`: The client instance to be used for communication.
+/// - `machine`: The collected information about the virtual machine.
+/// - `config_data`: Data parsed from the `nazar-config.toml`.
 #[allow(unused)]
 pub fn information_to_vm(
     state: &ThanixClient,
@@ -128,20 +118,18 @@ pub fn information_to_vm(
     todo!("Translation of collected information to VM not implemented yet!")
 }
 
-/// Translate gathered information into a `WritableInterfaceRequest` payload.
+/// Translates gathered information into a Interface payload.
 ///
 /// # Parameters
-///
-/// * interface: `&NetworkInformation` - The interface to be translated into a payload.
-/// * config_data: `ConfigData` - The configuration data.
-/// * device_id: `&i64` - The ID of the device that this interface belongs to.
+/// - `interface: &NetworkInformation` - The interface to be translated into a payload.
+/// - `config_data: &ConfigData` - The configuration data.
+/// - `device_id: &i64` - The ID of the device that this interface belongs to.
 ///
 /// # Returns
-///
-/// * payload: `WritableInterfaceRequest` - Payload for creating an interface.
+/// - `WritableInterfaceRequest` - The payload to use for Interface operations.
 #[allow(clippy::field_reassign_with_default)]
 pub fn information_to_interface(
-    config_data: ConfigData,
+    config_data: &ConfigData,
     interface: &NetworkInformation,
     device_id: &i64,
 ) -> WritableInterfaceRequest {
@@ -150,10 +138,10 @@ pub fn information_to_interface(
         &interface.name
     );
 
-    let mut payload: WritableInterfaceRequest = WritableInterfaceRequest::default();
+    let mut payload = WritableInterfaceRequest::default();
 
-    payload.device = Some(device_id.to_owned());
-    payload.name = Some(interface.name.clone());
+    payload.device = Value::from(device_id.to_owned());
+    payload.name = interface.name.clone();
 
     // Get NwiConfig for the given interface
     let nwi_config = config_data.nwi.as_ref().and_then(|nwi_list| {
@@ -165,25 +153,23 @@ pub fn information_to_interface(
     // This looks as horrible as it does, because at least for NetBox v3.6.9, we have to implement a
     // workaround on the API client side, making all Interface fields Options because we sometimes
     // get data back that does not comply with the api schema, failing serialization.
-    payload.r#type = Some(
-        nwi_config
-            .as_ref()
-            .and_then(|nwi| nwi.r#type.clone())
-            .unwrap_or(String::from("other")),
-    );
+    payload.r#type = nwi_config
+        .as_ref()
+        .and_then(|nwi| nwi.r#type.clone())
+        .unwrap_or(String::from("other"));
     payload.parent = nwi_config.as_ref().and_then(|nwi| nwi.parent);
     payload.bridge = nwi_config.as_ref().and_then(|nwi| nwi.bridge);
     payload.lag = nwi_config.as_ref().and_then(|nwi| nwi.lag);
     payload.mtu = nwi_config.as_ref().and_then(|nwi| nwi.mtu);
 
-    payload.mac_address = Some(interface.mac_addr.clone().unwrap_or_default());
+    if let Some(x) = &interface.mac_addr {
+        payload.primary_mac_address = Some(json!({"mac_address": x}));
+    }
     payload.speed = Some(interface.interface_speed.unwrap_or_default());
-    payload.description = Some(
-        nwi_config
-            .as_ref()
-            .and_then(|nwi| nwi.description.clone())
-            .unwrap_or_else(|| String::from("This interface was automatically created by Nazara.")),
-    );
+    payload.description = nwi_config
+        .as_ref()
+        .and_then(|nwi| nwi.description.clone())
+        .unwrap_or_else(|| String::from("This interface was automatically created by Nazara."));
     payload.mode = Some(
         nwi_config
             .as_ref()
@@ -220,49 +206,35 @@ pub fn information_to_interface(
             .and_then(|nwi| nwi.custom_fields.clone())
             .unwrap_or_default(),
     );
-    payload.mark_connected = Some(
-        nwi_config
-            .as_ref()
-            .and_then(|nwi| nwi.mark_connected)
-            .unwrap_or(true),
-    );
-    payload.enabled = Some(
-        nwi_config
-            .as_ref()
-            .and_then(|nwi| nwi.enabled)
-            .unwrap_or(interface.is_connected),
-    );
-    payload.vdcs = Some(
-        nwi_config
-            .as_ref()
-            .and_then(|nwi| nwi.vdcs.clone())
-            .unwrap_or_default(),
-    );
-    payload.label = Some(
-        nwi_config
-            .as_ref()
-            .and_then(|nwi| nwi.label.clone())
-            .unwrap_or_default(),
-    );
-    payload.mgmt_only = Some(
-        nwi_config
-            .as_ref()
-            .and_then(|nwi| nwi.mgmt_only)
-            .unwrap_or(false),
-    );
-    payload.tagged_vlans = Some(
-        nwi_config
-            .as_ref()
-            .and_then(|nwi| nwi.tagged_vlans.clone())
-            .unwrap_or_default(),
-    );
-    payload.wireless_lans = Some(
-        nwi_config
-            .as_ref()
-            .and_then(|nwi| nwi.wireless_lans.clone())
-            .unwrap_or_default(),
-    );
-    payload.tags = Some(Vec::new()); // FIXME: Currently not support tags, because they are hard.
+    payload.mark_connected = nwi_config
+        .as_ref()
+        .and_then(|nwi| nwi.mark_connected)
+        .unwrap_or(true);
+    payload.enabled = nwi_config
+        .as_ref()
+        .and_then(|nwi| nwi.enabled)
+        .unwrap_or(interface.is_connected);
+    payload.vdcs = nwi_config
+        .as_ref()
+        .and_then(|nwi| nwi.vdcs.clone())
+        .unwrap_or_default();
+    payload.label = nwi_config
+        .as_ref()
+        .and_then(|nwi| nwi.label.clone())
+        .unwrap_or_default();
+    payload.mgmt_only = nwi_config
+        .as_ref()
+        .and_then(|nwi| nwi.mgmt_only)
+        .unwrap_or(false);
+    payload.tagged_vlans = nwi_config
+        .as_ref()
+        .and_then(|nwi| nwi.tagged_vlans.clone())
+        .unwrap_or_default();
+    payload.wireless_lans = nwi_config
+        .as_ref()
+        .and_then(|nwi| nwi.wireless_lans.clone())
+        .unwrap_or_default();
+    payload.tags = Vec::new(); // FIXME: Currently not support tags, because they are hard.
 
     payload
 }
@@ -270,26 +242,10 @@ pub fn information_to_interface(
 /// Returns the payload necessary to create a new IP address.
 ///
 /// # Parameters
-///
-///	* `interface_address: IpAddr` - The IpAddress of the interface to register.
-/// * `interface_id: i64` - ID of the network interface this IP belongs to.
-///
-/// # Returns
-///
-/// * `WritableIpAddressRequest` - The payload for the API call.
+/// - `interface_address: IpAddr` - The IpAddress of the interface to register.
+/// - `interface_id: i64` - ID of the network interface this IP belongs to.
 pub fn information_to_ip(interface_address: IpAddr, interface_id: i64) -> WritableIPAddressRequest {
     println!("Creating IP Address payload...");
-
-    let payload: WritableIPAddressRequest = WritableIPAddressRequest {
-        address: format!("{}", interface_address),
-        status: String::from("active"),
-        assigned_object_type: Some(String::from("dcim.interface")),
-        assigned_object_id: Some(interface_id as u64),
-        description: String::from("This Address was automatically created by Nazara."),
-        comments: String::from("Automatically created by Nazara."),
-        custom_fields: Some(HashMap::new()),
-        ..Default::default()
-    };
 
     // payload.vrf = todo!();
     // payload.tenant = todo!();
@@ -297,34 +253,38 @@ pub fn information_to_ip(interface_address: IpAddr, interface_id: i64) -> Writab
     // payload.nat_inside = todo!();
     // payload.dns_name = todo!();
     // payload.tags = todo!();
-    payload
+    WritableIPAddressRequest {
+        address: format!("{interface_address}"),
+        status: String::from("active"),
+        assigned_object_type: Some(String::from("dcim.interface")),
+        assigned_object_id: Some(interface_id as u64),
+        description: String::from("This Address was automatically created by Nazara."),
+        comments: String::from("Automatically created by Nazara."),
+        custom_fields: Some(HashMap::new()),
+        ..Default::default()
+    }
 }
 
 /// Returns the ID of the platform this machine uses.
 ///
 /// # Parameters
+/// - `state: &ThanixClient` - The client required for searching for the platform.
 ///
-/// * state: `&ThanixClient` - The client required for searching for the platform.
+///	# Returns
+///	* `Option<i64>` - The ID of the platform, if found. Else `None`.
 ///
-/// # Returns
+/// # Panics
 ///
-/// Returns `Some(i64)` if the specified platform exists, else returns `None`.
-///
-/// # Aborts
-///
-/// If the netBox connection fails, this may terimnate the process.
+/// If the NetBox connection fails, this thread will panic.
 fn get_platform_id(state: &ThanixClient, platform_name: String) -> Option<i64> {
-    println!("Searching for id of platform '{}' ... ", platform_name);
+    println!("Searching for id of platform '{platform_name}' ... ");
 
-    let platform_list: Vec<Platform> = match paths::dcim_platforms_list(
-        state,
-        DcimPlatformsListQuery::default(),
-    ) {
+    let platform_list = match paths::dcim_platforms_list(state, DcimPlatformsListQuery::default()) {
         Ok(response) => {
             println!("List received. Analyzing...");
 
             match response {
-                paths::DcimPlatformsListResponse::Http200(platforms) => platforms.results,
+                paths::DcimPlatformsListResponse::Http200(platforms) => platforms.results?,
                 _ => {
                     todo!(
                         "Handling of non 200 Response code when getting platforms not implemented yet."
@@ -333,16 +293,13 @@ fn get_platform_id(state: &ThanixClient, platform_name: String) -> Option<i64> {
             }
         }
         Err(e) => {
-            eprintln!(
-                "[\x1b[31m[error]\x1b[0m Failure while receiving list of platforms.\n{}",
-                e
-            );
+            eprintln!("[\x1b[31m[error]\x1b[0m Failure while receiving list of platforms.\n{e}");
             process::exit(1);
         }
     };
 
     for platform in platform_list {
-        if platform.name == platform_name {
+        if platform.name == Some(platform_name.clone()) {
             println!("\x1b[32m[success]\x1b[0m Platform ID found. Proceeding...");
             return Some(platform.id);
         }
@@ -355,26 +312,21 @@ fn get_platform_id(state: &ThanixClient, platform_name: String) -> Option<i64> {
 ///
 /// The function will retrieve a list of IPv4 Adresses from NetBox,
 /// then search this list for the IP Adress Nazara collected.
-///
-/// The `primary_network_interface` paramter specified in the `nazara_config.toml`
+/// The `primary_network_interface` parameter specified in the `nazara_config.toml`
 /// will be used to specify which adress to search for.
 ///
-/// # Parameters
-///
-/// * state: `&ThanixClient` - The client required for making API requests.
-/// * machine: `&Machine` - The collected machine information.
-///
-/// # Returns
-///
 /// Returns the ID of the IP address object `i64` if a match has been found.
-/// Else returns `None`.
+///
+/// # Parameters
+/// - `state`: The client required for making API requests.
+/// - `machine`: The collected machine information.
 fn get_primary_addresses(
     state: &ThanixClient,
     machine: &Machine,
-    preferred_nwi: String,
+    preferred_nwi: &str,
 ) -> Option<i64> {
     println!("Retrieving list of Addresses...");
-    let key_nwi: &NetworkInformation;
+    let key_nwi;
 
     if let Some(nwi_match) = machine
         .network_information
@@ -383,10 +335,7 @@ fn get_primary_addresses(
     {
         key_nwi = nwi_match;
     } else {
-        eprintln!(
-            "\x1b[31m[error] Specified Network Interface '{}' not found!",
-            preferred_nwi
-        );
+        eprintln!("\x1b[31m[error] Specified Network Interface '{preferred_nwi}' not found!");
         process::exit(1);
     };
 
@@ -399,7 +348,7 @@ fn get_primary_addresses(
             println!("IPAddress list received. Analyzing...");
 
             match response {
-                paths::IpamIpAddressesListResponse::Http200(adresses) => adresses.results,
+                paths::IpamIpAddressesListResponse::Http200(adresses) => adresses.results?,
                 paths::IpamIpAddressesListResponse::Other(response) => {
                     eprintln!(
                         "\x1b[31m[error]\x1b[0m Failure while trying to retrieve list of IPAddresses. \n --- Unexpected response: {} ---",
@@ -411,8 +360,7 @@ fn get_primary_addresses(
         }
         Err(e) => {
             eprintln!(
-                "\x1b[31m[error]\x1b[0m Failure while retrieving list of IPv4 Adresses.\n --- Unexpected response: {} ---",
-                e
+                "\x1b[31m[error]\x1b[0m Failure while retrieving list of IPv4 Adresses.\n --- Unexpected response: {e} ---"
             );
             process::exit(1);
         }
@@ -421,8 +369,12 @@ fn get_primary_addresses(
     let mut result: Option<i64> = None;
 
     for (idx, addr) in ip_list.iter().enumerate() {
-        print! {"Searching for matching IP Adress... ({:?}/{:?})\r", idx+1, ip_list.len()};
-        let ip = IpAddr::from_str(addr.address.clone().split("/").next().unwrap()).unwrap(); // TODO: Errorhandling
+        print!(
+            "Searching for matching IP Adress... ({:?}/{:?})\r",
+            idx + 1,
+            ip_list.len()
+        );
+        let ip = IpAddr::from_str(addr.address.clone()?.split("/").next().unwrap()).unwrap(); // TODO: Errorhandling
         match ip {
             IpAddr::V4(x) => match key_nwi.v4ip {
                 Some(y) => {
@@ -446,19 +398,11 @@ fn get_primary_addresses(
 }
 
 /// Search for the site specified in the config file by ID or by name.
+/// Returns the ID of the site if found.
 ///
 /// # Parameters
-///
-/// * state: `&ThanixClient` - The client required for performing API requests.
-/// * config_data: `&ConfigData` - The configuration data found in the config file.
-///
-/// # Returns
-///
-/// * site_id: `i64` - The ID of the site if found. If not found, returns 0.
-///
-/// # Aborts
-///
-/// Unexpected API responses may terminate the process.
+/// - `state`: The client required for performing API requests.
+/// - `config_data`: The configuration data found in the config file.
 fn get_site_id(state: &ThanixClient, config_data: &ConfigData) -> Option<i64> {
     println!("Searching for site...");
     if config_data.system.site_id.is_some() {
@@ -475,10 +419,7 @@ fn get_site_id(state: &ThanixClient, config_data: &ConfigData) -> Option<i64> {
                 }
             },
             Err(e) => {
-                eprintln!(
-                    "\x1b[31m[error]\x1b[0m Error while searching for site.\n{}",
-                    e
-                );
+                eprintln!("\x1b[31m[error]\x1b[0m Error while searching for site.\n{e}");
                 process::exit(1);
             }
         };
@@ -486,10 +427,10 @@ fn get_site_id(state: &ThanixClient, config_data: &ConfigData) -> Option<i64> {
         return Some(target);
     }
     println!("\x1b[36m[info]\x1b[0m No 'site_id' specified. Searching by name...");
-    let site_list: Vec<Site>;
+    let site_list;
     match paths::dcim_sites_list(state, DcimSitesListQuery::default()) {
         Ok(response) => match response {
-            paths::DcimSitesListResponse::Http200(sites) => site_list = sites.results,
+            paths::DcimSitesListResponse::Http200(sites) => site_list = sites.results?,
             paths::DcimSitesListResponse::Other(response) => {
                 eprintln!(
                     "\x1b[31[error] Error while retrieving site list.\n--- Unexpected response: {} ---",
@@ -499,20 +440,17 @@ fn get_site_id(state: &ThanixClient, config_data: &ConfigData) -> Option<i64> {
             }
         },
         Err(e) => {
-            eprintln!(
-                "\x1b[31m[error]\x1b[0m Error while performing site list query.\n{}",
-                e
-            );
+            eprintln!("\x1b[31m[error]\x1b[0m Error while performing site list query.\n{e}");
             process::exit(1);
         }
     }
-    let target: String = config_data.system.site_name.clone().unwrap();
+    let target = config_data.system.site_name.clone().unwrap();
 
-    return Some(
+    Some(
         site_list
             .iter()
-            .find(|site| site.name == target)
+            .find(|&site| site.name.as_ref().is_some_and(|x| *x == target))
             .unwrap()
             .id,
-    );
+    )
 }

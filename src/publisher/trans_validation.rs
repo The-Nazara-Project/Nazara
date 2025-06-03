@@ -13,37 +13,7 @@
 
 use thanix_client::types::WritableDeviceWithConfigContextRequest;
 
-/// Validate the system information found in the config file.
-///
-/// Checks that parameters such as IDs and other system parameters entered in the config file
-/// correspond to an existing NetBox object.
-/// Otherwise, return an Error.
-///
-/// # Parameters
-///
-/// * state: `&ThanixClient` - The API client instance to use for communication.
-/// * config_data: `&ConfigData` - The configuration file contents.
-///
-/// # Returns
-///
-/// Returns `Ok(())` when all relevant config parameters correspond to existing objects. Otherwise
-/// return `Error`.
-///
-/// # Panics
-///
-/// This function panics if connection to NetBox fails.
-// pub fn validate_config_data(state: &ThanixClient, config_data: &ConfigData) -> Result<(), Error> {
-//     Ok(())
-// }
-
-/// Validate the `Device` Payload.
-///
-/// # Parameters
-/// * payload: `WritableDeviceWithConfigContextRequest` - The struct to validate.
-///
-/// # Returns
-///
-/// - Ok(())
+/// Validates a device payload.
 #[allow(unused)]
 fn validate_device_payload(payload: WritableDeviceWithConfigContextRequest) -> bool {
     println!("Validating device payload...");

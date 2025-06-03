@@ -1,7 +1,7 @@
 [package]
 name = "nazara"
-authors = ["Tiara Hock <tiara.dev@proton.me>"]
-version = "0.1.0-alpha.1"
+authors = ["Tiara Hock <tiara.dev@proton.me>", "Marvin Friedrich <me@mrvn.sh>"]
+version = "0.1.0-beta.1"
 edition = "2024"
 description = "A CLI application to create and update machines and VMs in NetBox."
 readme = "README.md"
@@ -13,8 +13,9 @@ license = "GPL-3.0"
 
 [dependencies]
 clap = { version = "4.4.2", features = ["derive"] }
-network-interface = "1.0.1"
-reqwest = { version="0.11.22", features = ["blocking", "json"] }
+futures = "0.3.31"
+rtnetlink = "0.16.0"
+reqwest = { version = "0.11.22", features = ["blocking", "json"] }
 serde = { version = "1.0.188", features = ["derive"] }
 serde_json = "1.0.108"
 toml = "0.7.6"
@@ -25,13 +26,14 @@ toml = "0.7.6"
 # This may not work in your environment. You can get your schema by visiting
 # https://your.netbox-instance.com/api/schema.
 # The yaml file will be downloaded and you can generate your client by using https://github.com/The-Nazara-Project/Thanix.
-thanix_client = "1.3.2"
+thanix_client = "2.4.4"
 dmidecode = { version = "0.9.0", features = ["std"] }
 uuid = "1.17.0"
+tokio = { version = "1.45.1" }
 # Uncomment this line if you are using a custom thanix client implementation.
 # Change the path to be relative to this Cargo.toml file.
 # The package parameter is the name of your client package. This is needed if you assigned a custom name upon creation.
 # thanix_client = { package = "thanix_client", path = "/path/to/your/crate" }
 
 [dev-dependencies]
-mockall = "0.11.4"
+mockall = "0.13.1"

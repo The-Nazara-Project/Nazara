@@ -7,8 +7,15 @@
 //! Errors are escalated upwards.
 extern crate thanix_client;
 
+use super::error::{self, NetBoxApiError};
 use reqwest::Error as ReqwestError;
 use serde_json::Value;
+use thanix_client::paths::{
+    DcimMacAddressesListQuery, DcimMacAddressesListResponse, IpamIpAddressesPartialUpdateResponse,
+    dcim_mac_addresses_create, dcim_mac_addresses_list, dcim_mac_addresses_update,
+    ipam_ip_addresses_partial_update,
+};
+use thanix_client::types::{MACAddressRequest, PatchedWritableIPAddressRequest};
 use thanix_client::{
     paths::{
         DcimDevicesCreateResponse, DcimDevicesListQuery, DcimDevicesUpdateResponse,
@@ -16,7 +23,6 @@ use thanix_client::{
         IpamIpAddressesListResponse, dcim_devices_create, dcim_devices_list, dcim_devices_update,
         dcim_interfaces_create, dcim_interfaces_list, dcim_interfaces_retrieve,
         dcim_interfaces_update, ipam_ip_addresses_create, ipam_ip_addresses_list,
-        ipam_ip_addresses_update,
     },
     types::{
         Interface, WritableDeviceWithConfigContextRequest, WritableIPAddressRequest,
@@ -25,22 +31,17 @@ use thanix_client::{
     util::ThanixClient,
 };
 
-use super::publisher_exceptions::{self, NetBoxApiError};
-
-/// Tests connection to the NetBox API and verifies if your `thanix_client` version is compatible
+/// Tests the connection to the NetBox API and verifies if your `thanix_client` version is compatible
 /// with your NetBox version.
-///
-/// # Parameters
-///
-/// * `client: &ThanixClient` - The client instance to be used for communication.
-///
-/// # Returns
 ///
 /// Returns `Ok(())` if the connection to the API is successful and the `thanix_client` version is
 /// compatible with the used NetBox version.
 /// Returns an `Err` with `publisher_exceptions::NetBoxApiError` if the connection fails or the
-/// `thanix_client``version is not compatible with your NetBox version.
-pub fn test_connection(client: &ThanixClient) -> Result<(), publisher_exceptions::NetBoxApiError> {
+/// `thanix_client` version is not compatible with your NetBox version.
+///
+///	# Parameters
+/// * `client: &ThanixClient` - The client instance to be used for communication.
+pub fn test_connection(client: &ThanixClient) -> Result<(), error::NetBoxApiError> {
     let url: String = format!("{}/api/status/", client.base_url);
 
     let response: Result<reqwest::blocking::Response, ReqwestError> = client
@@ -65,30 +66,26 @@ pub fn test_connection(client: &ThanixClient) -> Result<(), publisher_exceptions
                         );
                         Ok(())
                     } else {
-                        Err(publisher_exceptions::NetBoxApiError::VersionMismatch(
-                            String::from(
-                                "Client version incompatible with NetBox version! Use client v1.x for NetBox v3.6.x and above, and v2.x for NetBox 4.x.",
-                            ),
-                        ))
+                        Err(error::NetBoxApiError::VersionMismatch(String::from(
+                            "Client version incompatible with NetBox version! Use client v1.x for NetBox v3.6.x and above, and v2.x for NetBox 4.x.",
+                        )))
                     }
                 } else {
-                    Err(publisher_exceptions::NetBoxApiError::MissingVersion(
-                        String::from(
-                            "NetBox version missing from response. Please check your installation.",
-                        ),
-                    ))
+                    Err(error::NetBoxApiError::MissingVersion(String::from(
+                        "NetBox version missing from response. Please check your installation.",
+                    )))
                 }
             } else {
-                Err(publisher_exceptions::NetBoxApiError::Reqwest(
+                Err(error::NetBoxApiError::Reqwest(
                     resp.error_for_status().unwrap_err(),
                 ))
             }
         }
-        Err(e) => Err(publisher_exceptions::NetBoxApiError::Reqwest(e)),
+        Err(e) => Err(error::NetBoxApiError::Reqwest(e)),
     }
 }
 
-/// Compare the NetBox version with the thanix_client version for compatibility.
+/// Compares the NetBox version with the thanix_client version for compatibility.
 ///
 /// Given the drastic differences in NetBox's API between `v3.x` and `v4.x` there are two different
 /// release tracks for these two versions.
@@ -97,14 +94,8 @@ pub fn test_connection(client: &ThanixClient) -> Result<(), publisher_exceptions
 /// version `v2.x` will be compatible with NetBox version `v4.x` and above.
 ///
 /// # Parameters
-///
 /// * `netbox_version: &str` - The version of the NetBox instance extracted from the response.
 /// * `thanix_version: &str` - The version of the installed `thanix_client` dependency.
-///
-/// # Returns
-///
-/// * `bool` depending if the `thanix_client` dependency is compatible with the running NetBox
-/// version.
 fn check_version_compatiblity(netbox_version: &str, thanix_version: &str) -> bool {
     println!("Checking API client compatibility with used NetBox version...");
     let netbox_major = get_major_verison(netbox_version);
@@ -117,86 +108,73 @@ fn check_version_compatiblity(netbox_version: &str, thanix_version: &str) -> boo
     }
 }
 
-/// Get the major version from the given version String.
+/// Gets the major version from the given version String.
+/// Returns `Some(u32)` if the version can be parsed to an `u32`.
 ///
 /// # Parameters
-///
-/// * `version: &str` - String representation of the application version.
-///
-/// # Returns
-///
-/// * `Some(u32)` if the Version can be parsed to an `u32`, if not, returns `None`.
+/// - `version`: String representation of the application version.
 fn get_major_verison(version: &str) -> Option<u32> {
     version.split('.').next()?.parse().ok()
 }
 
 /// Search a device by sending a `DcimDevicesListQuery` with given search parameters.
+/// Returns the ID of the device if it exists.
 ///
-/// # Parameters
-///
-/// * `client: &ThanixClient` - The API client instance to use.
-/// * `name: String` - The name of the machine to search for.
-/// * `serial: String` - The serial number of the machine.
+///	# Parameters
+/// - `client: &ThanixClient` - The API client instance to use.
+/// - `name: &str` - The name of the machine to search for.
+/// - `serial: &str` - The serial number of the machine.
 ///
 /// # Returns
+/// - `Option<i64>` - The ID of the device, if it exists. Else `None`.
 ///
-/// * `Option<i64>` - The ID of the device, if it exists, if not, returns `None`.
+/// # Panics
 ///
-/// # Aborts
-///
-/// This function terminates the process under following conditions:
-///
-/// * Search results are indecisive. E.g more than one result.
-/// * The API request returns an unexpected response code.
-/// * The API request fails (e.g the connection fails).
-pub fn search_device(client: &ThanixClient, name: &String, serial: &String) -> Option<i64> {
+/// This function panics under following conditions:
+/// - Search results are indecisive. E.g more than one result.
+/// - The API request returns an unexpected response code.
+/// - The API request fails (e.g the connection fails).
+pub fn search_device(client: &ThanixClient, name: &str, serial: &str) -> Option<i64> {
     println!("Checking if device is already registered...");
     let payload: DcimDevicesListQuery = DcimDevicesListQuery {
-        name: Some(vec![name.clone()]),
-        serial: Some(vec![serial.clone()]),
+        name: Some(vec![name.to_owned()]),
+        serial: Some(vec![serial.to_owned()]),
         ..Default::default()
     };
 
     match dcim_devices_list(client, payload) {
         Ok(response) => match response {
             thanix_client::paths::DcimDevicesListResponse::Http200(device_list) => {
-                if device_list.results.len() == 1 {
-                    return Some(device_list.results[0].id);
+                if device_list.results.as_ref()?.len() == 1 {
+                    return Some(device_list.results?.first()?.id);
                 }
-                if device_list.results.is_empty() {
+                if device_list.results?.is_empty() {
                     return None;
                 }
-                let err = NetBoxApiError::Other("Ambiguous search result. Device listed more than once. Please check your data.".to_owned());
-                err.abort(None);
+                panic!(
+                    "Ambiguous search result. Device listed more than once. Please check your data."
+                );
             }
             thanix_client::paths::DcimDevicesListResponse::Other(other) => {
-                let exc: NetBoxApiError = NetBoxApiError::Other(other.text().unwrap());
-                exc.abort(None);
+                panic!("{}", other.text().unwrap());
             }
         },
         Err(e) => {
-            let err: NetBoxApiError = NetBoxApiError::Reqwest(e);
-            err.abort(None);
+            panic!("{}", e);
         }
     }
 }
 
 /// Send request to create a new device in NetBox.
+/// Returns the ID of the newly created Device object.
 ///
 /// # Parameters
+/// - `client: &ThanixClient` - The [`ThanixClient`] instance to use for communication.
+/// - `payload: &WritableDeviceWithConfigContextRequest` - The information about the device serving as a request body.
 ///
-/// * `client: &ThanixClient` - The `ThanixClient` instance to use for communication.
-/// * `payload: &WritableDeviceWithConfigContextRequest` - The information about the device serving
-/// as a request body.
+/// # Panics
 ///
-/// # Returns
-///
-/// * `Ok(i64)` - The ID of the newly created Device object.
-/// * `NetBoxApiError` - When the request returns an error.
-///
-/// # Aborts
-///
-/// This function terminates the process if the response code is not the expected `201`.
+/// This function panics if the response code is not `201`.
 pub fn create_device(
     client: &ThanixClient,
     payload: WritableDeviceWithConfigContextRequest,
@@ -213,11 +191,10 @@ pub fn create_device(
                 Ok(created_device.id)
             }
             DcimDevicesCreateResponse::Other(other_response) => {
-                let exc: NetBoxApiError = NetBoxApiError::Other(format!(
+                panic!(
                     "Unexpected response code '{}' when trying to create a device!",
                     other_response.status()
-                ));
-                exc.abort(Some(35));
+                );
             }
         },
         Err(err) => {
@@ -227,24 +204,18 @@ pub fn create_device(
     }
 }
 
-/// Update a device with a given ID.
-///
-/// Will simply overwrite the given `Device` object in NetBox with the collected information.
+/// Updates a device with a given ID.
+/// Returns the ID of the updated device.
+/// Will simply overwrite the given device object in NetBox with the collected information.
 ///
 /// # Parameters
+/// - `client`: The API client instance to use.
+/// - `payload`: The payload for the API request.
+/// - `id`: The ID of the device to update.
 ///
-/// * `client: &ThanixClient` - The API client instance to use.
-/// * `payload: WritableDeviceWithConfigContextRequest` - The payload for the API request.
-/// * `id: i64` - The ID of the device to update.
+/// # Panics
 ///
-/// # Returns
-///
-/// * `Ok(i64)` - The ID of the updated device.
-/// * `Err(NetBoxApiError)` - Returns a `NetBoxApiError` when the request fails.
-///
-/// # Aborts
-///
-/// This function may terminate the process if NetBox returns an unexpected non-200 response code.
+/// This function may panic if NetBox doesn't return a `200` response code.
 pub fn update_device(
     client: &ThanixClient,
     payload: WritableDeviceWithConfigContextRequest,
@@ -259,11 +230,10 @@ pub fn update_device(
                 Ok(updated_device.id)
             }
             DcimDevicesUpdateResponse::Other(other_response) => {
-                let exc: NetBoxApiError = NetBoxApiError::Other(format!(
+                panic!(
                     "Unexpected response code '{}' when trying to update device!",
                     other_response.status()
-                ));
-                exc.abort(Some(35));
+                );
             }
         },
         Err(err) => {
@@ -273,30 +243,144 @@ pub fn update_device(
     }
 }
 
-/// Search for interfaces with a given search parameters.
+/// Searches for a given MAC address object.
 ///
 /// # Parameters
-///
-/// * `client: &ThanixClient` - The `ThanixClient` instance to use for communication.
-/// * `device_id: &i64` - The ID of the device this interface is linked to.
-/// * `name: &String` - The name of this interface.
+/// - `client: &ThanixClient` - The API client instance to use.
+/// - `mac_address: &str` - The MAC address to search for.
 ///
 /// # Returns
 ///
-/// `Some(i64)` the ID of the interface when it is found, else returns `None`
+/// - `Option<i64>` - If it is found, will return the ID of the MAC address object in NetBox, else
+/// will return `None`.
 ///
-/// # Aborts
+/// # Panics
 ///
-/// This function aborts in these cases:
+/// This function panics if the API request fails.
+pub fn search_mac_address(client: &ThanixClient, mac_address: &str) -> Option<i64> {
+    println!("Searching for mac address...");
+
+    let mut payload = DcimMacAddressesListQuery::default();
+    payload.mac_address__ic = Some(vec![mac_address.to_string()]);
+
+    match dcim_mac_addresses_list(client, payload) {
+        Ok(response) => match response {
+            DcimMacAddressesListResponse::Http200(mut mac_addresses) => {
+                if mac_addresses.results.as_mut().unwrap().len() == 1 {
+                    let result = mac_addresses.results.unwrap();
+                    return Some(result[0].id);
+                }
+                if mac_addresses.results?.is_empty() {
+                    return None;
+                }
+                // FIXME: Remove this panic and swap with error.
+                panic!("Ambiguous search result. MAC Address listed more then once.");
+            }
+            DcimMacAddressesListResponse::Other(other) => {
+                panic!("{}", other.text().unwrap());
+            }
+        },
+        Err(e) => {
+            panic!("{}", e);
+        }
+    }
+}
+
+/// Creates new MAC address object.
 ///
-/// * The search results are inconclusive (interface is listed multiple times).
-/// * The request returns an unexpected response code.
-/// * The request fails (e.g the connection fails).
-pub fn search_interface(client: &ThanixClient, device_id: &i64, name: &String) -> Option<i64> {
-    println!("Searching for interface '{}'...", name);
+/// # Parameters
+///
+/// * `client: &ThanixClient` - The API client instance to use.
+/// * `payload: MACAddressRequest` - The API request payload.
+///
+/// # Returns
+///
+/// - `Ok(i64)` - Returns the ID of the newly created MAC address.
+/// - `Err(NetBoxAPIError)` - Returns an Error in case the request fails or get an unexpected
+/// response.
+pub fn create_mac_address(
+    client: &ThanixClient,
+    payload: MACAddressRequest,
+) -> Result<i64, NetBoxApiError> {
+    println!("Creating MAC address in NetBox...");
+
+    match dcim_mac_addresses_create(client, payload) {
+        Ok(response) => match response {
+            thanix_client::paths::DcimMacAddressesCreateResponse::Http201(result) => {
+                println!(
+                    "\x1b[32m[success]\x1b[0m MAC Address created successfully. New MAC Address-ID: '{}'",
+                    result.id
+                );
+                Ok(result.id)
+            }
+            thanix_client::paths::DcimMacAddressesCreateResponse::Other(other_response) => {
+                let exc: NetBoxApiError = NetBoxApiError::Other(other_response.text().unwrap());
+                Err(exc)
+            }
+        },
+        Err(e) => {
+            let exc = NetBoxApiError::Reqwest(e);
+            Err(exc)
+        }
+    }
+}
+
+/// Updates a MAC address object.
+///
+/// # Parameters
+/// * `client: &ThanixClient` - The API client instance to use.
+/// * `payload: MACAddressRequest` - The MAC address payload to update the MAC address with.
+/// * `mac_address_id: i64` - The ID of the MAC address to update.
+#[allow(unused)]
+pub fn update_mac_address(
+    client: &ThanixClient,
+    payload: MACAddressRequest,
+    mac_address_id: i64,
+) -> Result<i64, NetBoxApiError> {
+    match dcim_mac_addresses_update(client, payload, mac_address_id) {
+        Ok(response) => match response {
+            thanix_client::paths::DcimMacAddressesUpdateResponse::Http200(result) => {
+                println!(
+                    "\x1b[32m[success]\x1b[0m MAC Address '{}' updated successfully.",
+                    result.id
+                );
+                Ok(result.id)
+            }
+            thanix_client::paths::DcimMacAddressesUpdateResponse::Other(other) => {
+                let exc: NetBoxApiError = NetBoxApiError::Other(other.text().unwrap());
+                Err(exc)
+            }
+        },
+        Err(e) => {
+            let exc = NetBoxApiError::Reqwest(e);
+            Err(exc)
+        }
+    }
+}
+
+/// Searches for interfaces with a given search parameters.
+/// Returns the ID of the interface when it is found, else returns `None`
+///
+/// # Parameters
+/// - `client: &ThanixClient`: The `ThanixClient` instance to use for communication.
+/// - `device_id: i64`: The ID of the device this interface is linked to.
+/// - `name: &String`: The name of this interface.
+///
+/// # Returns
+///
+/// `Some(i64)` as the ID of the interface object if found. If not, returns `None`.
+///
+/// # Panics
+///
+/// This function panics in these cases:
+/// - The search results are inconclusive (interface is listed multiple times).
+/// - The request returns an unexpected response code.
+/// - The request fails (e.g the connection fails).
+pub fn search_interface(client: &ThanixClient, device_id: i64, name: &String) -> Option<i64> {
+    println!("Searching for interface '{name}'...");
 
     let payload: DcimInterfacesListQuery = DcimInterfacesListQuery {
-        device_id: Some(vec![*device_id]),
+        device_id: Some(vec![device_id]),
         name: Some(vec![name.clone()]),
         ..Default::default()
     };
@@ -311,37 +395,31 @@ pub fn search_interface(client: &ThanixClient, device_id: &i64, name: &String) -
                 if interfaces.results.unwrap().is_empty() {
                     return None;
                 }
-                let err = NetBoxApiError::Other(
-                    "Ambiguous search result. Interface listed more than once.".to_owned(),
-                );
-                err.abort(None);
+                panic!("Ambiguous search result. Interface listed more than once.");
             }
             DcimInterfacesListResponse::Other(res) => {
-                let err: NetBoxApiError = NetBoxApiError::Other(format!(
+                panic!(
                     "Unexpected response code '{}' when trying to search for interface!",
                     res.status()
-                ));
-                err.abort(None);
+                );
             }
         },
         Err(e) => {
-            let err: NetBoxApiError = NetBoxApiError::Reqwest(e);
-            err.abort(None);
+            panic!("{}", e);
         }
     }
 }
 
-/// Create an interface object in NetBox.
+/// Creates an interface object in NetBox.
+/// Returns the ID of the interface object.
 ///
 /// # Parameters
-///
-/// * client: `&ThanixClient` - The client instance necessary for communication.
-/// * payload: `&WritableInterfaceRequest` - The payload for the API request.
+/// - `client: &ThanixClient` - The client instance necessary for communication.
+/// - `payload: WritableInterfaceRequest` - The payload for the API request.
 ///
 /// # Returns
-///
-/// * `Ok(i64)` - The ID of the interface object.
-/// * `Err(NetBoxApiError)` - Error will be passed back to `publisher`.
+/// - `Ok(i64)` - ID of the interface, If the creation was successful.
+/// - `Err(NetBoxApiError)` - If the creation was unsuccessful or the request itself failed.
 pub fn create_interface(
     client: &ThanixClient,
     payload: WritableInterfaceRequest,
@@ -369,18 +447,17 @@ pub fn create_interface(
     }
 }
 
-/// Update a given interface object.
+/// Updates a given interface object.
+/// Returns the ID of the updated interface.
 ///
 /// # Parameters
-///
-/// * `client: &ThanixClient` - The API client instance to use.
-/// * `payload: WritableInterfaceRequest` - The API request payload to use.
-/// * `interface_id: i64` - The ID of the interface to update.
+/// - `client: &ThanixClient` - The API client instance to use.
+/// - `payload: WritableInterfaceRequest` - The API request payload to use.
+/// - `interface_id: i64` - The ID of the interface to update.
 ///
 /// # Returns
-///
-/// * `Ok(i64)` - Returns the ID of the updated interface.
-/// * `Err(NetBoxApiError)` - If the connection fails or a unexpected response is returned.
+/// - `Ok(i64)` - ID of the updated interface if the update was successful.
+/// - `Err(NetBoxApiError)` - If the update or request has failed.
 pub fn update_interface(
     client: &ThanixClient,
     payload: WritableInterfaceRequest,
@@ -407,52 +484,61 @@ pub fn update_interface(
     }
 }
 
-pub fn search_ip(client: &ThanixClient, address: &String, device_id: &i64) -> Option<i64> {
-    println!("Searching for IP Address '{}'...", address);
+/// Search given IP Address.
+///
+/// # Parameters
+/// * `client: &ThanixClient` - The API client instance to use.
+/// * `address: &String` - The address to search for.
+/// * `device_id: Option<i64>` - The ID of the device this address is linked to, if any.
+///
+/// # Returns
+/// * `Option<i64>` - The ID of the IP address if it was found, `None` if it wasn't found.
+///
+/// # Panics
+///
+/// This function panics if the search result is ambiguous or an unexpected response code is
+/// received.
+pub fn search_ip(client: &ThanixClient, address: &String, device_id: Option<i64>) -> Option<i64> {
+    println!("Searching for IP Address '{address}'...");
     let payload: IpamIpAddressesListQuery = IpamIpAddressesListQuery {
         address: Some(vec![address.clone()]),
-        device_id: Some(vec![*device_id]),
+        device_id: device_id.map(|x| vec![x]),
         ..Default::default()
     };
 
-    match ipam_ip_addresses_list(client, payload) {
-        Ok(response) => match response {
-            IpamIpAddressesListResponse::Http200(addresses) => {
-                if addresses.results.len() == 1 {
-                    return Some(addresses.results[0].id);
-                }
-                if addresses.results.is_empty() {
-                    return None;
-                }
-                let err = NetBoxApiError::Other("Ambiguous search result. IP address listed more than once. Please check your data.".to_owned());
-                err.abort(None);
+    // FIXME: Switch from panicking to returning a NetBoxApiError as is done everywhere else.
+    // No panic should be used in cases the user can fix the problem.
+    match ipam_ip_addresses_list(client, payload).unwrap() {
+        IpamIpAddressesListResponse::Http200(addresses) => {
+            if addresses.results.as_ref()?.len() == 1 {
+                return Some(addresses.results?.first()?.id);
             }
-            IpamIpAddressesListResponse::Other(res) => {
-                let err: NetBoxApiError = NetBoxApiError::Other(format!(
-                    "Unexpected response code '{}' when trying to search for IP addresses!",
-                    res.status()
-                ));
-                err.abort(None);
+            if addresses.results?.is_empty() {
+                return None;
             }
-        },
-        Err(e) => {
-            let err: NetBoxApiError = NetBoxApiError::Reqwest(e);
-            err.abort(None);
+            panic!(
+                "Ambiguous search result. IP address listed more than once. Please check your data."
+            );
+        }
+        IpamIpAddressesListResponse::Other(res) => {
+            panic!(
+                "Unexpected response code '{}' when trying to search for IP addresses!",
+                res.status()
+            );
         }
     }
 }
 
-/// Create new IP adress object.
+/// Creates new IP adress object.
+/// Returns the ID of the new IPAddress object.
 ///
 /// # Parameters
-///
-/// * `client: &ThanixClient` - The client instance necessary for communication.
-/// * `payload: WritableIPAddressRequest` - The payload to send.
+/// - `client: &ThanixClient` - The client instance necessary for communication.
+/// - `payload: WritableIPAddressRequest` - The payload to send.
 ///
 /// # Returns
-///
-/// * `Ok(i64)` - The ID of the new IPAddress object.
-/// * `Err(NetBoxApiError)` - A variant of `NetBoxAPiError` if the creation fails.
+/// - `Ok(i64)` - If the creation of the IP address was successful.
+/// - `Err(NetBoxApiError)` - If the creation or request itself fail.
 pub fn create_ip(
     client: &ThanixClient,
     payload: WritableIPAddressRequest,
@@ -475,8 +561,7 @@ pub fn create_ip(
         },
         Err(e) => {
             eprintln!(
-                "\x1b[33m[warning]\x1b[0m Error while decoding NetBox response while creating IP address. This probably is still fine and a problem with NetBox.\nError: {}",
-                e
+                "\x1b[33m[warning]\x1b[0m Error while decoding NetBox response while creating IP address. This probably is still fine and a problem with NetBox.\nError: {e}"
             );
             let exc = NetBoxApiError::Other(e.to_string());
             Err(exc)
@@ -484,51 +569,41 @@ pub fn create_ip(
     }
 }
 
-/// Update a given IP address object.
+/// Patches a given IP address object.
+/// Returns the ID of the updated object.
 ///
 /// # Parameters
-///
-/// * `client: &ThanixClient` - The API client instance to use.
-/// * `payload: WritableIPAddressRequest` - The API call payload.
-/// * `id: i64` - The ID of the IP Address to update.
+/// - `client: &ThanixClient` - The API client instance to use.
+/// - `payload: PatchedWritableIPAddressRequest`: The API call payload.
+/// - `id: i64`: The ID of the IP Address to update.
 ///
 /// # Returns
 ///
-/// * `Ok(i64)` - The ID of the updated object.
-/// * `Err(NetBoxApiError)` - In case the connection fails or an unexpected response is returned.
-pub fn update_ip(
+/// - `Ok(i64)` - The ID of the patched IP address object, if successful.
+/// - `Err(NetBoxApiError)` - If the request fails or an unexpected response is received.
+pub fn patch_ip(
     client: &ThanixClient,
-    payload: WritableIPAddressRequest,
+    payload: PatchedWritableIPAddressRequest,
     id: i64,
 ) -> Result<i64, NetBoxApiError> {
-    println!("Updating IPs for given interface...");
+    println!("Patching IPs for given interface...");
 
-    match ipam_ip_addresses_update(client, payload, id) {
+    match ipam_ip_addresses_partial_update(client, payload, id) {
         Ok(response) => match response {
-            thanix_client::paths::IpamIpAddressesUpdateResponse::Http200(result) => Ok(result.id),
-            thanix_client::paths::IpamIpAddressesUpdateResponse::Other(other) => {
-                let exc: NetBoxApiError = NetBoxApiError::Other(other.text().unwrap());
-                Err(exc)
+            IpamIpAddressesPartialUpdateResponse::Http200(result) => Ok(result.id),
+            IpamIpAddressesPartialUpdateResponse::Other(other) => {
+                Err(NetBoxApiError::Other(other.text().unwrap()))
             }
         },
-        Err(e) => {
-            let exc: NetBoxApiError = NetBoxApiError::Reqwest(e);
-            Err(exc)
-        }
+        Err(e) => Err(NetBoxApiError::Reqwest(e)),
     }
 }
 
-/// Get Interface by ID.
+/// Gets an interface by ID.
 ///
-/// # Parameters
-///
-/// * `state: &ThanixClient` - The API client instance to use.
-/// * `payload: &WritableInterfaceRequest` - The payload to use.
-///
-/// # Returns
-///
-/// * `Ok(Interface)` - The Interface we are looking for.
-/// * `Err(NetBoxApiError)` - When the Interface does not exist.
+/// - `state`: The API client instance to use.
+/// - `payload`: The payload to use.
+#[allow(unused)]
 pub fn get_interface(state: &ThanixClient, id: i64) -> Result<Interface, NetBoxApiError> {
     println!("Trying to get interface '{}'...", &id);
 
@@ -552,16 +627,10 @@ pub fn get_interface(state: &ThanixClient, id: i64) -> Result<Interface, NetBoxA
     }
 }
 
-/// Get List of Interfaces.
+/// Gets a list of Interfaces.
 ///
-/// # Parameters
-///
-/// * `state: &ThanixClient` - The API client instance to use.
-///
-/// # Returns
-///
-/// * `Ok(Vec<Interface>)` - A list of Interface objects.
-/// * `Err(NetBoxApiError)` - A `NetBoxApiError` when something goes wrong.
+/// - `state`: The API client instance to use.
+#[allow(unused)]
 pub fn get_interface_list(state: &ThanixClient) -> Result<Option<Vec<Interface>>, NetBoxApiError> {
     println!("Retrieving list of interfaces...");
 
@@ -585,29 +654,23 @@ pub fn get_interface_list(state: &ThanixClient) -> Result<Option<Vec<Interface>>
     }
 }
 
-/// Attempt to retrieve an interface by its name.
+/// Attempts to retrieve an interface by its name.
 ///
-/// # Parameters
-///
-/// * `state: &ThanixClient` - The API client instance to use.
-/// * `payload: &WritableInterfaceRequest` - The payload to send.
-///
-/// # Returns
-///
-/// * `Ok(Interface)` - Returns the `Interface` if it exists.
-/// * `Err(NetBoxApiError)` - Returns variant of `NetBoxApiError` if the interface does not exist.
+/// - `state`: The API client instance to use.
+/// - `payload`: The payload to send.
+#[allow(unused)]
 pub fn get_interface_by_name(
     state: &ThanixClient,
     payload: &WritableInterfaceRequest,
 ) -> Result<Interface, NetBoxApiError> {
     println!(
         "Trying to retrieve interface by name '{}'...",
-        payload.name.as_ref().unwrap()
+        &payload.name
     );
 
     match dcim_interfaces_list(state, DcimInterfacesListQuery::default()) {
         Ok(response) => {
-            let interface_list: Vec<Interface> = match response {
+            let interface_list = match response {
                 thanix_client::paths::DcimInterfacesListResponse::Http200(interfaces) => {
                     interfaces.results.unwrap()
                 }
@@ -618,13 +681,13 @@ pub fn get_interface_by_name(
             };
 
             for interface in interface_list {
-                if interface.name == payload.name {
+                if interface.name == Some(payload.clone().name) {
                     return Ok(interface);
                 }
             }
             Err(NetBoxApiError::Other(format!(
-                "No Inteface '{}' with name found. Creation possibly failed.",
-                payload.name.as_ref().unwrap()
+                "No interface '{}' with name found. Creation possibly failed.",
+                &payload.name
             )))
         }
         Err(e) => {
