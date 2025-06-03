@@ -84,12 +84,6 @@ pub fn information_to_device(
     payload.description = config_data.system.description;
     // payload.local_context_data = todo!();
     // payload.oob_ip = todo!();
-    if let Some(x) = &config_data.system.primary_network_interface {
-        let primary_ipv4 = get_primary_addresses(state, machine, x);
-        let primary_ipv6 = get_primary_addresses(state, machine, x);
-        payload.primary_ip4 = primary_ipv4.map(Value::from);
-        payload.primary_ip6 = primary_ipv6.map(Value::from);
-    };
     // payload.tags = todo!();
     // payload.virtual_chassis = todo!();
     // payload.vc_position = todo!();
