@@ -195,6 +195,12 @@ pub struct NwiConfig {
 /// If no file can be found, a warning is displayed to the user and a default config file is written.
 /// If command line arguments are given, the parameters read from the file will be overwritten.
 ///
+/// # Parameters
+///
+/// * `uri: Option<&str>` - The URI of the NetBox instance
+/// * `token: Option<&str>` - The API tokent to be used
+/// * `name: Option<&str>` - The name of the machine to register
+///
 /// # Panics
 ///
 /// The function panics under these conditions:
@@ -264,6 +270,14 @@ pub fn set_up_configuration(
 
 /// Checks if a config file exists at a given path.
 /// Returns true if the file exists.
+///
+/// # Parameters
+///
+/// * `path: &Path` - The filepath to check.
+///
+/// # Returns
+///
+/// True/False depending on whether the file exists.
 fn file_exists(path: &Path) -> bool {
     if let Ok(metadata) = fs::metadata(path) {
         metadata.is_file()
@@ -285,6 +299,12 @@ fn get_config_dir() -> PathBuf {
 
 impl ConfigData {
     /// Initializes a new default configuration file if none exists.
+    ///
+    /// # Parameters
+    ///
+    /// * `uri: Option<&str>` - The URI of the NetBox instance
+    /// * `token: Option<&str>` - The API tokent to be used
+    /// * `name: Option<&str>` - The name of the machine to register
     ///
     /// # Panics
     ///

@@ -11,9 +11,12 @@ use std::process::Command;
 use std::{error::Error, path::Path};
 
 /// Executes a given script.
-/// Returns a HashMap if the plugin script returns valid JSON.
 ///
-/// - `path`: The Path of the script to execute relative to the CWD. (If none, the plugins directory will be searched).
+///	# Parameters
+/// * `path: ` - The Path of the script to execute relative to the CWD. (If none, the plugins directory will be searched).
+///
+/// # Returns
+/// * `Ok(HashMap<String, Value, RandomState>)` - The information collected form the plugin.
 pub fn execute(
     path: Option<String>,
 ) -> Result<HashMap<String, Value, RandomState>, Box<dyn Error>> {

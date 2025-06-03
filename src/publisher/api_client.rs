@@ -39,7 +39,8 @@ use thanix_client::{
 /// Returns an `Err` with `publisher_exceptions::NetBoxApiError` if the connection fails or the
 /// `thanix_client` version is not compatible with your NetBox version.
 ///
-/// - `client`: The client instance to be used for communication.
+///	# Parameters
+/// * `client: &ThanixClient` - The client instance to be used for communication.
 pub fn test_connection(client: &ThanixClient) -> Result<(), error::NetBoxApiError> {
     let url: String = format!("{}/api/status/", client.base_url);
 
@@ -92,8 +93,9 @@ pub fn test_connection(client: &ThanixClient) -> Result<(), error::NetBoxApiErro
 /// Version `v1.x` is compatible for NetBox Version `v3.6.x` and above, while `thanix_client`
 /// version `v2.x` will be compatible with NetBox version `v4.x` and above.
 ///
-/// - `netbox_version`: The version of the NetBox instance extracted from the response.
-/// - `thanix_version`: The version of the installed `thanix_client` dependency.
+/// # Parameters
+/// * `netbox_version: &str` - The version of the NetBox instance extracted from the response.
+/// * `thanix_version: &str` - The version of the installed `thanix_client` dependency.
 fn check_version_compatiblity(netbox_version: &str, thanix_version: &str) -> bool {
     println!("Checking API client compatibility with used NetBox version...");
     let netbox_major = get_major_verison(netbox_version);
@@ -109,6 +111,7 @@ fn check_version_compatiblity(netbox_version: &str, thanix_version: &str) -> boo
 /// Gets the major version from the given version String.
 /// Returns `Some(u32)` if the version can be parsed to an `u32`.
 ///
+/// # Parameters
 /// - `version`: String representation of the application version.
 fn get_major_verison(version: &str) -> Option<u32> {
     version.split('.').next()?.parse().ok()
@@ -117,9 +120,13 @@ fn get_major_verison(version: &str) -> Option<u32> {
 /// Search a device by sending a `DcimDevicesListQuery` with given search parameters.
 /// Returns the ID of the device if it exists.
 ///
-/// - `client`: The API client instance to use.
-/// - `name`: The name of the machine to search for.
-/// - `serial`: The serial number of the machine.
+///	# Parameters
+/// - `client: &ThanixClient` - The API client instance to use.
+/// - `name: &str` - The name of the machine to search for.
+/// - `serial: &str` - The serial number of the machine.
+///
+/// # Returns
+/// - `Option<i64>` - The ID of the device, if it exists. Else `None`.
 ///
 /// # Panics
 ///
@@ -161,8 +168,9 @@ pub fn search_device(client: &ThanixClient, name: &str, serial: &str) -> Option<
 /// Send request to create a new device in NetBox.
 /// Returns the ID of the newly created Device object.
 ///
-/// - `client`: The [`ThanixClient`] instance to use for communication.
-/// - `payload`: The information about the device serving as a request body.
+/// # Parameters
+/// - `client: &ThanixClient` - The [`ThanixClient`] instance to use for communication.
+/// - `payload: &WritableDeviceWithConfigContextRequest` - The information about the device serving as a request body.
 ///
 /// # Panics
 ///
@@ -200,6 +208,7 @@ pub fn create_device(
 /// Returns the ID of the updated device.
 /// Will simply overwrite the given device object in NetBox with the collected information.
 ///
+/// # Parameters
 /// - `client`: The API client instance to use.
 /// - `payload`: The payload for the API request.
 /// - `id`: The ID of the device to update.
@@ -234,6 +243,20 @@ pub fn update_device(
     }
 }
 
+/// Searches for a given MAC address object.
+///
+/// # Parameters
+/// - `client: &ThanixClient` - The API client instance to use.
+/// - `mac_address: &str` - The MAC address to search for.
+///
+/// # Returns
+///
+/// - `Option<i64>` - If it is found, will return the ID of the MAC address object in NetBox, else
+/// will return `None`.
+///
+/// # Panics
+///
+/// This function panics if the API request fails.
 pub fn search_mac_address(client: &ThanixClient, mac_address: &str) -> Option<i64> {
     println!("Searching for mac address...");
 
@@ -250,6 +273,7 @@ pub fn search_mac_address(client: &ThanixClient, mac_address: &str) -> Option<i6
                 if mac_addresses.results?.is_empty() {
                     return None;
                 }
+                // FIXME: Remove this panic and swap with error.
                 panic!("Ambiguous search result. MAC Address listed more then once.");
             }
             DcimMacAddressesListResponse::Other(other) => {
@@ -262,6 +286,18 @@ pub fn search_mac_address(client: &ThanixClient, mac_address: &str) -> Option<i6
     }
 }
 
+/// Creates new MAC address object.
+///
+/// # Parameters
+///
+/// * `client: &ThanixClient` - The API client instance to use.
+/// * `payload: MACAddressRequest` - The API request payload.
+///
+/// # Returns
+///
+/// - `Ok(i64)` - Returns the ID of the newly created MAC address.
+/// - `Err(NetBoxAPIError)` - Returns an Error in case the request fails or get an unexpected
+/// response.
 pub fn create_mac_address(
     client: &ThanixClient,
     payload: MACAddressRequest,
@@ -289,6 +325,12 @@ pub fn create_mac_address(
     }
 }
 
+/// Updates a MAC address object.
+///
+/// # Parameters
+/// * `client: &ThanixClient` - The API client instance to use.
+/// * `payload: MACAddressRequest` - The MAC address payload to update the MAC address with.
+/// * `mac_address_id: i64` - The ID of the MAC address to update.
 #[allow(unused)]
 pub fn update_mac_address(
     client: &ThanixClient,
@@ -319,9 +361,14 @@ pub fn update_mac_address(
 /// Searches for interfaces with a given search parameters.
 /// Returns the ID of the interface when it is found, else returns `None`
 ///
-/// - `client`: The `ThanixClient` instance to use for communication.
-/// - `device_id`: The ID of the device this interface is linked to.
-/// - `name`: The name of this interface.
+/// # Parameters
+/// - `client: &ThanixClient`: The `ThanixClient` instance to use for communication.
+/// - `device_id: i64`: The ID of the device this interface is linked to.
+/// - `name: &String`: The name of this interface.
+///
+/// # Returns
+///
+/// `Some(i64)` as the ID of the interface object if found. If not, returns `None`.
 ///
 /// # Panics
 ///
@@ -366,8 +413,13 @@ pub fn search_interface(client: &ThanixClient, device_id: i64, name: &String) ->
 /// Creates an interface object in NetBox.
 /// Returns the ID of the interface object.
 ///
-/// - `client`: The client instance necessary for communication.
-/// - `payload`: The payload for the API request.
+/// # Parameters
+/// - `client: &ThanixClient` - The client instance necessary for communication.
+/// - `payload: WritableInterfaceRequest` - The payload for the API request.
+///
+/// # Returns
+/// - `Ok(i64)` - ID of the interface, If the creation was successful.
+/// - `Err(NetBoxApiError)` - If the creation was unsuccessful or the request itself failed.
 pub fn create_interface(
     client: &ThanixClient,
     payload: WritableInterfaceRequest,
@@ -398,9 +450,14 @@ pub fn create_interface(
 /// Updates a given interface object.
 /// Returns the ID of the updated interface.
 ///
-/// - `client`: The API client instance to use.
-/// - `payload`: The API request payload to use.
-/// - `interface_id`: The ID of the interface to update.
+/// # Parameters
+/// - `client: &ThanixClient` - The API client instance to use.
+/// - `payload: WritableInterfaceRequest` - The API request payload to use.
+/// - `interface_id: i64` - The ID of the interface to update.
+///
+/// # Returns
+/// - `Ok(i64)` - ID of the updated interface if the update was successful.
+/// - `Err(NetBoxApiError)` - If the update or request has failed.
 pub fn update_interface(
     client: &ThanixClient,
     payload: WritableInterfaceRequest,
@@ -427,6 +484,20 @@ pub fn update_interface(
     }
 }
 
+/// Search given IP Address.
+///
+/// # Parameters
+/// * `client: &ThanixClient` - The API client instance to use.
+/// * `address: &String` - The address to search for.
+/// * `device_id: Option<i64>` - The ID of the device this address is linked to, if any.
+///
+/// # Returns
+/// * `Option<i64>` - The ID of the IP address if it was found, `None` if it wasn't found.
+///
+/// # Panics
+///
+/// This function panics if the search result is ambiguous or an unexpected response code is
+/// received.
 pub fn search_ip(client: &ThanixClient, address: &String, device_id: Option<i64>) -> Option<i64> {
     println!("Searching for IP Address '{address}'...");
     let payload: IpamIpAddressesListQuery = IpamIpAddressesListQuery {
@@ -435,6 +506,8 @@ pub fn search_ip(client: &ThanixClient, address: &String, device_id: Option<i64>
         ..Default::default()
     };
 
+    // FIXME: Switch from panicking to returning a NetBoxApiError as is done everywhere else.
+    // No panic should be used in cases the user can fix the problem.
     match ipam_ip_addresses_list(client, payload).unwrap() {
         IpamIpAddressesListResponse::Http200(addresses) => {
             if addresses.results.as_ref()?.len() == 1 {
@@ -459,8 +532,13 @@ pub fn search_ip(client: &ThanixClient, address: &String, device_id: Option<i64>
 /// Creates new IP adress object.
 /// Returns the ID of the new IPAddress object.
 ///
-/// - `client`: The client instance necessary for communication.
-/// - `payload`: The payload to send.
+/// # Parameters
+/// - `client: &ThanixClient` - The client instance necessary for communication.
+/// - `payload: WritableIPAddressRequest` - The payload to send.
+///
+/// # Returns
+/// - `Ok(i64)` - If the creation of the IP address was successful.
+/// - `Err(NetBoxApiError)` - If the creation or request itself fail.
 pub fn create_ip(
     client: &ThanixClient,
     payload: WritableIPAddressRequest,
@@ -494,9 +572,15 @@ pub fn create_ip(
 /// Patches a given IP address object.
 /// Returns the ID of the updated object.
 ///
-/// - `client`: The API client instance to use.
-/// - `payload`: The API call payload.
-/// - `id`: The ID of the IP Address to update.
+/// # Parameters
+/// - `client: &ThanixClient` - The API client instance to use.
+/// - `payload: PatchedWritableIPAddressRequest`: The API call payload.
+/// - `id: i64`: The ID of the IP Address to update.
+///
+/// # Returns
+///
+/// - `Ok(i64)` - The ID of the patched IP address object, if successful.
+/// - `Err(NetBoxApiError)` - If the request fails or an unexpected response is received.
 pub fn patch_ip(
     client: &ThanixClient,
     payload: PatchedWritableIPAddressRequest,

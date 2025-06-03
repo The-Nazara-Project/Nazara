@@ -39,6 +39,10 @@ pub struct NetworkInformation {
 
 /// Returns a list of network interfaces.
 /// Any collected loopback device is skipped.
+///
+/// # Returns
+/// * `Ok(Vec<NetworkInformation>)` - A list of all collected network interfaces.
+/// * `Err(CollectorError)` - A `CollectorError` instance containing information about the failure.
 pub fn construct_network_information() -> Result<Vec<NetworkInformation>, CollectorError> {
     println!("Collecting Network Information...");
 

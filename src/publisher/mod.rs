@@ -43,7 +43,13 @@ use thanix_client::{
 
 /// Test connection to NetBox.
 ///
-/// - `client`: Reference to a `thanix_client` instance.
+///	# Parameters
+///
+/// * `client: &ThanixClient` - Reference to a `thanix_client` instance.
+///
+/// # Returns
+///
+/// An empty `Ok()` or a `NetBoxApiError` instance dpending on outcome.
 pub fn probe(client: &ThanixClient) -> Result<(), NetBoxApiError> {
     println!("Probing connection to NetBox...");
 
@@ -58,9 +64,14 @@ pub fn probe(client: &ThanixClient) -> Result<(), NetBoxApiError> {
 
 /// Register this machine or VM in NetBox.
 ///
-/// - `client`: A client instance.
-/// - `machine`: Information about the host machine collected by the [`super::collectors`] module.
-/// - `config_data`: Nazara's configuration.
+/// # Parameters
+/// * `client: &ThanixClient` - A client instance.
+/// * `machine: Machine` - Information about the host machine collected by the [`super::collectors`] module.
+/// * `config_data: ConfigData` - Nazara's configuration.
+///
+/// # Returns
+///
+/// An empty `Ok()` or a `NetBoxApiError` instance depending on operation outcome.
 pub fn register_machine(
     client: &ThanixClient,
     machine: Machine,
@@ -184,10 +195,15 @@ pub fn register_machine(
 /// Create new Network Interface object in NetBox.
 /// Returns the ID of the newly created interface.
 ///
-/// - `client`: The API client instance to use.
-/// - `device_id`: The device this interface belongs to.
-/// - `interface`: The interface to create.
-/// - `config_data`: The configuration read from the config file.
+/// # Parameters
+/// * `client: &ThanixClient` - The API client instance to use.
+/// * `device_id: i64` - The device this interface belongs to.
+/// * `interface: &NetworkInformation` - The interface to create.
+/// * `config_data: &ConfigData` - The configuration read from the config file.
+///
+/// # Returns
+/// * `Ok(i64)` - The ID of the newly created Interface.
+/// * `Err(NetBoxApiError)` - Error with information about the operation's failure.
 fn create_nwi(
     client: &ThanixClient,
     device_id: i64,
@@ -231,11 +247,12 @@ fn create_nwi(
 /// Creates a new Interface API payload and invokes the API call to update the interface.
 /// Returns the ID of the interface.
 ///
-/// - `client`: The API client instance to use.
-/// - `device_id`: The ID of the device this NWI belongs to.
-/// - `interface`: The information of the interface to update.
-/// - `config_data`: The configuration data.
-/// - `interface_id`: The ID of the interface to update.
+/// # Parameters
+/// * `client: &ThanixClient` - The API client instance to use.
+/// * `device_id: i64` - The ID of the device this NWI belongs to.
+/// * `interface: &NetworkInformation` - The information of the interface to update.
+/// * `config_data &ConfigData` - The configuration data.
+/// * `interface_id: &i64` - The ID of the interface to update.
 fn update_nwi(
     client: &ThanixClient,
     device_id: i64,
@@ -288,9 +305,10 @@ fn update_nwi(
 /// The first field represents the IPv4 Address, the second the IPv6 address.
 /// If one or both are not already registered the value will be `None`.
 ///
-/// - `client`: The API client instance to use.
-/// - `interface`: The interface this address belongs to.
-/// - `device_id`: The ID of the device these Addresses are linked to.
+/// # Parameters
+/// * `client` - The API client instance to use.
+/// * `interface` - The interface this address belongs to.
+/// * `device_id` - The ID of the device these Addresses are linked to.
 fn search_ips(
     client: &ThanixClient,
     interface: &NetworkInformation,
@@ -315,9 +333,10 @@ fn search_ips(
 
 /// Creates the given interface's IPv4 and/or IPv6 address(es).
 ///
-/// - `client`: The API client instance to use.
-/// - `interface`: The interface to get the IP Addresses from.
-/// - `interface_id`: The ID of the interface these addresses belong to.
+/// # Parameters
+/// * `client: &ThanixClient` - The API client instance to use.
+/// * `interface: &NetworkInformation` - The interface to get the IP Addresses from.
+/// * `interface_id: i64` - The ID of the interface these addresses belong to.
 fn create_ips(
     client: &ThanixClient,
     interface: &NetworkInformation,

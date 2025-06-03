@@ -35,9 +35,14 @@ use thanix_client::util::ThanixClient;
 ///
 /// Certain information provided in the config file will be overwritten if a different one is detected by the collector!
 ///
-/// - `state`: API Client instance used for search and validation.
-/// - `machine`:  Collected information about the device.
-/// - `config_data`:  Additional information about the device provided by config file or CLI.
+/// # Parameters
+/// - `state: &ThanixClient` - API Client instance used for search and validation.
+/// - `machine: &Machine` -  Collected information about the device.
+/// - `config_data: ConfigData` -  Additional information about the device provided by config file or CLI.
+///
+/// # Returns
+///
+/// - `WritableDeviceWithConfigContextRequest` - A device payload.
 #[allow(clippy::field_reassign_with_default)]
 pub fn information_to_device(
     state: &ThanixClient,
@@ -113,11 +118,15 @@ pub fn information_to_vm(
     todo!("Translation of collected information to VM not implemented yet!")
 }
 
-/// Translates gathered information into a payload.
+/// Translates gathered information into a Interface payload.
 ///
-/// - `interface`: The interface to be translated into a payload.
-/// - `config_data`: The configuration data.
-/// - `device_id`: The ID of the device that this interface belongs to.
+/// # Parameters
+/// - `interface: &NetworkInformation` - The interface to be translated into a payload.
+/// - `config_data: &ConfigData` - The configuration data.
+/// - `device_id: &i64` - The ID of the device that this interface belongs to.
+///
+/// # Returns
+/// - `WritableInterfaceRequest` - The payload to use for Interface operations.
 #[allow(clippy::field_reassign_with_default)]
 pub fn information_to_interface(
     config_data: &ConfigData,
@@ -232,8 +241,9 @@ pub fn information_to_interface(
 
 /// Returns the payload necessary to create a new IP address.
 ///
-/// - `interface_address`: The IpAddress of the interface to register.
-/// - `interface_id`: ID of the network interface this IP belongs to.
+/// # Parameters
+/// - `interface_address: IpAddr` - The IpAddress of the interface to register.
+/// - `interface_id: i64` - ID of the network interface this IP belongs to.
 pub fn information_to_ip(interface_address: IpAddr, interface_id: i64) -> WritableIPAddressRequest {
     println!("Creating IP Address payload...");
 
@@ -257,7 +267,11 @@ pub fn information_to_ip(interface_address: IpAddr, interface_id: i64) -> Writab
 
 /// Returns the ID of the platform this machine uses.
 ///
-/// - `state`: The client required for searching for the platform.
+/// # Parameters
+/// - `state: &ThanixClient` - The client required for searching for the platform.
+///
+///	# Returns
+///	* `Option<i64>` - The ID of the platform, if found. Else `None`.
 ///
 /// # Panics
 ///
@@ -303,6 +317,7 @@ fn get_platform_id(state: &ThanixClient, platform_name: String) -> Option<i64> {
 ///
 /// Returns the ID of the IP address object `i64` if a match has been found.
 ///
+/// # Parameters
 /// - `state`: The client required for making API requests.
 /// - `machine`: The collected machine information.
 fn get_primary_addresses(
@@ -385,6 +400,7 @@ fn get_primary_addresses(
 /// Search for the site specified in the config file by ID or by name.
 /// Returns the ID of the site if found.
 ///
+/// # Parameters
 /// - `state`: The client required for performing API requests.
 /// - `config_data`: The configuration data found in the config file.
 fn get_site_id(state: &ThanixClient, config_data: &ConfigData) -> Option<i64> {
