@@ -151,7 +151,7 @@ pub fn set_up_configuration(
 
     println!("Checking for existing configuration file...");
 
-    if file_exists(&get_config_dir()) {
+    if file_exists(&get_config_path(true)) {
         println!("Configuration file already exists. Validating...");
         // TODO Rewrite validation logic to properly condition here
         match ConfigData::validate_config_file() {
@@ -227,8 +227,11 @@ fn file_exists(path: &Path) -> bool {
 /// # Panics
 ///
 /// This function panics if no `$HOME` variable can be found.
-fn get_config_dir() -> PathBuf {
+fn get_config_path(with_file: bool) -> PathBuf {
     let home_dir = std::env::var("HOME").expect("\x1b[31m[FATAL]\x1b[0m No $HOME variable found!");
+    if with_file {
+        return Path::new(&home_dir).join(".config/nazara/config.toml");
+    }
     Path::new(&home_dir).join(".config/nazara/")
 }
 
@@ -265,7 +268,7 @@ impl ConfigData {
         }
 
         // Path to the output file
-        let config_path = get_config_dir();
+        let config_path = get_config_path(false);
         std::fs::create_dir_all(&config_path).map_err(ConfigError::FileOpError)?;
         let mut output_file =
             File::create(config_path.join("config.toml")).map_err(ConfigError::FileOpError)?;
@@ -281,7 +284,8 @@ impl ConfigData {
     /// If it is not or does not exists, an error is returned.
     fn validate_config_file() -> Result<(), ConfigError> {
         // TODO improve this
-        let mut file = File::open(get_config_dir()).map_err(|e| ConfigError::FileOpError(e))?;
+        let mut file =
+            File::open(get_config_path(true)).map_err(|e| ConfigError::FileOpError(e))?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)
             .map_err(|e| ConfigError::FileOpError(e))?;
@@ -332,7 +336,7 @@ impl ConfigData {
     ///
     /// This function will panic if it cannot read the config file.
     fn read_config_file() -> ConfigData {
-        let mut file = File::open(get_config_dir()).unwrap();
+        let mut file = File::open(get_config_path(true)).unwrap();
 
         let mut contents = String::new();
         file.read_to_string(&mut contents).unwrap();
