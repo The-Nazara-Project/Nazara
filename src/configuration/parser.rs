@@ -1,75 +1,11 @@
 //! This module is responsible for creating a default configuration file as well as validating and reading the config
 //! file.
 //!
-//! A default configuration file looks like this:
-//!
 //! ```toml
-//! [netbox]
-//! netbox_uri = ""
-//! netbox_api_token = ""
-//!
-//! [system]
-//! name = "some_name" # Required for virtual machines!
-//! site_id = 0 # The ID of the site this device is located at.
-//! description = ""
-//! comments = "Automatically registered using Nazara."
-//! device_type = 0
-//! role = 0
-//! # Name of the network interface to set. (e.g eth0, etc)
-//! # If not set, the first active interface will be selected.
-//! primary_network_interface = ""
-//! face = "" # Direction this device may face (e.g front or rear)
-//! status = "active" # Status of the device. 'active' by default.
-//! airflow = "front-to-rear" # Direction of airflow.
-//!
-//! # Optional data of your device
-//! # This section may be empty
-//! [[system.optional]]
-//! # tenant_group = 0 # The ID of the department this device belongs to.
-//! # tenant = 0 # ID of the team or individual this device blongs to.
-//! # location = 0 # ID of the location of the device.
-//! # rack = 0 # ID of the Rack this device sits in.
-//! # position = 0 # Position of the device within the Rack.
-//! platform = "x86_64" # Name of the paltform of this device.
-//!
-//! # These will be parsed into a single HashMap. You must provide
-//! # the correct field labels as there is no way for Nazara to know.
-//!
-//! # These values are purely exemplary.
-//! [system.custom_fields]
-//!
-//! # Network Interfaces Configuration (optional)
-//! #[[nwi]]
-//! #name = "" # Required. Must match interface that exists on the machine.
-//! #enabled = true
-//! #rtype = "type1"
-//! #parent = 1
-//! #bridge = 1
-//! #lag = 1
-//! #mtu = 1500
-//! #duplex = "full"
-//! #wwn = "wwn12345"
-//! #mgmt_only = false
-//! #description = "Automatically created by Nazara."
-//! #mode = ""
-//! #rf_role = ""
-//! #rf_channel = ""
-//! #poe_role = ""
-//! #poe_channel = ""
-//! #rf_channel_frequency = 2400.0
-//! #rf_channel_width = 20.0
-//! #tx_power = 20
-//! #untagged_vlans = [10, 20]
-//! #tagged_vlans = [30, 40]
-//! #mark_connected = true
-//! #wireless_lans = [50, 60]
-//! #vrf = 1
-//! # Custom fields specific for this interface
-//! #[nwi.custom_fields]
-//! # ...
+#![doc = include_str!("config_template.toml")]
 //! ```
 //!
-//! It will be created at ` $HOME/.nazara/.config.toml`.
+//! It will be created at ` $HOME/.config/nazara/config.toml`.
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -81,7 +17,6 @@ use std::path::Path;
 use std::{fs, path::PathBuf};
 
 use super::error::ConfigError;
-
 /// Configuration state set by the configuration file.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ConfigData {
@@ -191,7 +126,7 @@ pub struct NwiConfig {
     pub custom_fields: Option<HashMap<String, Value, RandomState>>,
 }
 
-/// This function reads the configuration file located at `$HOME/.nazara/config.toml`.
+/// This function reads the configuration file located at `$HOME/.config/nazara/config.toml`.
 /// If no file can be found, a warning is displayed to the user and a default config file is written.
 /// If command line arguments are given, the parameters read from the file will be overwritten.
 ///
@@ -246,7 +181,7 @@ pub fn set_up_configuration(
 
     println!("\x1b[36m[info]\x1b[0m No config file found. Creating default...");
 
-    ConfigData::initialize_config_file(uri, token, name).unwrap();
+    ConfigData::initialize_config_file(uri, token, name)?;
     println!("\x1b[32m[success]\x1b[0m Default configuration file created successfully.");
 
     if uri.is_none() || token.is_none() {
@@ -294,7 +229,7 @@ fn file_exists(path: &Path) -> bool {
 /// This function panics if no `$HOME` variable can be found.
 fn get_config_dir() -> PathBuf {
     let home_dir = std::env::var("HOME").expect("\x1b[31m[FATAL]\x1b[0m No $HOME variable found!");
-    Path::new(&home_dir).join(".nazara/config.toml")
+    Path::new(&home_dir).join(".config/nazara/")
 }
 
 impl ConfigData {
@@ -308,27 +243,15 @@ impl ConfigData {
     ///
     /// # Panics
     ///
-    /// If it is not able to create a new config file at `$HOME/.nazara-config.toml` or if it cannot write the defaults
+    /// If it is not able to create a new config file at `$HOME/.config/nazara/config.toml` or if it cannot write the defaults
     /// to the file, the function panics as this is the main method of configuring the program.
     fn initialize_config_file(
         uri: Option<&str>,
         token: Option<&str>,
         name: Option<&str>,
     ) -> Result<(), ConfigError> {
-        let mut file = match File::open(Path::new("src/configuration/config_template.toml")) {
-            Ok(file) => file,
-            Err(err) => {
-                return Err(ConfigError::FileOpError(err));
-            }
-        };
-
-        let mut contents = String::new();
-        match file.read_to_string(&mut contents) {
-            Ok(x) => x,
-            Err(err) => {
-                return Err(ConfigError::FileOpError(err));
-            }
-        };
+        let file = include_str!("config_template.toml");
+        let mut contents = file.to_owned();
 
         // Replace placeholders with actual values if exist.
         if let Some(uri) = uri {
@@ -342,8 +265,11 @@ impl ConfigData {
         }
 
         // Path to the output file
+        let config_path = get_config_dir();
+        std::fs::create_dir_all(&config_path).map_err(ConfigError::FileOpError)?;
         let mut output_file =
-            File::create(get_config_dir()).map_err(|e| ConfigError::FileOpError(e))?;
+            File::create(config_path.join("config.toml")).map_err(ConfigError::FileOpError)?;
+
         output_file
             .write_all(contents.as_bytes())
             .map_err(|e| ConfigError::FileOpError(e))?;

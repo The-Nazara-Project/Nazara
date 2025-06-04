@@ -64,9 +64,9 @@
 //! ./target/release/Nazara --api-url <API_URL> --api-token <API_TOKEN>
 //! ```
 //!
-//! ## Configuring via `~/.nazara/config.toml`file.
+//! ## Configuring via `~/.config/nazara/config.toml`file.
 //!
-//! Nazara's configuration must be located in the user's home directory at `~/.nazara/config.toml`.
+//! Nazara's configuration must be located in the user's home directory at `~/.config/nazara/config.toml`.
 //!
 //! ```toml
 //! [netbox]
@@ -78,69 +78,10 @@
 //! custom fields to your system information that cannot be automatically selected. A great example would be the
 //! `System Location` entry. To specify that, simply add the parameter under the `[system]` block in your configuration file.
 //!
+//! A default configuration file looks like this:
+//!
 //! ```toml
-//! # A default configuration file looks like this:
-//! [netbox]
-//! netbox_uri = ""
-//! netbox_api_token = ""
-//!
-//! [system]
-//! name = "some_name" # Required for virtual machines!
-//! site_id = 0 # The ID of the site this device is located at.
-//! description = ""
-//! comments = "Automatically registered using Nazara."
-//! device_type = 0
-//! role = 0
-//! # Name of the network interface to set. (e.g eth0, etc)
-//! # If not set, the first active interface will be selected.
-//! primary_network_interface = ""
-//! face = "" # Direction this device may face (e.g front or rear)
-//! status = "active" # Status of the device. 'active' by default.
-//! airflow = "front-to-rear" # Direction of airflow.
-//! # Optional data of your device
-//! # This section may be empty
-//! [[system.optional]]
-//!
-//! # tenant_group = 0 # The ID of the department this device belongs to.
-//! # tenant = 0 # ID of the team or individual this device blongs to.
-//! # location = 0 # ID of the location of the device.
-//! # rack = 0 # ID of the Rack this device sits in.
-//! # position = 0 # Position of the device within the Rack.
-//! platform = "x86_64" # Name of the paltform of this device.
-//! # These will be parsed into a single HashMap. You must provide
-//! # the correct field labels as there is no way for Nazara to know.
-//! # These values are purely exemplary.
-//! [system.custom_fields]
-//!
-//! # Network Interfaces Configuration (optional)
-//! #[[nwi]]
-//! #name = "" # Required. Must match interface that exists on the machine.
-//! #enabled = true
-//! #rtype = "type1"
-//! #parent = 1
-//! #bridge = 1
-//! #lag = 1
-//! #mtu = 1500
-//! #duplex = "full"
-//! #wwn = "wwn12345"
-//! #mgmt_only = false
-//! #description = "Automatically created by Nazara."
-//! #mode = ""
-//! #rf_role = ""
-//! #rf_channel = ""
-//! #poe_role = ""
-//! #poe_channel = ""
-//! #rf_channel_frequency = 2400.0
-//! #rf_channel_width = 20.0
-//! #tx_power = 20
-//! #untagged_vlans = [10, 20]
-//! #tagged_vlans = [30, 40]
-//! #mark_connected = true
-//! #wireless_lans = [50, 60]
-//! #vrf = 1
-//! # Custom fields specific for this interface
-//! #[nwi.custom_fields]
-//! # ...
+#![doc = include_str!("configuration/config_template.toml")]
 //! ```
 //!
 //! *Please note that this section is still a work in progress and all information is subject to change.*
@@ -148,7 +89,7 @@
 //! ## Configuring custom fields using user plugins
 //!
 //! Users are able to fill `custom_fields` parameters in their NetBox objects using custom bash scripts.
-//! These scripts should be placed inside the `~/.nazara/scripts/` directory.
+//! These scripts should be placed inside the `~/.config/nazara/scripts/` directory.
 //!
 //! These scripts can collect the desired information and output *a valid JSON representation* to `stdout`.
 //! Nazara then reads this output, validates it, and attempts to parse it to a `HashMap` of values.
@@ -217,7 +158,7 @@ pub struct Machine {
 /// nazara --uri <NETBOX_URI> --token <NETBOX_TOKEN>
 /// ```
 ///
-/// These arguments override the ones defined in the `.nbs-config.toml`.
+/// These arguments override the ones defined in the `$HOME/.config/nazara/config.toml`.
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about=None)]
 struct Args {
@@ -290,8 +231,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             args.uri.as_deref(),
             args.token.as_deref(),
             args.name.as_deref(),
-        )
-        .unwrap();
+        )?;
 
         let client = ThanixClient {
             base_url: config.get_netbox_uri().to_string(),
@@ -299,10 +239,10 @@ fn main() -> Result<(), Box<dyn Error>> {
             client: Client::new(),
         };
 
-        probe(&client).unwrap();
+        probe(&client)?;
 
         // Register the machine or VM with NetBox
-        register_machine(&client, machine, config).unwrap();
+        register_machine(&client, machine, config)?;
         println!("\x1b[32mAll done, have a nice day!\x1b[0m");
     }
 
