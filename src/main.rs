@@ -61,18 +61,12 @@
 //! Here is an example for passing these parameters on using the CLI:
 //!
 //! ```bash
-//! ./target/release/Nazara --api-url <API_URL> --api-token <API_TOKEN>
+//! sudo ./target/release/Nazara --api-url <API_URL> --api-token <API_TOKEN>
 //! ```
 //!
-//! ## Configuring via `~/.config/nazara/config.toml`file.
+//! ## Configuring via `$HOME/.config/nazara/config.toml`file.
 //!
-//! Nazara's configuration must be located in the user's home directory at `~/.config/nazara/config.toml`.
-//!
-//! ```toml
-//! [netbox]
-//! netbox_api_token = "$API_TOKEN"
-//! netbox_uri = "$API_URI"
-//! ```
+//! Nazara's configuration must be located in the root user's home directory at `$HOME/.config/nazara/config.toml`.
 //!
 //! Aside from the NetBox system parameters, configuration via the `config.toml` also allows you to add certain
 //! custom fields to your system information that cannot be automatically selected. A great example would be the
@@ -89,7 +83,7 @@
 //! ## Configuring custom fields using user plugins
 //!
 //! Users are able to fill `custom_fields` parameters in their NetBox objects using custom bash scripts.
-//! These scripts should be placed inside the `~/.config/nazara/scripts/` directory.
+//! These scripts should be placed inside the `$HOME/.config/nazara/scripts/` directory.
 //!
 //! These scripts can collect the desired information and output *a valid JSON representation* to `stdout`.
 //! Nazara then reads this output, validates it, and attempts to parse it to a `HashMap` of values.

@@ -37,7 +37,7 @@ When major ports to newer NetBox versions happen - which usually include breakin
 |Nazara Version|NetBox Version|Branch|maintained?|
 |-|-|-|-|
 |`v0.1.0_beta.1`|`v4.3.x`|`main`|:white_check_mark:|
-|`v0.1.0_alpha.2|`v3.6.x`|`version/alpha-2`|:x:|
+|`v0.1.0_alpha.2`|`v3.6.x`|`version/alpha-2`|:x:|
 
 Maintenance work on these older versions is not planned.
 
@@ -99,17 +99,19 @@ Nazara accepts these parameters from you:
 Here is an example for passing these parameters on using the CLI:
 
 ```bash
-./target/release/Nazara --uri <API_URL> --token <API_TOKEN> --name test_device
+sudo ./target/release/Nazara --uri <API_URL> --token <API_TOKEN> --name test_device
 ```
 
-## Configuring via `~/.nazara/config.toml`file (recommended)
+## Configuring via `$HOME/.config/nazara/config.toml`file (recommended)
 
-Nazara's configuration must be located in the user's home directory at `~/.nazara/config.toml`.
+Nazara's configuration must be located in the root user's home directory at `$HOME/.config/nazara/config.toml`.
 
 When launching Nazara for the first time, it will write a stock config file to that path. Certain parameters are required to be configured there manually.
 You recognize them by their line not being commented out.
 
-When providing CLI parameters, Nazara will write them into the config file for you.
+Aside from the NetBox system parameters, configuration via the `config.toml` also allows you to add certain
+custom fields to your system information that cannot be automatically selected. A great example would be the
+`System Location` entry. To specify that, simply add the parameter under the `[system]` block in your configuration file.
 
 > [!Note]
 > Currently, configuration by config file is the proper way to use Nazara given the amount of data required to register a machine.
@@ -186,7 +188,7 @@ platform = "x86_64" # Name of the paltform of this device.
 ## Configuring custom fields using user plugins
 
 Users are able to fill `custom_fields` parameters in their NetBox objects using custom bash scripts.
-These scripts should be placed inside the `~/.nazara/scripts/` directory.
+These scripts should be placed inside the `$HOME/.config/nazara/scripts/` directory.
 
 These scripts can collect the desired information and output *a valid JSON representation* to `stdout`.
 Nazara then reads this output, validates it, and attempts to parse it to a `HashMap` of values.
