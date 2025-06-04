@@ -89,18 +89,24 @@ Nazara supports two ways of providing configuration parameters: CLI arguments an
 
 Nazara accepts these parameters from you:
 
-- `-u, --uri`: URI to your NetBox instance.
-- `-t, --token`: Your API authentication token.
-- `-n, --name`: The name of the device.
-- `-p, --plugin`: The path to a plugin script you want to use to fill in custom fields.
+- `-d, --dry-run`: Print all collected information without committing it to NetBox.
+- `-u, --uri <URI>`: URI to your NetBox instance.
+- `-t, --token <TOKEN>`: Your API authentication token.
+- `-n, --name <NAME>`: The name of the device.
+- `-p, --plugin <PLUGIN>`: The path to a plugin script you want to use to fill in custom fields.
+- `-h, --help`: Print help.
+- `-V, --version`: Print version.
 
 ## Configuring via CLI
 
 Here is an example for passing these parameters on using the CLI:
 
 ```bash
-sudo ./target/release/Nazara --uri <API_URL> --token <API_TOKEN> --name test_device
+sudo nazara --uri <API_URL> --token <API_TOKEN> --name test_device
 ```
+
+When launching Nazara for the first time, a configuration file will be written at `$HOME/.config/nazara/config.toml`. If you pass CLI parameters, these will be automatically
+transfered into the config file as well.
 
 ## Configuring via `$HOME/.config/nazara/config.toml`file (recommended)
 
