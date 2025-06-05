@@ -2,65 +2,74 @@
 
 # Configuration parameters for the NetBox connection
 [netbox]
-netbox_api_token = "{NETBOX_TOKEN}"
-netbox_uri = "{NETBOX_URI}"
+netbox_api_token = ""
+netbox_uri = ""
 
-# Mandatory information about the system
-[system]
-name = "{SYSTEM_NAME}" # Name of the machine or VM. **Required** when device is a VM
-site_id = 0 # The id of the site this device is located at. (Stored in NetBox)
-# site_name = "" # Name of the site this device is located at. (May take longer to find.)
-description = ""
-comments = "Automatically registered by Nazara."
-device_type = 0 # ID of the type of the Device Type in NetBox
-device_role = 0 # ID of the device role in NetBox
-face = "" # Direction this device may face in (e.g front or rear)
-status = "active" # Status of the device. Default: active
-airflow = "front-to-rear" # Direction of airflow
+# Use [device] for devices, or [vm] if this is a virtual machine.
 
-# Optional data of your device.
-[[system.optional]]
-# tenant_group = 0 # ID of the department this device belongs to
-# tenant_group_name = "" # Name of the department this device belongs to. (May take longer to find.)
-# tenant = 0 # ID of the team or individual this device belongs to.
-# tenant_name = "" # Name of the team or individual this device belongs to.
-# location = 0 # ID fof the location of the device.
-# rack = 0 # ID of the rack this device is mounted in if any.
-# position = 0 # Position of the device within the rack.
-platform = "x86_64"
+# # -- Mandatory device information --
+# [device]
+# # NetBox ID of the Device Type.
+# device_type = 0
+# # NetBox ID of the Device Role.
+# device_role = 0
+# # NetBox ID of the site this device is located at.
+# site_id = 0
 
-# Custom parameters about the system, which fall under the "custom_fields" section.
-[system.custom_fields]
-# Custom fields for the system
+# # -- Optional device information --
+# # Name of the machine.
+# name = "{SYSTEM_NAME}"
+# # ID of the team or individual this device belongs to.
+# tenant = 0
+# # ID of the platform running on this device.
+# platform = 0
+# # Chassis serial number.
+# serial = ""
+# # A unique tag used to identify this device.
+# asset_tag = ""
+# # NetBox ID of the location.
+# location = 0
+# # NetBox ID of the rack this device is mounted in if any.
+# rack = 0
+# # Position of the device within the rack (in 0.5 increments).
+# position = 0.0
+# # Direction this device may face in (e.g front or rear).
+# face = "front"
+# latitude = 0.0
+# longitude = 0.0
+# # Status of the device. Default is "active"
+# status = "active"
+# # Direction of airflow
+# airflow = "front-to-rear"
+# primary_ipv4 = 0
+# primary_ipv6 = 0
+# oob_ip = 0
+# cluster = 0
+# virtual_chassis = 0
+# vc_position = 0
+# vc_priority = 0
+# # A description of this device.
+# description = ""
+# comments = "Automatically registered by Nazara."
 
-# Network Interfaces Configuration (optional)
-# Uncomment and define `[[nwi]]` tables if network interfaces need to be configured.
-# If this section is not present, `nwi` will be an empty vector.
-#[[nwi]]
-#name = "interface1"
-#enabled = true
-#rtype = "type1"
-#parent = 1
-#bridge = 2
-#lag = 3
-#mtu = 1500
-#duplex = "full"
-#wwn = "wwn12345"
-#mgmt_only = false
-#description = "Interface 1 Description"
-#mode = "mode1"
-#rf_role = "role1"
-#rf_channel = "channel1"
-#poe_mode = "poe_mode1"
-#poe_type = "poe_type1"
-#rf_channel_frequency = 2400.0
-#rf_channel_width = 20.0
-#tx_power = 20
-#untagged_vlans = [10, 20]
-#tagged_vlans = [30, 40]
-#mark_connected = true
-#wireless_lans = [50, 60]
-#vrf = 1
-# Custom fields specific to this interface
-#[nwi.custom_fields]
+# # -- Mandatory VM information --
+# [vm]
+# # Name of the virtual machine.
+# name = "{SYSTEM_NAME}"
 
+# # -- Optional VM information --
+# # Status of the virtual machine.
+# status = "active"
+# site = 0
+# cluster = 0
+# device = 0
+# # VM serial number.
+# serial = ""
+# role = 0
+# tenant = 0
+# platform = 0
+# primary_ipv4 = 0
+# primary_ipv6 = 0
+# # A description of this virtual machine.
+# description = ""
+# comments = "Automatically registered by Nazara."
