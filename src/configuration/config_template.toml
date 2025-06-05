@@ -5,71 +5,18 @@
 netbox_api_token = ""
 netbox_uri = ""
 
+[common]
+name = ""
+description = ""
+comments = "Automatically registered by Nazara."
+status = "active"
+
 # Use [device] for devices, or [vm] if this is a virtual machine.
 
-# # -- Mandatory device information --
 # [device]
-# # NetBox ID of the Device Type.
 # device_type = 0
-# # NetBox ID of the Device Role.
-# device_role = 0
-# # NetBox ID of the site this device is located at.
-# site_id = 0
-
-# # -- Optional device information --
-# # Name of the machine.
-# name = "{SYSTEM_NAME}"
-# # ID of the team or individual this device belongs to.
-# tenant = 0
-# # ID of the platform running on this device.
-# platform = 0
-# # Chassis serial number.
-# serial = ""
-# # A unique tag used to identify this device.
-# asset_tag = ""
-# # NetBox ID of the location.
-# location = 0
-# # NetBox ID of the rack this device is mounted in if any.
-# rack = 0
-# # Position of the device within the rack (in 0.5 increments).
-# position = 0.0
-# # Direction this device may face in (e.g front or rear).
-# face = "front"
-# latitude = 0.0
-# longitude = 0.0
-# # Status of the device. Default is "active"
-# status = "active"
-# # Direction of airflow
-# airflow = "front-to-rear"
-# primary_ipv4 = 0
-# primary_ipv6 = 0
-# oob_ip = 0
-# cluster = 0
-# virtual_chassis = 0
-# vc_position = 0
-# vc_priority = 0
-# # A description of this device.
-# description = ""
-# comments = "Automatically registered by Nazara."
-
-# # -- Mandatory VM information --
-# [vm]
-# # Name of the virtual machine.
-# name = "{SYSTEM_NAME}"
-
-# # -- Optional VM information --
-# # Status of the virtual machine.
-# status = "active"
-# site = 0
-# cluster = 0
-# device = 0
-# # VM serial number.
-# serial = ""
 # role = 0
-# tenant = 0
-# platform = 0
-# primary_ipv4 = 0
-# primary_ipv6 = 0
-# # A description of this virtual machine.
-# description = ""
-# comments = "Automatically registered by Nazara."
+# site = 0
+
+# [vm]
+# cluster = 0
