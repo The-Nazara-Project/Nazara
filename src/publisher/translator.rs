@@ -20,8 +20,10 @@ use crate::{
 use serde_json::{Value, json};
 use std::{collections::HashMap, net::IpAddr};
 use thanix_client::types::{
-    WritableDeviceWithConfigContextRequest, WritableIPAddressRequest, WritableInterfaceRequest,
-    WritableVMInterfaceRequest, WritableVirtualMachineWithConfigContextRequest,
+    PatchedWritableDeviceWithConfigContextRequest,
+    PatchedWritableVirtualMachineWithConfigContextRequest, WritableDeviceWithConfigContextRequest,
+    WritableIPAddressRequest, WritableInterfaceRequest, WritableVMInterfaceRequest,
+    WritableVirtualMachineWithConfigContextRequest,
 };
 
 /// Translates the machine information to a [`WritableDeviceWithConfigContextRequest`]
@@ -44,22 +46,38 @@ pub fn information_to_device(
     common: &CommonConfig,
     device: &DeviceConfig,
 ) -> WritableDeviceWithConfigContextRequest {
-    println!("Creating Device object...");
+    WritableDeviceWithConfigContextRequest {
+        name: Some(common.name.clone()),
+        device_type: Value::from(device.device_type),
+        role: Value::from(device.role),
+        serial: machine.dmi_information.system_information.serial.clone(),
+        asset_tag: Some(machine.dmi_information.chassis_information.asset.clone()),
+        site: Value::from(device.site),
+        status: common.status.clone(),
+        comments: common.comments.clone(),
+        custom_fields: machine.custom_information.clone(),
+        description: common.description.clone(),
+        ..Default::default()
+    }
+}
 
-    let mut payload = WritableDeviceWithConfigContextRequest::default();
-
-    payload.name = Some(common.name.clone());
-    payload.device_type = Value::from(device.device_type);
-    payload.role = Value::from(device.role);
-    payload.serial = machine.dmi_information.system_information.serial.clone();
-    payload.asset_tag = Some(machine.dmi_information.chassis_information.asset.clone());
-    payload.site = Value::from(device.site);
-    payload.status = common.status.clone();
-    payload.comments = common.comments.clone();
-    payload.custom_fields = machine.custom_information.clone();
-    payload.description = common.description.clone();
-
-    payload
+pub fn information_to_existing_device(
+    machine: &Machine,
+    common: &CommonConfig,
+    device: &DeviceConfig,
+) -> PatchedWritableDeviceWithConfigContextRequest {
+    PatchedWritableDeviceWithConfigContextRequest {
+        name: Some(Some(common.name.clone())),
+        device_type: Some(Value::from(device.device_type)),
+        role: Some(Value::from(device.role)),
+        serial: Some(machine.dmi_information.system_information.serial.clone()),
+        site: Some(Value::from(device.site)),
+        status: Some(common.status.clone()),
+        description: Some(common.description.clone()),
+        comments: Some(common.comments.clone()),
+        custom_fields: Some(machine.custom_information.clone()),
+        ..Default::default()
+    }
 }
 
 /// Translate gathered information about the virtual machine into a usable Payload.
@@ -68,29 +86,52 @@ pub fn information_to_device(
 /// - `state`: The client instance to be used for communication.
 /// - `machine`: The collected information about the virtual machine.
 /// - `config_data`: Data parsed from the `nazar-config.toml`.
-#[allow(unused)]
 pub fn information_to_vm(
     machine: &Machine,
     common: &CommonConfig,
     vm: &VmConfig,
 ) -> WritableVirtualMachineWithConfigContextRequest {
-    let mut payload = WritableVirtualMachineWithConfigContextRequest::default();
+    WritableVirtualMachineWithConfigContextRequest {
+        name: common.name.clone(),
+        serial: machine.dmi_information.system_information.serial.clone(),
+        status: common.status.clone(),
+        comments: common.comments.clone(),
+        custom_fields: machine.custom_information.clone(),
+        description: common.description.clone(),
+        cluster: Some(Value::from(vm.cluster)),
+        vcpus: machine
+            .dmi_information
+            .cpu_information
+            .core_count
+            .parse()
+            .ok(),
+        ..Default::default()
+    }
+}
 
-    payload.name = common.name.clone();
-    payload.serial = machine.dmi_information.system_information.serial.clone();
-    payload.status = common.status.clone();
-    payload.comments = common.comments.clone();
-    payload.custom_fields = machine.custom_information.clone();
-    payload.description = common.description.clone();
-    payload.cluster = Some(Value::from(vm.cluster));
-    payload.vcpus = machine
-        .dmi_information
-        .cpu_information
-        .core_count
-        .parse()
-        .ok();
-
-    payload
+pub fn information_to_existing_vm(
+    machine: &Machine,
+    common: &CommonConfig,
+    vm: &VmConfig,
+) -> PatchedWritableVirtualMachineWithConfigContextRequest {
+    PatchedWritableVirtualMachineWithConfigContextRequest {
+        name: Some(common.name.clone()),
+        serial: Some(machine.dmi_information.system_information.serial.clone()),
+        status: Some(common.status.clone()),
+        comments: Some(common.comments.clone()),
+        custom_fields: Some(machine.custom_information.clone()),
+        description: Some(common.description.clone()),
+        cluster: Some(Some(Value::from(vm.cluster))),
+        vcpus: Some(
+            machine
+                .dmi_information
+                .cpu_information
+                .core_count
+                .parse()
+                .ok(),
+        ),
+        ..Default::default()
+    }
 }
 
 /// Translates gathered information into a Interface payload.
@@ -125,6 +166,7 @@ pub fn information_to_interface(
     payload.mark_connected = interface.is_connected;
     payload.enabled = true;
     payload.custom_fields = Some(HashMap::new());
+    payload.r#type = String::from("other");
 
     payload
 }

@@ -18,7 +18,10 @@ use crate::publisher::api_client::{
     create_mac_address, create_vm, create_vm_interface, patch_ip, search_mac_address, search_vm,
     search_vm_interface, search_vm_ip, update_vm, update_vm_interface,
 };
-use crate::publisher::translator::{information_to_device, information_to_vm};
+use crate::publisher::translator::{
+    information_to_device, information_to_existing_device, information_to_existing_vm,
+    information_to_vm,
+};
 use crate::{
     Machine,
     collectors::network::NetworkInformation,
@@ -65,13 +68,12 @@ pub fn register_machine(
         MachineConfig::Device(x) => {
             println!("Registering device");
 
-            let payload = information_to_device(&machine, &config_data.common, x);
-
             let Some(device_id) = search_device(
                 client,
                 &config_data.common.name,
                 &machine.dmi_information.system_information.serial,
             ) else {
+                let payload = information_to_device(&machine, &config_data.common, x);
                 let device_id = create_device(client, payload)?;
 
                 // Create new interface object if no interface ID is given, or the given ID does
@@ -86,6 +88,7 @@ pub fn register_machine(
                 return Ok(());
             };
 
+            let payload = information_to_existing_device(&machine, &config_data.common, x);
             let updated_id = update_device(client, payload, device_id)?;
 
             let mut nwi_id;
@@ -168,13 +171,13 @@ pub fn register_machine(
         }
         MachineConfig::VM(x) => {
             println!("Registering virtual machine");
-            let payload = information_to_vm(&machine, &config_data.common, x);
 
             let Some(vm_id) = search_vm(
                 client,
                 &config_data.common.name,
                 &machine.dmi_information.system_information.serial,
             ) else {
+                let payload = information_to_vm(&machine, &config_data.common, x);
                 let vm_id = create_vm(client, payload)?;
 
                 for interface in &machine.network_information {
@@ -186,6 +189,7 @@ pub fn register_machine(
                 return Ok(());
             };
 
+            let payload = information_to_existing_vm(&machine, &config_data.common, x);
             let updated_id = update_vm(client, payload, vm_id)?;
             let mut nwi_id;
             for interface in &machine.network_information {
