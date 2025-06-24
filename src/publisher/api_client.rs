@@ -9,33 +9,30 @@ extern crate thanix_client;
 
 use super::error::{self, NetBoxApiError};
 use serde_json::Value;
-use thanix_client::paths::{
-    DcimDevicesListResponse, DcimMacAddressesListQuery, DcimMacAddressesListResponse,
-    IpamIpAddressesPartialUpdateResponse, VirtualizationInterfacesCreateResponse,
-    VirtualizationInterfacesListQuery, VirtualizationInterfacesListResponse,
-    VirtualizationInterfacesUpdateResponse, VirtualizationVirtualMachinesCreateResponse,
-    VirtualizationVirtualMachinesListQuery, VirtualizationVirtualMachinesListResponse,
-    VirtualizationVirtualMachinesUpdateResponse, dcim_mac_addresses_create,
-    dcim_mac_addresses_list, dcim_mac_addresses_update, ipam_ip_addresses_partial_update,
-    virtualization_interfaces_create, virtualization_interfaces_list,
-    virtualization_interfaces_update, virtualization_virtual_machines_create,
-    virtualization_virtual_machines_list, virtualization_virtual_machines_update,
-};
-use thanix_client::types::{
-    MACAddressRequest, PatchedWritableIPAddressRequest, WritableVMInterfaceRequest,
-    WritableVirtualMachineWithConfigContextRequest,
-};
 use thanix_client::{
     paths::{
-        DcimDevicesCreateResponse, DcimDevicesListQuery, DcimDevicesUpdateResponse,
-        DcimInterfacesListQuery, DcimInterfacesListResponse, IpamIpAddressesListQuery,
-        IpamIpAddressesListResponse, dcim_devices_create, dcim_devices_list, dcim_devices_update,
-        dcim_interfaces_create, dcim_interfaces_list, dcim_interfaces_retrieve,
-        dcim_interfaces_update, ipam_ip_addresses_create, ipam_ip_addresses_list,
+        DcimDevicesCreateResponse, DcimDevicesListQuery, DcimDevicesListResponse,
+        DcimDevicesPartialUpdateResponse, DcimInterfacesListQuery, DcimInterfacesListResponse,
+        DcimMacAddressesListQuery, DcimMacAddressesListResponse, IpamIpAddressesListQuery,
+        IpamIpAddressesListResponse, IpamIpAddressesPartialUpdateResponse,
+        VirtualizationInterfacesCreateResponse, VirtualizationInterfacesListQuery,
+        VirtualizationInterfacesListResponse, VirtualizationInterfacesUpdateResponse,
+        VirtualizationVirtualMachinesCreateResponse, VirtualizationVirtualMachinesListQuery,
+        VirtualizationVirtualMachinesListResponse,
+        VirtualizationVirtualMachinesPartialUpdateResponse, dcim_devices_create, dcim_devices_list,
+        dcim_devices_partial_update, dcim_interfaces_create, dcim_interfaces_list,
+        dcim_interfaces_retrieve, dcim_interfaces_update, dcim_mac_addresses_create,
+        dcim_mac_addresses_list, dcim_mac_addresses_update, ipam_ip_addresses_create,
+        ipam_ip_addresses_list, ipam_ip_addresses_partial_update, virtualization_interfaces_create,
+        virtualization_interfaces_list, virtualization_interfaces_update,
+        virtualization_virtual_machines_create, virtualization_virtual_machines_list,
+        virtualization_virtual_machines_partial_update,
     },
     types::{
-        Interface, WritableDeviceWithConfigContextRequest, WritableIPAddressRequest,
-        WritableInterfaceRequest,
+        Interface, MACAddressRequest, PatchedWritableDeviceWithConfigContextRequest,
+        PatchedWritableIPAddressRequest, PatchedWritableVirtualMachineWithConfigContextRequest,
+        WritableDeviceWithConfigContextRequest, WritableIPAddressRequest, WritableInterfaceRequest,
+        WritableVMInterfaceRequest, WritableVirtualMachineWithConfigContextRequest,
     },
     util::ThanixClient,
 };
@@ -256,21 +253,21 @@ pub fn create_device(
 /// This function may panic if NetBox doesn't return a `200` response code.
 pub fn update_device(
     client: &ThanixClient,
-    payload: WritableDeviceWithConfigContextRequest,
+    payload: PatchedWritableDeviceWithConfigContextRequest,
     id: i64,
 ) -> Result<i64, NetBoxApiError> {
     println!("Updating device in NetBox...");
 
-    match dcim_devices_update(client, payload, id) {
+    match dcim_devices_partial_update(client, payload, id) {
         Ok(response) => match response {
-            DcimDevicesUpdateResponse::Http200(updated_device) => {
+            DcimDevicesPartialUpdateResponse::Http200(updated_device) => {
                 println!("\x1b[32m[success]\x1b[0m Device updated successfully!");
                 Ok(updated_device.id)
             }
-            DcimDevicesUpdateResponse::Other(other_response) => {
+            DcimDevicesPartialUpdateResponse::Other(other_response) => {
                 panic!(
-                    "Unexpected response code '{}' when trying to update device!",
-                    other_response.status()
+                    "Unexpected response code '{:?}' when trying to update device!",
+                    other_response.text()
                 );
             }
         },
@@ -335,18 +332,18 @@ pub fn create_vm(
 /// This function may panic if NetBox doesn't return a `200` response code.
 pub fn update_vm(
     client: &ThanixClient,
-    payload: WritableVirtualMachineWithConfigContextRequest,
+    payload: PatchedWritableVirtualMachineWithConfigContextRequest,
     id: i64,
 ) -> Result<i64, NetBoxApiError> {
     println!("Updating Virtual machine in NetBox...");
 
-    match virtualization_virtual_machines_update(client, payload, id) {
+    match virtualization_virtual_machines_partial_update(client, payload, id) {
         Ok(response) => match response {
-            VirtualizationVirtualMachinesUpdateResponse::Http200(updated_device) => {
+            VirtualizationVirtualMachinesPartialUpdateResponse::Http200(updated_device) => {
                 println!("\x1b[32m[success]\x1b[0m Device updated successfully!");
                 Ok(updated_device.id)
             }
-            VirtualizationVirtualMachinesUpdateResponse::Other(other_response) => {
+            VirtualizationVirtualMachinesPartialUpdateResponse::Other(other_response) => {
                 panic!(
                     "Unexpected response code '{}' when trying to update device!",
                     other_response.status()
