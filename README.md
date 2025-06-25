@@ -1,11 +1,4 @@
-```
-███╗   ██╗ █████╗ ███████╗ █████╗ ██████╗  █████╗
-████╗  ██║██╔══██╗╚══███╔╝██╔══██╗██╔══██╗██╔══██╗
-██╔██╗ ██║███████║  ███╔╝ ███████║██████╔╝███████║
-██║╚██╗██║██╔══██║ ███╔╝  ██╔══██║██╔══██╗██╔══██║
-██║ ╚████║██║  ██║███████╗██║  ██║██║  ██║██║  ██║
-╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝
-```
+<img src="https://github.com/user-attachments/assets/1a0ab81a-544f-45ef-a95d-46689a5ec922" alt="Alt Text" style="width:20%; height:auto;">
 
 Nazara is an experimental Rust program that automates the collection of system information for NetBox, using NetBox's
 API. It enables the automatic creation of new machines in NetBox or population of information fields for existing ones.
