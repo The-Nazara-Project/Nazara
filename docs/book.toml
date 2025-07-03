@@ -6,6 +6,7 @@ src = "src"
 title = "Nazara - Documentation"
 
 [output.html]
+git-repository-url = "https://github.com/The-Nazara-Project/Nazara"
 default-theme = "light"
 preferred-dark-theme = "navy"
 mathjax-support = true
