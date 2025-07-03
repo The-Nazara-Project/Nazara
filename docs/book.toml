@@ -1,0 +1,6 @@
+[book]
+authors = ["Tiara Lena Hock <tiara.dev@proton.me>"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Nazara - Documentation"
