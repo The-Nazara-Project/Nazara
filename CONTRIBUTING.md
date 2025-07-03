@@ -10,12 +10,14 @@ In case you don't have a dedicated test instance of NetBox, you can easily set u
 2. Modify the `docker-compose.yml` file to the required NetBox version
 
 > [!Note]
-> Nazara currently only supports NetBox version v3.6.9 and compatible versions. A port to v4.x is planned in the near future.
+> Depending on the version of Nazara you are working with, you may need to adjust the image version number in your `docker-compose.yaml` to fit your needs.
+> In case you are working on a specific issue, please make sure the Nazara version is compatible with the NetBox version you are using and also make sure that we
+> still support that version.
 
 ```yml
 services:
     netbox: &netbox
-        image: docker.io/netboxcommunity/netbox:v3.6.9
+        image: docker.io/netboxcommunity/netbox:v4.3.3
         ...
 ```
 
