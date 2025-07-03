@@ -26,4 +26,4 @@ updated on any modifications. By participating in this project, you agree to abi
 Nazara is designed to run only within your local network. The user is responsible for their network setup
 themselves.
 
-We are not liable for any damages that are caused by insufficient network security.
+We are not liable for any damages that are caused by insufficient network security. Security Policy
