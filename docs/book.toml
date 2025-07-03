@@ -4,3 +4,13 @@ language = "en"
 multilingual = false
 src = "src"
 title = "Nazara - Documentation"
+
+[output.html]
+default-theme = "light"
+preferred-dark-theme = "navy"
+mathjax-support = true
+additional-css = ["theme/pagetoc.css"]
+additional-js = ["theme/pagetoc.js"]
+
+[output.html.sidebar]
+toggle = true
