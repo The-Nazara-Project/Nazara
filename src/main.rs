@@ -168,10 +168,6 @@ struct Args {
     #[arg(short, long)]
     token: Option<String>,
 
-    /// The name of the device
-    #[arg(short, long)]
-    name: Option<String>,
-
     /// The Path to a plugin script you want to run
     #[arg(short, long)]
     plugin: Option<String>,
@@ -199,7 +195,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Collect machine information.
     let machine = Machine {
-        name: args.name.clone(),
+        name: None,
         dmi_information: dmi::construct_dmi_information()?,
         network_information: network::construct_network_information()?,
         custom_information: match execute(args.plugin) {
@@ -221,11 +217,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         println!("Dry run results:");
         dbg!(&machine);
     } else {
-        let config = set_up_configuration(
-            args.uri.as_deref(),
-            args.token.as_deref(),
-            args.name.as_deref(),
-        )?;
+        let config = set_up_configuration(args.uri.as_deref(), args.token.as_deref())?;
 
         let client = ThanixClient {
             base_url: config.get_netbox_uri().to_string(),
@@ -233,7 +225,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             client: Client::new(),
         };
 
-        probe(&client)?;
+        println!("Testing connection...");
+        test_connection(&client)?;
 
         // Register the machine or VM with NetBox
         register_machine(&client, machine, config)?;
