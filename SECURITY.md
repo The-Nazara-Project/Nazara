@@ -3,7 +3,7 @@
 ## Reporting a Vulnerability
 
 If you discover a security vulnerability in this project, please report it by emailing the
-[project owner](mailto:byteotter@gmail.com). Please provide detailed information about the vulnerability,
+[project owner](mailto:tiara.dev@proton.me). Please provide detailed information about the vulnerability,
 including steps to reproduce, possible ways of exploitation and any relevant details about your environment.
 
 We appreciate responsible disclosure.
