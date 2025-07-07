@@ -52,6 +52,7 @@ Note that working branches should have one of these prefixes.
 - `ci/`: For CI/CD maintenance
 - `fix/`: For bugfixes
 - `dep/`: For deprecations
+- `tests/`: For branches that add/change tests
 
 ```admonish example
 Examples of good or bad branch names would look like this:
@@ -67,11 +68,15 @@ It is important to pay attention to the scope of your contribution. To this end 
 This makes it easier for us to review your PR and to keep the commit history clean. (If you encounter something else you want to change,
 which is not directly linked to your contribution, please open a PR on a separate branch for this change.)
 
+~~~admonish hint
+Please refer to our [Code Style Guide](../design/002-code_style.md) to find out how our code should be formatted and documented.
+~~~
+
 ### 3. Include tests in your code 
 
 Automated tests are essential to ensure the correctness and reliability of the codebase.
-Therefore it is required that Pull Requests, which change the existing behaviour of the codebase (e.g by adding features),
-must be covered with tests by the contributor whenever possible in the same PR as the contribution itself.
+Therefore **it is required that Pull Requests, which change the existing behaviour of the codebase (e.g by adding features),
+must be covered with tests** by the contributor whenever possible in the same PR as the contribution itself.
 Code without tests might be rejected or take longer to process.
 
 ### 4. **Push your branch to your fork**.
@@ -79,6 +84,10 @@ Code without tests might be rejected or take longer to process.
 ### 5. **Open a PR against the main repository**.
 
 Fill out the PR form and provide a detailed description of what your PR does and the reason or motivation behind the change.
+
+~~~admonish hint
+To make it easier for us to process your contribution, **please stick to the PR template**.
+~~~
 
 ### 6. **Wait for CI to pass**.
 
@@ -98,13 +107,20 @@ That's it, now you can, if not already automatically done so, request a review b
 For any other questions regarding style, please refer to the [Code Style Guide](../design/002-code_style.md).
 ```
 
+## Introducing a Dependency
+
+While we would prefer contributors not to introduce new dependencies, we acknowledge that this is not always possible.
+
+Therefore, please refer to our [Dependency Policy](./dependencies.md) to see which dependencies we accept, and also please be ready
+to explain why introducing this dependency was necessary.
+
 ## A word on vulnerabilities
 
 If you discover a security vulnerability in our code, please inform us privately immediately according to our [Security Policy](security.md).
 
 If you wish to fix a vulnerability, please also inform us and stand by for our green light. We would still like to investigate the vulnerability for ourselves to get an overview over the severity and scope of the problem. *Please refrain from publishing a fix until we came back to you or have published a security advisory*.
 
-## Disclaimer
+## License Disclaimer
 
 By contributing to this project you agree to surrender your contribution to the Nazara Project.
 
