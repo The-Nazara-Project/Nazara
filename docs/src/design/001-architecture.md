@@ -62,9 +62,78 @@ This philosophy should also extend to Nazara's `Git`-History. You can find more 
 
 ### High-Level-Design
 
-TODO: Add Module overview diagram here
+As mentioned before, Nazara is designed with strict separation of concerns in mind.
+The following is a very high-level overview of Nazara's four logical parts:
 
-### Core components
+- The Collectors
+- The Configuration Package
+- The Publisher
+- The Main module
+
+It also shows the two modules of our `thanix_client` crate, which we created specifically
+for sending API requests to NetBox. More on that later.
+
+```plantuml
+@startuml
+package "Nazara" {
+    [main]
+    [configuration]
+    [collectors]
+    [publisher]
+}
+
+package "thanix_client" {
+    [types]
+    [paths]
+}
+
+@enduml
+```
+
+The following diagram gives an overview over the program flow once started by a user.
+Note that the exact function calls within `translator.rs` and the difference between POST/PATCH
+requests has been omitted for simplicity.
+
+```plantuml
+
+@startuml
+actor User
+
+participant "main.rs\n(Nazara CLI)" as Main
+participant "parser.rs\n(Config Parser)" as Parser
+participant "collectors\n(DMI, Network, Plugin)" as Collectors
+participant "publisher.rs" as Publisher
+participant "translator.rs\n(Data Translator)" as Translator
+participant "api_client.rs\n(API Client)" as APIClient
+actor "NetBox\n(remote server)" as NetBox
+
+== Startup & Config ==
+User -> Main : nazara --plugin_path $PLUGIN_PATH (optional)
+Main -> Parser : parse(config.toml)
+Parser --> Main : Config Struct
+
+== Data Collection ==
+Main -> Collectors : collect_all(config)
+Collectors -> Collectors : dmi::construct_dmi_information()
+Collectors --> Main : DmiInformation
+Collectors -> Collectors : network::construct_network_information()
+Collectors --> Main : Vec<NetworkInformation>
+Collectors -> Collectors : plugin::execute(plugin_path)
+Collectors --> Main : Option<HashMap<String, Value>>
+
+== Data Translation & Publish ==
+Main -> Publisher : register_machine()
+Publisher -> Translator : invoke translation for current payload
+Publisher -> APIClient : make POST/PATCH request as needed
+APIClient -> NetBox : POST/PATCH /api/... with payload
+NetBox --> APIClient : 200 OK / Error
+APIClient --> Publisher : Response
 
 
-## Security/Privacy
+== Teardown ==
+Publisher --> Main : Ok() / Error 
+Main --> User : exit code
+@enduml
+
+```
+
