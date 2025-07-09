@@ -1,0 +1,61 @@
+name: Build RPM and DEB for latest Release
+
+on:
+  release:
+    types: [created] # Only run on latest manual release
+  workflow_dispatch: # Enable manual runs to edit existing releases
+
+jobs:
+  build:
+    name: Build DEB and RPM
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up Rust
+      uses: actions-rust-lang/setup-rust-toolchain@v1
+
+    - name: Install Tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y rpm build-essential
+        cargo install cargo-deb
+        cargo install cargo-rpm
+
+    - name: Build .deb package
+      run: cargo deb
+
+    - name: Build .rpm package
+      run: |
+        cargo rpm build
+        mkdir -p target/release
+        cp target/release/rpmbuild/RPMS/*/*.rpm target/release/
+
+    - name: Get latest release
+      id: get_tag
+      uses: actions/github-script@v7
+      with:
+        script: |
+          if(github.event_name === 'release') {
+            return github.event.release.tag_name;
+          } else {
+            // Manual dispatch: Fetch latest release tag
+            const latestRelease = await github.rest.repos.getLatestRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            return latestRelease.data.tag_name;
+          }
+        result-encoding: string
+
+    - name: Upload release assets
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ steps.get_tag.result }}
+        files: |
+          target/debian/*.deb
+          target/release/*.rpm
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
