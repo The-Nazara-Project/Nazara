@@ -102,9 +102,9 @@ actor User
 participant "main.rs\n(Nazara CLI)" as Main
 participant "parser.rs\n(Config Parser)" as Parser
 participant "collectors\n(DMI, Network, Plugin)" as Collectors
-participant "publisher.rs" as Publisher
-participant "translator.rs\n(Data Translator)" as Translator
-participant "api_client.rs\n(API Client)" as APIClient
+participant "publisher/mod.rs" as Publisher
+participant "publisher/translator.rs\n(Data Translator)" as Translator
+participant "publisher/api_client.rs\n(API Client)" as APIClient
 actor "NetBox\n(remote server)" as NetBox
 
 == Startup & Config ==
@@ -136,4 +136,10 @@ Main --> User : exit code
 @enduml
 
 ```
+
+In reality, the `publisher` checks if the device has already been registered. The easiest way to do this 
+would be to pass the ID the device or VM has in NetBox, however we are capable of searching given several
+parameters like serial number or UUID. Though these methods are less reliable.
+
+In any way, the publisher then decides whether a POST or PATCH request shall be made.
 
