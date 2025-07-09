@@ -43,3 +43,6 @@ supports-color = "3.0.2"
 
 [dev-dependencies]
 mockall = "0.13.1"
+
+[package.metadata.deb]
+depends = ["libssl3 (>= 3.0)"]
