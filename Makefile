@@ -34,8 +34,13 @@ build:
 build-dev:
 	cargo build --bin
 
-docs:
+code-docs:
 	cargo doc --bin nazara  --no-deps --document-private-items --open
+
+docs:
+	cargo install mdbook mdbook-admonish mdbook-plantuml
+	mdbook build && mdbook serve
+	@echo "You can now reach the documentation via 'http://localhost:3000'"
 
 format:
 	@echo "Formatting code with 'cargo fmt'..."

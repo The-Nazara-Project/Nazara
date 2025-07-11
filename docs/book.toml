@@ -1,0 +1,26 @@
+[book]
+authors = ["Tiara Lena Hock <tiara.dev@proton.me>"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Nazara - Documentation"
+
+[output.html]
+git-repository-url = "https://github.com/The-Nazara-Project/Nazara"
+default-theme = "light"
+preferred-dark-theme = "navy"
+mathjax-support = true
+additional-css = ["theme/pagetoc.css", "theme/mdbook-admonish.css"]
+additional-js = ["theme/pagetoc.js"]
+
+[preprocessor.admonish]
+command = "mdbook-admonish"
+after = ["links"]
+assets_version = "3.1.0" # do not edit: managed by `mdbook-admonish install`
+
+[preprocessor.plantuml]
+plantuml-cmd = "plantuml"
+clickable-img = true
+
+[output.html.sidebar]
+toggle = true
