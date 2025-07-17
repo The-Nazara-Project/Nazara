@@ -8,25 +8,31 @@
 extern crate thanix_client;
 
 use super::error::{self, NetBoxApiError};
-use reqwest::Error as ReqwestError;
 use serde_json::Value;
-use thanix_client::paths::{
-    DcimMacAddressesListQuery, DcimMacAddressesListResponse, IpamIpAddressesPartialUpdateResponse,
-    dcim_mac_addresses_create, dcim_mac_addresses_list, dcim_mac_addresses_update,
-    ipam_ip_addresses_partial_update,
-};
-use thanix_client::types::{MACAddressRequest, PatchedWritableIPAddressRequest};
 use thanix_client::{
     paths::{
-        DcimDevicesCreateResponse, DcimDevicesListQuery, DcimDevicesUpdateResponse,
-        DcimInterfacesListQuery, DcimInterfacesListResponse, IpamIpAddressesListQuery,
-        IpamIpAddressesListResponse, dcim_devices_create, dcim_devices_list, dcim_devices_update,
-        dcim_interfaces_create, dcim_interfaces_list, dcim_interfaces_retrieve,
-        dcim_interfaces_update, ipam_ip_addresses_create, ipam_ip_addresses_list,
+        DcimDevicesCreateResponse, DcimDevicesListQuery, DcimDevicesListResponse,
+        DcimDevicesPartialUpdateResponse, DcimInterfacesListQuery, DcimInterfacesListResponse,
+        DcimMacAddressesListQuery, DcimMacAddressesListResponse, IpamIpAddressesListQuery,
+        IpamIpAddressesListResponse, IpamIpAddressesPartialUpdateResponse,
+        VirtualizationInterfacesCreateResponse, VirtualizationInterfacesListQuery,
+        VirtualizationInterfacesListResponse, VirtualizationInterfacesUpdateResponse,
+        VirtualizationVirtualMachinesCreateResponse, VirtualizationVirtualMachinesListQuery,
+        VirtualizationVirtualMachinesListResponse,
+        VirtualizationVirtualMachinesPartialUpdateResponse, dcim_devices_create, dcim_devices_list,
+        dcim_devices_partial_update, dcim_interfaces_create, dcim_interfaces_list,
+        dcim_interfaces_retrieve, dcim_interfaces_update, dcim_mac_addresses_create,
+        dcim_mac_addresses_list, dcim_mac_addresses_update, ipam_ip_addresses_create,
+        ipam_ip_addresses_list, ipam_ip_addresses_partial_update, virtualization_interfaces_create,
+        virtualization_interfaces_list, virtualization_interfaces_update,
+        virtualization_virtual_machines_create, virtualization_virtual_machines_list,
+        virtualization_virtual_machines_partial_update,
     },
     types::{
-        Interface, WritableDeviceWithConfigContextRequest, WritableIPAddressRequest,
-        WritableInterfaceRequest,
+        Interface, MACAddressRequest, PatchedWritableDeviceWithConfigContextRequest,
+        PatchedWritableIPAddressRequest, PatchedWritableVirtualMachineWithConfigContextRequest,
+        WritableDeviceWithConfigContextRequest, WritableIPAddressRequest, WritableInterfaceRequest,
+        WritableVMInterfaceRequest, WritableVirtualMachineWithConfigContextRequest,
     },
     util::ThanixClient,
 };
@@ -44,44 +50,42 @@ use thanix_client::{
 pub fn test_connection(client: &ThanixClient) -> Result<(), error::NetBoxApiError> {
     let url: String = format!("{}/api/status/", client.base_url);
 
-    let response: Result<reqwest::blocking::Response, ReqwestError> = client
+    let response = client
         .client
         .get(&url)
         .header(
             "Authorization",
             format!("Token {}", client.authentication_token),
         )
-        .send();
+        .send()
+        .map_err(error::NetBoxApiError::Reqwest)?;
 
-    match response {
-        Ok(resp) => {
-            if resp.status().is_success() {
-                let json: Value = resp.json::<Value>().map_err(NetBoxApiError::Reqwest)?;
+    println!("Got response!");
 
-                if let Some(netbox_ver) = json.get("netbox-version").and_then(Value::as_str) {
-                    // Compare netbox version for compatibility
-                    if check_version_compatiblity(netbox_ver, thanix_client::version::VERSION) {
-                        println!(
-                            "\x1b[32m[success]\x1b[0m API client version compatible with NetBox version."
-                        );
-                        Ok(())
-                    } else {
-                        Err(error::NetBoxApiError::VersionMismatch(String::from(
-                            "Client version incompatible with NetBox version! Use client v1.x for NetBox v3.6.x and above, and v2.x for NetBox 4.x.",
-                        )))
-                    }
-                } else {
-                    Err(error::NetBoxApiError::MissingVersion(String::from(
-                        "NetBox version missing from response. Please check your installation.",
-                    )))
-                }
+    if response.status().is_success() {
+        let json: Value = response.json::<Value>().map_err(NetBoxApiError::Reqwest)?;
+
+        if let Some(netbox_ver) = json.get("netbox-version").and_then(Value::as_str) {
+            // Compare netbox version for compatibility
+            if check_version_compatiblity(netbox_ver, thanix_client::version::VERSION) {
+                println!(
+                    "\x1b[32m[success]\x1b[0m API client version compatible with NetBox version."
+                );
+                Ok(())
             } else {
-                Err(error::NetBoxApiError::Reqwest(
-                    resp.error_for_status().unwrap_err(),
-                ))
+                Err(error::NetBoxApiError::VersionMismatch(String::from(
+                    "Client version incompatible with NetBox version! Use client v1.x for NetBox v3.6.x and above, and v2.x for NetBox 4.x.",
+                )))
             }
+        } else {
+            Err(error::NetBoxApiError::MissingVersion(String::from(
+                "NetBox version missing from response. Please check your installation.",
+            )))
         }
-        Err(e) => Err(error::NetBoxApiError::Reqwest(e)),
+    } else {
+        Err(error::NetBoxApiError::Reqwest(
+            response.error_for_status().unwrap_err(),
+        ))
     }
 }
 
@@ -136,7 +140,7 @@ fn get_major_verison(version: &str) -> Option<u32> {
 /// - The API request fails (e.g the connection fails).
 pub fn search_device(client: &ThanixClient, name: &str, serial: &str) -> Option<i64> {
     println!("Checking if device is already registered...");
-    let payload: DcimDevicesListQuery = DcimDevicesListQuery {
+    let payload = DcimDevicesListQuery {
         name: Some(vec![name.to_owned()]),
         serial: Some(vec![serial.to_owned()]),
         ..Default::default()
@@ -144,7 +148,7 @@ pub fn search_device(client: &ThanixClient, name: &str, serial: &str) -> Option<
 
     match dcim_devices_list(client, payload) {
         Ok(response) => match response {
-            thanix_client::paths::DcimDevicesListResponse::Http200(device_list) => {
+            DcimDevicesListResponse::Http200(device_list) => {
                 if device_list.results.as_ref()?.len() == 1 {
                     return Some(device_list.results?.first()?.id);
                 }
@@ -155,7 +159,38 @@ pub fn search_device(client: &ThanixClient, name: &str, serial: &str) -> Option<
                     "Ambiguous search result. Device listed more than once. Please check your data."
                 );
             }
-            thanix_client::paths::DcimDevicesListResponse::Other(other) => {
+            DcimDevicesListResponse::Other(other) => {
+                panic!("{}", other.text().unwrap());
+            }
+        },
+        Err(e) => {
+            panic!("{}", e);
+        }
+    }
+}
+
+pub fn search_vm(client: &ThanixClient, name: &str, serial: &str) -> Option<i64> {
+    println!("Checking if virtual machine is already registered...");
+    let payload = VirtualizationVirtualMachinesListQuery {
+        name: Some(vec![name.to_owned()]),
+        serial: Some(vec![serial.to_owned()]),
+        ..Default::default()
+    };
+
+    match virtualization_virtual_machines_list(client, payload) {
+        Ok(response) => match response {
+            VirtualizationVirtualMachinesListResponse::Http200(device_list) => {
+                if device_list.results.as_ref()?.len() == 1 {
+                    return Some(device_list.results?.first()?.id);
+                }
+                if device_list.results?.is_empty() {
+                    return None;
+                }
+                panic!(
+                    "Ambiguous search result. Device listed more than once. Please check your data."
+                );
+            }
+            VirtualizationVirtualMachinesListResponse::Other(other) => {
                 panic!("{}", other.text().unwrap());
             }
         },
@@ -218,18 +253,97 @@ pub fn create_device(
 /// This function may panic if NetBox doesn't return a `200` response code.
 pub fn update_device(
     client: &ThanixClient,
-    payload: WritableDeviceWithConfigContextRequest,
+    payload: PatchedWritableDeviceWithConfigContextRequest,
     id: i64,
 ) -> Result<i64, NetBoxApiError> {
     println!("Updating device in NetBox...");
 
-    match dcim_devices_update(client, payload, id) {
+    match dcim_devices_partial_update(client, payload, id) {
         Ok(response) => match response {
-            DcimDevicesUpdateResponse::Http200(updated_device) => {
+            DcimDevicesPartialUpdateResponse::Http200(updated_device) => {
                 println!("\x1b[32m[success]\x1b[0m Device updated successfully!");
                 Ok(updated_device.id)
             }
-            DcimDevicesUpdateResponse::Other(other_response) => {
+            DcimDevicesPartialUpdateResponse::Other(other_response) => {
+                panic!(
+                    "Unexpected response code '{:?}' when trying to update device!",
+                    other_response.text()
+                );
+            }
+        },
+        Err(err) => {
+            let exc: NetBoxApiError = NetBoxApiError::Reqwest(err);
+            Err(exc)
+        }
+    }
+}
+
+/// Send request to create a new device in NetBox.
+/// Returns the ID of the newly created Device object.
+///
+/// # Parameters
+/// - `client: &ThanixClient` - The [`ThanixClient`] instance to use for communication.
+/// - `payload: &WritableDeviceWithConfigContextRequest` - The information about the device serving as a request body.
+///
+/// # Panics
+///
+/// This function panics if the response code is not `201`.
+pub fn create_vm(
+    client: &ThanixClient,
+    payload: WritableVirtualMachineWithConfigContextRequest,
+) -> Result<i64, NetBoxApiError> {
+    println!("Creating virtual machine in NetBox...");
+
+    match virtualization_virtual_machines_create(client, payload) {
+        Ok(response) => match response {
+            VirtualizationVirtualMachinesCreateResponse::Http201(created_device) => {
+                println!(
+                    "\x1b[32m[success]\x1b[0m Virtual Machine creation successful! New ID: '{}'.",
+                    created_device.id
+                );
+                Ok(created_device.id)
+            }
+            VirtualizationVirtualMachinesCreateResponse::Other(other_response) => {
+                panic!(
+                    "Unexpected response code '{}' when trying to create a virtual machine: {:?}!",
+                    other_response.status(),
+                    other_response.text()
+                );
+            }
+        },
+        Err(err) => {
+            let exc: NetBoxApiError = NetBoxApiError::Reqwest(err);
+            Err(exc)
+        }
+    }
+}
+
+/// Updates a device with a given ID.
+/// Returns the ID of the updated device.
+/// Will simply overwrite the given device object in NetBox with the collected information.
+///
+/// # Parameters
+/// - `client`: The API client instance to use.
+/// - `payload`: The payload for the API request.
+/// - `id`: The ID of the device to update.
+///
+/// # Panics
+///
+/// This function may panic if NetBox doesn't return a `200` response code.
+pub fn update_vm(
+    client: &ThanixClient,
+    payload: PatchedWritableVirtualMachineWithConfigContextRequest,
+    id: i64,
+) -> Result<i64, NetBoxApiError> {
+    println!("Updating Virtual machine in NetBox...");
+
+    match virtualization_virtual_machines_partial_update(client, payload, id) {
+        Ok(response) => match response {
+            VirtualizationVirtualMachinesPartialUpdateResponse::Http200(updated_device) => {
+                println!("\x1b[32m[success]\x1b[0m Device updated successfully!");
+                Ok(updated_device.id)
+            }
+            VirtualizationVirtualMachinesPartialUpdateResponse::Other(other_response) => {
                 panic!(
                     "Unexpected response code '{}' when trying to update device!",
                     other_response.status()
@@ -251,8 +365,7 @@ pub fn update_device(
 ///
 /// # Returns
 ///
-/// - `Option<i64>` - If it is found, will return the ID of the MAC address object in NetBox, else
-/// will return `None`.
+/// - `Option<i64>` - If it is found, will return the ID of the MAC address object in NetBox, else will return `None`.
 ///
 /// # Panics
 ///
@@ -410,6 +523,40 @@ pub fn search_interface(client: &ThanixClient, device_id: i64, name: &String) ->
     }
 }
 
+pub fn search_vm_interface(client: &ThanixClient, vm_id: i64, name: &String) -> Option<i64> {
+    println!("Searching for interface '{name}'...");
+
+    let payload = VirtualizationInterfacesListQuery {
+        virtual_machine_id: Some(vec![vm_id]),
+        name: Some(vec![name.clone()]),
+        ..Default::default()
+    };
+
+    match virtualization_interfaces_list(client, payload) {
+        Ok(response) => match response {
+            VirtualizationInterfacesListResponse::Http200(mut interfaces) => {
+                if interfaces.results.as_mut().unwrap().len() == 1 {
+                    let result = interfaces.results.unwrap();
+                    return Some(result[0].id);
+                }
+                if interfaces.results.unwrap().is_empty() {
+                    return None;
+                }
+                panic!("Ambiguous search result. Interface listed more than once.");
+            }
+            VirtualizationInterfacesListResponse::Other(res) => {
+                panic!(
+                    "Unexpected response code '{}' when trying to search for interface!",
+                    res.status()
+                );
+            }
+        },
+        Err(e) => {
+            panic!("{}", e);
+        }
+    }
+}
+
 /// Creates an interface object in NetBox.
 /// Returns the ID of the interface object.
 ///
@@ -436,6 +583,33 @@ pub fn create_interface(
                 Ok(result.id)
             }
             thanix_client::paths::DcimInterfacesCreateResponse::Other(other_response) => {
+                let exc: NetBoxApiError = NetBoxApiError::Other(other_response.text().unwrap());
+                Err(exc)
+            }
+        },
+        Err(e) => {
+            let exc = NetBoxApiError::Reqwest(e);
+            Err(exc)
+        }
+    }
+}
+
+pub fn create_vm_interface(
+    client: &ThanixClient,
+    payload: WritableVMInterfaceRequest,
+) -> Result<i64, NetBoxApiError> {
+    println!("Creating network interface in NetBox...");
+
+    match virtualization_interfaces_create(client, payload) {
+        Ok(response) => match response {
+            VirtualizationInterfacesCreateResponse::Http201(result) => {
+                println!(
+                    "\x1b[32m[success]\x1b[0m Interface created successfully. New Interface-ID: '{}'",
+                    result.id
+                );
+                Ok(result.id)
+            }
+            VirtualizationInterfacesCreateResponse::Other(other_response) => {
                 let exc: NetBoxApiError = NetBoxApiError::Other(other_response.text().unwrap());
                 Err(exc)
             }
@@ -484,6 +658,32 @@ pub fn update_interface(
     }
 }
 
+pub fn update_vm_interface(
+    client: &ThanixClient,
+    payload: WritableVMInterfaceRequest,
+    interface_id: i64,
+) -> Result<i64, NetBoxApiError> {
+    match virtualization_interfaces_update(client, payload, interface_id) {
+        Ok(response) => match response {
+            VirtualizationInterfacesUpdateResponse::Http200(result) => {
+                println!(
+                    "\x1b[32m[success]\x1b[0m Interface '{}' updated successfully.",
+                    result.id
+                );
+                Ok(result.id)
+            }
+            VirtualizationInterfacesUpdateResponse::Other(other) => {
+                let exc: NetBoxApiError = NetBoxApiError::Other(other.text().unwrap());
+                Err(exc)
+            }
+        },
+        Err(e) => {
+            let exc = NetBoxApiError::Reqwest(e);
+            Err(exc)
+        }
+    }
+}
+
 /// Search given IP Address.
 ///
 /// # Parameters
@@ -503,6 +703,37 @@ pub fn search_ip(client: &ThanixClient, address: &String, device_id: Option<i64>
     let payload: IpamIpAddressesListQuery = IpamIpAddressesListQuery {
         address: Some(vec![address.clone()]),
         device_id: device_id.map(|x| vec![x]),
+        ..Default::default()
+    };
+
+    // FIXME: Switch from panicking to returning a NetBoxApiError as is done everywhere else.
+    // No panic should be used in cases the user can fix the problem.
+    match ipam_ip_addresses_list(client, payload).unwrap() {
+        IpamIpAddressesListResponse::Http200(addresses) => {
+            if addresses.results.as_ref()?.len() == 1 {
+                return Some(addresses.results?.first()?.id);
+            }
+            if addresses.results?.is_empty() {
+                return None;
+            }
+            panic!(
+                "Ambiguous search result. IP address listed more than once. Please check your data."
+            );
+        }
+        IpamIpAddressesListResponse::Other(res) => {
+            panic!(
+                "Unexpected response code '{}' when trying to search for IP addresses!",
+                res.status()
+            );
+        }
+    }
+}
+
+pub fn search_vm_ip(client: &ThanixClient, address: &String, vm_ip: Option<i64>) -> Option<i64> {
+    println!("Searching for IP Address '{address}'...");
+    let payload: IpamIpAddressesListQuery = IpamIpAddressesListQuery {
+        address: Some(vec![address.clone()]),
+        virtual_machine_id: vm_ip.map(|x| vec![x]),
         ..Default::default()
     };
 

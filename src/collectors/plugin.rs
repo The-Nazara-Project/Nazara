@@ -12,7 +12,7 @@ use std::{error::Error, path::Path};
 
 /// Executes a given script.
 ///
-///	# Parameters
+/// # Parameters
 /// * `path: ` - The Path of the script to execute relative to the CWD. (If none, the plugins directory will be searched).
 ///
 /// # Returns
