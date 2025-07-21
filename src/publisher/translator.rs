@@ -15,7 +15,7 @@
 use crate::{
     Machine,
     collectors::network::NetworkInformation,
-    configuration::parser::{CommonConfig, ConfigData, DeviceConfig, VmConfig},
+    configuration::parser::{CommonConfig, DeviceConfig, VmConfig},
 };
 use serde_json::{Value, json};
 use std::{collections::HashMap, net::IpAddr};
@@ -51,7 +51,6 @@ pub fn information_to_device(
         device_type: Value::from(device.device_type),
         role: Value::from(device.role),
         serial: machine.dmi_information.system_information.serial.clone(),
-        asset_tag: Some(machine.dmi_information.chassis_information.asset.clone()),
         site: Value::from(device.site),
         status: common.status.clone(),
         comments: common.comments.clone(),
