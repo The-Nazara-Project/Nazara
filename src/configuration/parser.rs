@@ -9,10 +9,7 @@
 
 use super::error::ConfigError;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
-use std::collections::HashMap;
 use std::fs::File;
-use std::hash::RandomState;
 use std::io::prelude::*;
 use std::path::Path;
 use std::{fs, path::PathBuf};
@@ -26,8 +23,6 @@ pub struct ConfigData {
     pub common: CommonConfig,
     #[serde(flatten)]
     pub machine: MachineConfig,
-    #[serde(default)]
-    pub nwi: Vec<NwiConfig>,
 }
 
 /// Configuration parameters relevant for a NetBox connection.
@@ -65,57 +60,6 @@ pub struct DeviceConfig {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct VmConfig {
     pub cluster: i64,
-}
-
-/// Information about the system's interface.
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct NwiConfig {
-    /// The name of the interface.
-    pub name: Option<String>,
-    /// The ID of the interface, if it already exists. Mutually exclusive with name.
-    pub id: Option<i64>,
-    pub vdcs: Option<Vec<i64>>,
-    /// The module assigned to this interface.
-    pub module: Option<i64>,
-    /// The phyiscal label of this device if any.
-    pub label: Option<String>,
-    #[serde(rename = "rtype")]
-    /// The type of the interface (e.g. "bridge")
-    pub r#type: Option<String>, // I hate this field name, but that's what the openAPI schema said.
-    /// Whether this device is enabled or not. Default: `True`.
-    pub enabled: Option<bool>,
-    /// ID of the parent interface if applicable.
-    pub parent: Option<i64>,
-    /// ID of the bridge device for this interface if applicable.
-    pub bridge: Option<i64>,
-    pub lag: Option<i64>,
-    pub mtu: Option<u32>,
-    pub duplex: Option<String>,
-    pub wwn: Option<String>,
-    /// Whether this interface may only be used for management. Default: `False`.
-    pub mgmt_only: Option<bool>,
-    /// Optional description of the device.
-    pub description: Option<String>,
-    /// The mode this interface operates in.
-    pub mode: Option<String>,
-    pub rf_role: Option<String>,
-    pub rf_channel: Option<String>,
-    /// The PoE mode of the interface.
-    pub poe_mode: Option<String>,
-    pub poe_type: Option<String>,
-    pub rf_channel_frequency: Option<f64>,
-    pub rf_channel_width: Option<f64>,
-    pub tx_power: Option<u8>,
-    /// List of IDs of untagged VLANs assigned to this interface.
-    pub untagged_vlans: Option<Vec<i64>>,
-    /// List of IDs of tagged VLANs assigned to this interface.
-    pub tagged_vlans: Option<Vec<i64>>,
-    /// Whether this interface is connected. Default: `True`.
-    pub mark_connected: Option<bool>,
-    pub wireless_lans: Option<Vec<i64>>,
-    pub vrf: Option<i64>,
-    /// Any Custom fields you wish to add in form a of a Key-Value list.
-    pub custom_fields: Option<HashMap<String, Value, RandomState>>,
 }
 
 /// This function reads the configuration file located at `$HOME/.config/nazara/config.toml`.
@@ -281,15 +225,6 @@ impl ConfigData {
             return Err(ConfigError::MissingConfigOptionError(String::from(
                 "netbox_api_token",
             )));
-        }
-
-        // Optional NWI Section
-        for nwi in &config_data.nwi {
-            if nwi.r#type.is_none() {
-                return Err(ConfigError::MissingConfigOptionError(String::from(
-                    "r#type",
-                )));
-            }
         }
 
         Ok(())
