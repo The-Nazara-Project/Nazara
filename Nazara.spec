@@ -15,7 +15,7 @@
 # Please submit bugfixes or comments via https://bugs.opensuse.org/
 
 Name:           Nazara
-Version:        0.1.0_beta.1
+Version:        0.1.0_beta.2
 Release:        0.1
 Summary:        Automated registration and update of machines and VMs in NetBox
 License:        GPL-3.0

@@ -1,66 +1,28 @@
-# Template nazara-config.toml file for v0.1.0-beta.1
+# Template nazara-config.toml file for v0.1.0-beta.2
 
 # Configuration parameters for the NetBox connection
 [netbox]
-netbox_api_token = "{NETBOX_TOKEN}"
-netbox_uri = "{NETBOX_URI}"
+netbox_api_token = ""
+netbox_uri = ""
 
-# Mandatory information about the system
-[system]
-name = "{SYSTEM_NAME}" # Name of the machine or VM. **Required** when device is a VM
-site_id = 0 # The id of the site this device is located at. (Stored in NetBox)
-# site_name = "" # Name of the site this device is located at. (May take longer to find.)
+# Common settings that always have to be provided.
+[common]
+# The name of the device/VM.
+name = ""
 description = ""
+# A comment left by Nazara if anything gets modified by it.
 comments = "Automatically registered by Nazara."
-device_type = 0 # ID of the type of the Device Type in NetBox
-device_role = 0 # ID of the device role in NetBox
-face = "" # Direction this device may face in (e.g front or rear)
-status = "active" # Status of the device. Default: active
-airflow = "front-to-rear" # Direction of airflow
+# The current status of the device/VM.
+status = "active"
 
-# Optional data of your device.
-[[system.optional]]
-# tenant_group = 0 # ID of the department this device belongs to
-# tenant_group_name = "" # Name of the department this device belongs to. (May take longer to find.)
-# tenant = 0 # ID of the team or individual this device belongs to.
-# tenant_name = "" # Name of the team or individual this device belongs to.
-# location = 0 # ID fof the location of the device.
-# rack = 0 # ID of the rack this device is mounted in if any.
-# position = 0 # Position of the device within the rack.
-platform = "x86_64"
+# ---------------------------------------------------------------
+# Use [device] for devices, or [vm] if this is a virtual machine.
+# ---------------------------------------------------------------
 
-# Custom parameters about the system, which fall under the "custom_fields" section.
-[system.custom_fields]
-# Custom fields for the system
+# [device]
+# device_type = 0
+# role = 0
+# site = 0
 
-# Network Interfaces Configuration (optional)
-# Uncomment and define `[[nwi]]` tables if network interfaces need to be configured.
-# If this section is not present, `nwi` will be an empty vector.
-#[[nwi]]
-#name = "interface1"
-#enabled = true
-#rtype = "type1"
-#parent = 1
-#bridge = 2
-#lag = 3
-#mtu = 1500
-#duplex = "full"
-#wwn = "wwn12345"
-#mgmt_only = false
-#description = "Interface 1 Description"
-#mode = "mode1"
-#rf_role = "role1"
-#rf_channel = "channel1"
-#poe_mode = "poe_mode1"
-#poe_type = "poe_type1"
-#rf_channel_frequency = 2400.0
-#rf_channel_width = 20.0
-#tx_power = 20
-#untagged_vlans = [10, 20]
-#tagged_vlans = [30, 40]
-#mark_connected = true
-#wireless_lans = [50, 60]
-#vrf = 1
-# Custom fields specific to this interface
-#[nwi.custom_fields]
-
+# [vm]
+# cluster = 0
