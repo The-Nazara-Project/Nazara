@@ -1,4 +1,14 @@
 -------------------------------------------------------------------
+Mon Jul 21 16:36:02 UTC 2025 - Tiara Hock <tiara.dev@proton.me>
+
+- 0.1.0_beta.2
+    * Add VM registration/update to Nazara
+    * Change update logic to partial update
+    * Implement proper online documentation
+    * Fix config file creation
+
+
+-------------------------------------------------------------------
 Fri May 30 14:17:03 UTC 2025 - Marvin Friedrich <me@mrvn.sh>
 
 - 0.1.0_beta.1
