@@ -28,6 +28,14 @@ run-hooks:
 setup: install-pre-commit setup-hooks run-hooks
 	@echo "pre-commit setup completed."
 
+setup-netbox:
+	@echo "[Makefile] Setting up local NetBox..."
+	python3 ./scripts/setup_netbox_docker.py \
+		--version $(version) \
+		--superuser-name $(name) \
+		--superuser-email $(email) \
+		--superuser-password $(password)
+
 build:
 	cargo build --bin --release
 
