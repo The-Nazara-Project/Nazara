@@ -31,7 +31,7 @@ When major ports to newer NetBox versions happen - which usually include breakin
 | Nazara Version   | NetBox Version | Branch            | maintained?        |
 | ---------------- | -------------- | ----------------- | ------------------ |
 | `v0.1.0_beta.2`  | `v4.3.x`       | `main`            | :white_check_mark: |
-| `v0.1.0_beta.1`  | `v4.3.x`       | `version/beta-1`  | :white_check_mark: |
+| `v0.1.0_beta.1`  | `v4.3.x`       | `version/beta-1`  | :x: |
 | `v0.1.0_alpha.2` | `v3.6.x`       | `version/alpha-2` | :x:                |
 
 Maintenance work on these older versions is not planned.
@@ -149,3 +149,10 @@ information on our workflow and check the issues section for any open issue.
 # License
 
 Nazara is released under the terms of the [GPL-v3.0](./LICENSE).
+
+By submitting a contribution to The Nazara Project, you agree that your contribution shall be licensed under the
+same license(s) as the project at the time of contribution.
+
+You also grant the project maintainers the right to relicense the project, including your contribution, under any
+future version of those license(s), or under any other license that is free and open source software (FOSS) and
+compatible with the current license(s).
