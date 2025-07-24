@@ -126,5 +126,5 @@ By submitting a contribution to The Nazara Project, you agree that your contribu
 license(s) as the project at the time of contribution.
 
 You also grant the project maintainers the right to relicense the project, including your contribution, under any
-uture version of those license(s), or under any other license that is free and open source software (FOSS) and
+future version of those license(s), or under any other license that is free and open source software (FOSS) and
 compatible with the current license(s).
