@@ -114,11 +114,9 @@ If you wish to fix a vulnerability, please also inform us and stand by for our g
 
 # Disclaimer
 
-By contributing to this project you agree to surrender your contribution to the Nazara Project.
+By submitting a contribution to The Nazara Project, you agree that your contribution shall be licensed under the same license(s) as the project at the time of contribution.
 
-Your contribution to this project will be subject to the same licensing terms as the rest of the project.
+You also grant the project maintainers the right to relicense the project, including your contribution, under any future version of those license(s), or under any other
+license that is free and open source software (FOSS) and compatible with the current license(s).
 
-This is a standard practice in open-source projects to ensure that all contributions are compatible with the project's overall license and to maintain consistency in the project's legal framework. 
-
-It's important for contributors to be aware of this agreement to ensure that their contributions are properly integrated into the project without any legal conflicts.
 #### Thank you for your contribution!
