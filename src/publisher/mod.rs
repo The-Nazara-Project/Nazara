@@ -84,7 +84,7 @@ pub fn register_machine(
 
                     create_ips(client, interface, interface_id, false)?;
                 }
-                println!("\x1b[32m[success]\x1b[0m Registration process completed!");
+                println!("Registration process completed!");
                 return Ok(());
             };
 
@@ -167,7 +167,7 @@ pub fn register_machine(
                     }
                 }
             }
-            println!("\x1b[32m[success]\x1b[0m Update process completed!");
+            println!("Update process completed!");
         }
         MachineConfig::VM(x) => {
             println!("Registering virtual machine");

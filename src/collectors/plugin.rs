@@ -23,9 +23,7 @@ pub fn execute(
     let script_path = match path.as_deref() {
         Some(p) => Path::new(p),
         None => {
-            println!(
-                "\x1b[36m[info]\x1b[0m No plugin path provided. Custom field parameters ignored."
-            );
+            println!("No plugin path provided. Custom field parameters ignored.");
             return Ok(HashMap::new());
         }
     };

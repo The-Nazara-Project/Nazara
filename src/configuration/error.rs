@@ -25,25 +25,22 @@ impl fmt::Display for ConfigError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             ConfigError::FileOpError(err) => {
-                write!(f, "\x1b[31m[error]\x1b[0m File operation failed: {err}")
+                write!(f, "File operation failed: {err}")
             }
             ConfigError::NoConfigFileError(err) => {
-                write!(f, "\x1b[31m[error]\x1b[0m No config file found: {err}")
+                write!(f, "No config file found: {err}")
             }
             ConfigError::MissingConfigOptionError(err) => {
-                write!(
-                    f,
-                    "\x1b[31m[error]\x1b[0m Missing required config parameter: {err}"
-                )
+                write!(f, "Missing required config parameter: {err}")
             }
             ConfigError::DeserializationError(err) => {
-                write!(f, "\x1b[31m[error]\x1b[0m Invalid config file: {err}")
+                write!(f, "Invalid config file: {err}")
             }
             ConfigError::SerializationError(err) => {
-                write!(f, "\x1b[31m[error]\x1b[0m Serialization error: {err}")
+                write!(f, "Serialization error: {err}")
             }
             ConfigError::Other(err) => {
-                write!(f, "\x1b[31m[error]\x1b[0m Config Parser error: {err}")
+                write!(f, "Config Parser error: {err}")
             }
         }
     }

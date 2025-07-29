@@ -153,6 +153,6 @@ pub fn construct_network_information() -> Result<Vec<NetworkInformation>, Collec
         .filter(|x| x.name != "lo")
         .collect::<Vec<_>>();
 
-    println!("\x1b[32m[success]\x1b[0m Network Interface collection completed.");
+    println!("Network Interface collection completed.");
     Ok(result)
 }

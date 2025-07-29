@@ -26,34 +26,28 @@ impl fmt::Display for CollectorError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             CollectorError::Dmi(err) => {
-                write!(f, "\x1b[31m[error]\x1b[0m Dmi Error: {err}")
+                write!(f, "Dmi Error: {err}")
             }
             CollectorError::UnableToCollectData(err) => {
-                write!(f, "\x1b[31m[error]\x1b[0m Collector Error: {err}")
+                write!(f, "Collector Error: {err}")
             }
             CollectorError::InvalidNetworkInterface(err) => {
-                write!(f, "\x1b[31m[error]\x1b[0m Network Collector Error: {err}")
+                write!(f, "Network Collector Error: {err}")
             }
             CollectorError::NoNetworkInterfaces(err) => {
-                write!(f, "\x1b[31m[error]\x1b[0m Network Collector Error: {err}")
+                write!(f, "Network Collector Error: {err}")
             }
             CollectorError::UnableToParseUTF8(err) => {
-                write!(
-                    f,
-                    "\x1b[31m[error]\x1b[0m Unable to parse stdout from UTF8 to string: {err}"
-                )
+                write!(f, "Unable to parse stdout from UTF8 to string: {err}")
             }
             CollectorError::InvalidPluginOutput(err) => {
-                write!(
-                    f,
-                    "\x1b[31m[error]\x1b[0m Plugin returned invalid JSON: {err}"
-                )
+                write!(f, "Plugin returned invalid JSON: {err}")
             }
             CollectorError::PluginExecution(err) => {
-                write!(f, "\x1b[31m[error]\x1b[0m Plugin execution failed: {err}")
+                write!(f, "Plugin execution failed: {err}")
             }
             CollectorError::Other(err) => {
-                write!(f, "\x1b[31m[error]\x1b[0m Collector Error: {err}")
+                write!(f, "Collector Error: {err}")
             }
         }
     }

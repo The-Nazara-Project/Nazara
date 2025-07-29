@@ -122,7 +122,7 @@ use configuration::parser::set_up_configuration;
 use publisher::*;
 use reqwest::blocking::Client;
 use serde_json::Value;
-use std::{collections::HashMap, error::Error, process};
+use std::{collections::HashMap, error::Error};
 use thanix_client::util::ThanixClient;
 
 /// This struct represents your machine.
@@ -206,10 +206,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Passing a name in any way is mandatory for a virtual machine.
     if machine.dmi_information.system_information.is_virtual && machine.name.is_none() {
-        eprintln!(
-            "[FATAL] No name has been provided for this virtual machine! Providing a name as search parameter is mandatory for virtual machines."
+        return Err(
+            "No name has been provided for this virtual machine! Providing a name as search parameter is mandatory for virtual machines.".into(),
         );
-        process::exit(1)
     }
 
     // If we only want to do a dry run, we only have to print the collected information.
@@ -230,7 +229,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         // Register the machine or VM with NetBox
         register_machine(&client, machine, config)?;
-        println!("\x1b[32mAll done, have a nice day!\x1b[0m");
+        println!("All done, have a nice day!");
     }
 
     Ok(())

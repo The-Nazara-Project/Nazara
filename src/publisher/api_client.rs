@@ -68,9 +68,7 @@ pub fn test_connection(client: &ThanixClient) -> Result<(), error::NetBoxApiErro
         if let Some(netbox_ver) = json.get("netbox-version").and_then(Value::as_str) {
             // Compare netbox version for compatibility
             if check_version_compatiblity(netbox_ver, thanix_client::version::VERSION) {
-                println!(
-                    "\x1b[32m[success]\x1b[0m API client version compatible with NetBox version."
-                );
+                println!("API client version compatible with NetBox version.");
                 Ok(())
             } else {
                 Err(error::NetBoxApiError::VersionMismatch(String::from(
@@ -220,7 +218,7 @@ pub fn create_device(
         Ok(response) => match response {
             DcimDevicesCreateResponse::Http201(created_device) => {
                 println!(
-                    "\x1b[32m[success]\x1b[0m Device creation successful! New Device-ID: '{}'.",
+                    " Device creation successful! New Device-ID: '{}'.",
                     created_device.id
                 );
                 Ok(created_device.id)
@@ -261,7 +259,7 @@ pub fn update_device(
     match dcim_devices_partial_update(client, payload, id) {
         Ok(response) => match response {
             DcimDevicesPartialUpdateResponse::Http200(updated_device) => {
-                println!("\x1b[32m[success]\x1b[0m Device updated successfully!");
+                println!("Device updated successfully!");
                 Ok(updated_device.id)
             }
             DcimDevicesPartialUpdateResponse::Other(other_response) => {
@@ -298,7 +296,7 @@ pub fn create_vm(
         Ok(response) => match response {
             VirtualizationVirtualMachinesCreateResponse::Http201(created_device) => {
                 println!(
-                    "\x1b[32m[success]\x1b[0m Virtual Machine creation successful! New ID: '{}'.",
+                    " Virtual Machine creation successful! New ID: '{}'.",
                     created_device.id
                 );
                 Ok(created_device.id)
@@ -340,7 +338,7 @@ pub fn update_vm(
     match virtualization_virtual_machines_partial_update(client, payload, id) {
         Ok(response) => match response {
             VirtualizationVirtualMachinesPartialUpdateResponse::Http200(updated_device) => {
-                println!("\x1b[32m[success]\x1b[0m Device updated successfully!");
+                println!("Device updated successfully!");
                 Ok(updated_device.id)
             }
             VirtualizationVirtualMachinesPartialUpdateResponse::Other(other_response) => {
@@ -421,7 +419,7 @@ pub fn create_mac_address(
         Ok(response) => match response {
             thanix_client::paths::DcimMacAddressesCreateResponse::Http201(result) => {
                 println!(
-                    "\x1b[32m[success]\x1b[0m MAC Address created successfully. New MAC Address-ID: '{}'",
+                    " MAC Address created successfully. New MAC Address-ID: '{}'",
                     result.id
                 );
                 Ok(result.id)
@@ -453,10 +451,7 @@ pub fn update_mac_address(
     match dcim_mac_addresses_update(client, payload, mac_address_id) {
         Ok(response) => match response {
             thanix_client::paths::DcimMacAddressesUpdateResponse::Http200(result) => {
-                println!(
-                    "\x1b[32m[success]\x1b[0m MAC Address '{}' updated successfully.",
-                    result.id
-                );
+                println!("MAC Address '{}' updated successfully.", result.id);
                 Ok(result.id)
             }
             thanix_client::paths::DcimMacAddressesUpdateResponse::Other(other) => {
@@ -577,7 +572,7 @@ pub fn create_interface(
         Ok(response) => match response {
             thanix_client::paths::DcimInterfacesCreateResponse::Http201(result) => {
                 println!(
-                    "\x1b[32m[success]\x1b[0m Interface created successfully. New Interface-ID: '{}'",
+                    " Interface created successfully. New Interface-ID: '{}'",
                     result.id
                 );
                 Ok(result.id)
@@ -604,7 +599,7 @@ pub fn create_vm_interface(
         Ok(response) => match response {
             VirtualizationInterfacesCreateResponse::Http201(result) => {
                 println!(
-                    "\x1b[32m[success]\x1b[0m Interface created successfully. New Interface-ID: '{}'",
+                    " Interface created successfully. New Interface-ID: '{}'",
                     result.id
                 );
                 Ok(result.id)
@@ -640,10 +635,7 @@ pub fn update_interface(
     match dcim_interfaces_update(client, payload, interface_id) {
         Ok(response) => match response {
             thanix_client::paths::DcimInterfacesUpdateResponse::Http200(result) => {
-                println!(
-                    "\x1b[32m[success]\x1b[0m Interface '{}' updated successfully.",
-                    result.id
-                );
+                println!("Interface '{}' updated successfully.", result.id);
                 Ok(result.id)
             }
             thanix_client::paths::DcimInterfacesUpdateResponse::Other(other) => {
@@ -666,10 +658,7 @@ pub fn update_vm_interface(
     match virtualization_interfaces_update(client, payload, interface_id) {
         Ok(response) => match response {
             VirtualizationInterfacesUpdateResponse::Http200(result) => {
-                println!(
-                    "\x1b[32m[success]\x1b[0m Interface '{}' updated successfully.",
-                    result.id
-                );
+                println!("Interface '{}' updated successfully.", result.id);
                 Ok(result.id)
             }
             VirtualizationInterfacesUpdateResponse::Other(other) => {
@@ -780,7 +769,7 @@ pub fn create_ip(
         Ok(response) => match response {
             thanix_client::paths::IpamIpAddressesCreateResponse::Http201(result) => {
                 println!(
-                    "\x1b[32m[success]\x1b[0m IP Address created successfully. New IP-ID: '{}'",
+                    " IP Address created successfully. New IP-ID: '{}'",
                     result.id
                 );
                 Ok(result.id)
@@ -792,7 +781,7 @@ pub fn create_ip(
         },
         Err(e) => {
             eprintln!(
-                "\x1b[33m[warning]\x1b[0m Error while decoding NetBox response while creating IP address. This probably is still fine and a problem with NetBox.\nError: {e}"
+                "Error while decoding NetBox response while creating IP address. This probably is still fine and a problem with NetBox.\nError: {e}"
             );
             let exc = NetBoxApiError::Other(e.to_string());
             Err(exc)

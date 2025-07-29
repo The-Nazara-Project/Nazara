@@ -91,9 +91,7 @@ pub fn set_up_configuration(
         // TODO Rewrite validation logic to properly condition here
         match ConfigData::validate_config_file() {
             Ok(_) => {
-                println!(
-                    "\x1b[32m[success]\x1b[0m Configuration file \x1b[32mvalid\x1b[0m. Loading defaults..."
-                );
+                println!("Configuration file valid. Loading defaults...");
                 conf_data = ConfigData::read_config_file();
 
                 if let Some(x) = uri {
@@ -110,10 +108,10 @@ pub fn set_up_configuration(
         }
     }
 
-    println!("\x1b[36m[info]\x1b[0m No config file found. Creating default...");
+    println!("No config file found. Creating default...");
 
     ConfigData::initialize_config_file(uri, token)?;
-    println!("\x1b[32m[success]\x1b[0m Default configuration file created successfully.");
+    println!("Default configuration file created successfully.");
 
     if uri.is_none() || token.is_none() {
         panic!(
@@ -129,7 +127,7 @@ pub fn set_up_configuration(
         conf_data.netbox.netbox_api_token = token.unwrap().to_owned();
     }
 
-    println!("\x1b[32m[success]\x1b[0m Configuration loaded.\x1b[0m");
+    println!("Configuration loaded.");
     Ok(conf_data)
 }
 
@@ -158,7 +156,7 @@ fn file_exists(path: &Path) -> bool {
 ///
 /// This function panics if no `$HOME` variable can be found.
 fn get_config_path(with_file: bool) -> PathBuf {
-    let home_dir = std::env::var("HOME").expect("\x1b[31m[FATAL]\x1b[0m No $HOME variable found!");
+    let home_dir = std::env::var("HOME").expect("No $HOME variable found!");
     if with_file {
         return Path::new(&home_dir).join(".config/nazara/config.toml");
     }

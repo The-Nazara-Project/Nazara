@@ -83,7 +83,7 @@ pub fn construct_dmi_information() -> Result<DmiInformation, Box<dyn Error>> {
     // Iterate over the DMI tables.
     for table in entry.structures(&dmi) {
         let Ok(t) = table else {
-            eprintln!("[warn] DMI tables contain malformed structure: {table:?}");
+            println!("DMI tables contain malformed structure: {table:?}");
             continue;
         };
 

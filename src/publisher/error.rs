@@ -23,21 +23,18 @@ impl fmt::Display for NetBoxApiError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             NetBoxApiError::Reqwest(err) => {
-                write!(f, "\x1b[31m[error]\x1b[0m Request error: {err}")
+                write!(f, "Request error: {err}")
             }
             NetBoxApiError::VersionMismatch(err) => {
-                write!(f, "\x1b[31m[error]\x1b[0m API Client version error: {err}")
+                write!(f, "API Client version error: {err}")
             }
             NetBoxApiError::MissingVersion(err) => {
-                write!(
-                    f,
-                    "\x1b[31m[error]x1b[0m API Client missing version error: {err}"
-                )
+                write!(f, "API Client missing version error: {err}")
             }
             NetBoxApiError::JsonParse(err) => {
-                write!(f, "\x1b[31m[error]\x1b[0m JSON parsing error: {err}")
+                write!(f, "JSON parsing error: {err}")
             }
-            NetBoxApiError::Other(err) => write!(f, "\x1b[31m[error]\x1b[0m {err}"),
+            NetBoxApiError::Other(err) => write!(f, "{err}"),
         }
     }
 }
