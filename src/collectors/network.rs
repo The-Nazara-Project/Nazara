@@ -1,12 +1,13 @@
 //! This module provides logic to collect and process Information about all network interfaces a device has.
 
-use super::errors::CollectorError;
 use futures::TryStreamExt;
 use rtnetlink::new_connection;
 use rtnetlink::packet_route::address::AddressAttribute;
 use rtnetlink::packet_route::link::LinkAttribute;
 use serde::Serialize;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
+
+use crate::{NazaraError, error::NazaraResult};
 
 /// This object contains information about one specific network interface.
 #[derive(Serialize, Debug, Default)]
@@ -43,7 +44,7 @@ pub struct NetworkInformation {
 /// # Returns
 /// * `Ok(Vec<NetworkInformation>)` - A list of all collected network interfaces.
 /// * `Err(CollectorError)` - A `CollectorError` instance containing information about the failure.
-pub fn construct_network_information() -> Result<Vec<NetworkInformation>, CollectorError> {
+pub fn construct_network_information() -> NazaraResult<Vec<NetworkInformation>> {
     println!("Collecting Network Information...");
 
     let mut result = Vec::new();
@@ -100,7 +101,7 @@ pub fn construct_network_information() -> Result<Vec<NetworkInformation>, Collec
         while let Some(msg) = foo
             .try_next()
             .await
-            .map_err(|x| CollectorError::InvalidNetworkInterface(x.to_string()))?
+            .map_err(|x| NazaraError::InvalidNetworkInterface(x.to_string()))?
         {
             let target_intf = result
                 .iter_mut()
@@ -140,7 +141,7 @@ pub fn construct_network_information() -> Result<Vec<NetworkInformation>, Collec
 
     // The rtlink crate is async only. Because we don't want to introduce async everywhere,
     // just run the future in this thread.
-    let t: Result<(), CollectorError> = tokio::runtime::Builder::new_current_thread()
+    let t: NazaraResult<()> = tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()
         .unwrap()

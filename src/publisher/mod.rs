@@ -9,11 +9,11 @@
 //! [`crate::publisher::api_client`] modules respectively.
 
 mod api_client;
-pub mod error;
 pub mod trans_validation;
 pub mod translator;
 
 use crate::configuration::parser::{CommonConfig, MachineConfig};
+use crate::error::NazaraResult;
 use crate::publisher::api_client::{
     create_mac_address, create_vm, create_vm_interface, patch_ip, search_mac_address, search_vm,
     search_vm_interface, search_vm_ip, update_vm, update_vm_interface,
@@ -33,7 +33,6 @@ use crate::{
 };
 pub use api_client::test_connection;
 use api_client::update_interface;
-use error::NetBoxApiError;
 use serde_json::Value;
 use std::collections::HashMap;
 use thanix_client::paths::{
@@ -61,7 +60,7 @@ pub fn register_machine(
     client: &ThanixClient,
     machine: Machine,
     config_data: ConfigData,
-) -> Result<(), NetBoxApiError> {
+) -> NazaraResult<()> {
     println!("Starting registration process. This may take a while...");
 
     match &config_data.machine {
@@ -296,9 +295,9 @@ fn create_nwi(
     device_id: i64,
     interface: &NetworkInformation,
     common: &CommonConfig,
-) -> Result<i64, NetBoxApiError> {
+) -> NazaraResult<i64> {
     // Check if MAC exists before creating the interface, create the MAC if it doesn't exist
-    let mac = match search_mac_address(client, interface.mac_addr.clone().unwrap().as_str()) {
+    let mac = match search_mac_address(client, interface.mac_addr.clone().unwrap().as_str())? {
         Some(x) => x,
         None => create_mac_address(
             client,
@@ -320,7 +319,7 @@ fn create_nwi(
     patch.mac_address = Some(interface.mac_addr.clone().unwrap());
     patch.assigned_object_id = Some(Some(intf_id as u64));
     patch.assigned_object_type = Some(Some("dcim.interface".to_string()));
-    dcim_mac_addresses_partial_update(client, patch, mac).map_err(NetBoxApiError::from)?;
+    dcim_mac_addresses_partial_update(client, patch, mac)?;
 
     // Update Intf with primary MAC
     let mut intf_patch = PatchedWritableInterfaceRequest::default();
@@ -335,9 +334,9 @@ fn create_vm_nwi(
     device_id: i64,
     interface: &NetworkInformation,
     common: &CommonConfig,
-) -> Result<i64, NetBoxApiError> {
+) -> NazaraResult<i64> {
     // Check if MAC exists before creating the interface, create the MAC if it doesn't exist
-    let mac = match search_mac_address(client, interface.mac_addr.clone().unwrap().as_str()) {
+    let mac = match search_mac_address(client, interface.mac_addr.clone().unwrap().as_str())? {
         Some(x) => x,
         None => create_mac_address(
             client,
@@ -359,7 +358,7 @@ fn create_vm_nwi(
     patch.mac_address = Some(interface.mac_addr.clone().unwrap());
     patch.assigned_object_id = Some(Some(intf_id as u64));
     patch.assigned_object_type = Some(Some("virtualization.vminterface".to_string()));
-    dcim_mac_addresses_partial_update(client, patch, mac).map_err(NetBoxApiError::from)?;
+    dcim_mac_addresses_partial_update(client, patch, mac)?;
 
     // Update Intf with primary MAC
     let mut intf_patch = PatchedWritableVMInterfaceRequest::default();
@@ -385,11 +384,11 @@ fn update_nwi(
     interface: &NetworkInformation,
     config_data: &CommonConfig,
     interface_id: &i64,
-) -> Result<i64, NetBoxApiError> {
+) -> NazaraResult<i64> {
     println!("Updating interface '{interface_id}' belonging to device '{device_id}'");
 
     // Check if MAC exists before creating the interface, otherwise create the MAC.
-    let mac = match search_mac_address(client, interface.mac_addr.clone().unwrap().as_str()) {
+    let mac = match search_mac_address(client, interface.mac_addr.clone().unwrap().as_str())? {
         Some(x) => x,
         None => create_mac_address(
             client,
@@ -412,7 +411,7 @@ fn update_nwi(
     let mut patch = PatchedMACAddressRequest::default();
     patch.assigned_object_id = Some(Some(*interface_id as u64));
     patch.assigned_object_type = Some(Some("dcim.interface".to_string()));
-    dcim_mac_addresses_partial_update(client, patch, mac).map_err(NetBoxApiError::from)?;
+    dcim_mac_addresses_partial_update(client, patch, mac)?;
 
     // Update Intf with primary MAC
     let mut intf_patch = PatchedWritableInterfaceRequest::default();
@@ -428,11 +427,11 @@ fn update_vm_nwi(
     interface: &NetworkInformation,
     config_data: &CommonConfig,
     interface_id: &i64,
-) -> Result<i64, NetBoxApiError> {
+) -> NazaraResult<i64> {
     println!("Updating interface '{interface_id}' belonging to device '{device_id}'");
 
     // Check if MAC exists before creating the interface, otherwise create the MAC.
-    let mac = match search_mac_address(client, interface.mac_addr.clone().unwrap().as_str()) {
+    let mac = match search_mac_address(client, interface.mac_addr.clone().unwrap().as_str())? {
         Some(x) => x,
         None => create_mac_address(
             client,
@@ -455,7 +454,7 @@ fn update_vm_nwi(
     let mut patch = PatchedMACAddressRequest::default();
     patch.assigned_object_id = Some(Some(*interface_id as u64));
     patch.assigned_object_type = Some(Some("virtualization.vminterface".to_string()));
-    dcim_mac_addresses_partial_update(client, patch, mac).map_err(NetBoxApiError::from)?;
+    dcim_mac_addresses_partial_update(client, patch, mac)?;
 
     // Update Intf with primary MAC
     let mut intf_patch = PatchedWritableVMInterfaceRequest::default();
@@ -482,7 +481,7 @@ fn search_device_ips(
     client: &ThanixClient,
     interface: &NetworkInformation,
     device_id: Option<i64>,
-) -> Result<(Option<i64>, Option<i64>), NetBoxApiError> {
+) -> NazaraResult<(Option<i64>, Option<i64>)> {
     let mut result: (Option<i64>, Option<i64>) = (None, None);
     if let Some(ipv4_address) = interface.v4ip {
         result = (
@@ -504,7 +503,7 @@ fn search_vm_ips(
     client: &ThanixClient,
     interface: &NetworkInformation,
     vm_id: Option<i64>,
-) -> Result<(Option<i64>, Option<i64>), NetBoxApiError> {
+) -> NazaraResult<(Option<i64>, Option<i64>)> {
     let mut result: (Option<i64>, Option<i64>) = (None, None);
     if let Some(ipv4_address) = interface.v4ip {
         result = (
@@ -533,7 +532,7 @@ fn create_ips(
     interface: &NetworkInformation,
     interface_id: i64,
     is_vm: bool,
-) -> Result<(), NetBoxApiError> {
+) -> NazaraResult<()> {
     if let Some(ipv4_address) = interface.v4ip {
         let ipv4_payload: WritableIPAddressRequest =
             translator::information_to_ip(ipv4_address, interface_id, is_vm);

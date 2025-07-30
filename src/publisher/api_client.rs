@@ -7,7 +7,8 @@
 //! Errors are escalated upwards.
 extern crate thanix_client;
 
-use super::error::{self, NetBoxApiError};
+use crate::{NazaraError, error::NazaraResult};
+
 use serde_json::Value;
 use thanix_client::{
     paths::{
@@ -47,7 +48,7 @@ use thanix_client::{
 ///
 ///	# Parameters
 /// * `client: &ThanixClient` - The client instance to be used for communication.
-pub fn test_connection(client: &ThanixClient) -> Result<(), error::NetBoxApiError> {
+pub fn test_connection(client: &ThanixClient) -> Result<(), NazaraError> {
     let url: String = format!("{}/api/status/", client.base_url);
 
     let response = client
@@ -57,33 +58,21 @@ pub fn test_connection(client: &ThanixClient) -> Result<(), error::NetBoxApiErro
             "Authorization",
             format!("Token {}", client.authentication_token),
         )
-        .send()
-        .map_err(error::NetBoxApiError::Reqwest)?;
+        .send()?;
 
     println!("Got response!");
+    let json: Value = response.json::<Value>()?;
 
-    if response.status().is_success() {
-        let json: Value = response.json::<Value>().map_err(NetBoxApiError::Reqwest)?;
-
-        if let Some(netbox_ver) = json.get("netbox-version").and_then(Value::as_str) {
-            // Compare netbox version for compatibility
-            if check_version_compatiblity(netbox_ver, thanix_client::version::VERSION) {
-                println!("API client version compatible with NetBox version.");
-                Ok(())
-            } else {
-                Err(error::NetBoxApiError::VersionMismatch(String::from(
-                    "Client version incompatible with NetBox version! Use client v1.x for NetBox v3.6.x and above, and v2.x for NetBox 4.x.",
-                )))
-            }
+    if let Some(netbox_ver) = json.get("netbox-version").and_then(Value::as_str) {
+        // Compare netbox version for compatibility
+        if check_version_compatiblity(netbox_ver, thanix_client::version::VERSION) {
+            println!("API client version compatible with NetBox version.");
+            Ok(())
         } else {
-            Err(error::NetBoxApiError::MissingVersion(String::from(
-                "NetBox version missing from response. Please check your installation.",
-            )))
+            Err(NazaraError::VersionMismatch)
         }
     } else {
-        Err(error::NetBoxApiError::Reqwest(
-            response.error_for_status().unwrap_err(),
-        ))
+        Err(NazaraError::MissingVersion)
     }
 }
 
@@ -211,28 +200,22 @@ pub fn search_vm(client: &ThanixClient, name: &str, serial: &str) -> Option<i64>
 pub fn create_device(
     client: &ThanixClient,
     payload: WritableDeviceWithConfigContextRequest,
-) -> Result<i64, NetBoxApiError> {
+) -> NazaraResult<i64> {
     println!("Creating device in NetBox...");
 
-    match dcim_devices_create(client, payload) {
-        Ok(response) => match response {
-            DcimDevicesCreateResponse::Http201(created_device) => {
-                println!(
-                    " Device creation successful! New Device-ID: '{}'.",
-                    created_device.id
-                );
-                Ok(created_device.id)
-            }
-            DcimDevicesCreateResponse::Other(other_response) => {
-                panic!(
-                    "Unexpected response code '{}' when trying to create a device!",
-                    other_response.status()
-                );
-            }
-        },
-        Err(err) => {
-            let exc: NetBoxApiError = NetBoxApiError::Reqwest(err);
-            Err(exc)
+    match dcim_devices_create(client, payload)? {
+        DcimDevicesCreateResponse::Http201(created_device) => {
+            println!(
+                " Device creation successful! New Device-ID: '{}'.",
+                created_device.id
+            );
+            Ok(created_device.id)
+        }
+        DcimDevicesCreateResponse::Other(other_response) => {
+            panic!(
+                "Unexpected response code '{}' when trying to create a device!",
+                other_response.status()
+            );
         }
     }
 }
@@ -253,25 +236,18 @@ pub fn update_device(
     client: &ThanixClient,
     payload: PatchedWritableDeviceWithConfigContextRequest,
     id: i64,
-) -> Result<i64, NetBoxApiError> {
+) -> NazaraResult<i64> {
     println!("Updating device in NetBox...");
-
-    match dcim_devices_partial_update(client, payload, id) {
-        Ok(response) => match response {
-            DcimDevicesPartialUpdateResponse::Http200(updated_device) => {
-                println!("Device updated successfully!");
-                Ok(updated_device.id)
-            }
-            DcimDevicesPartialUpdateResponse::Other(other_response) => {
-                panic!(
-                    "Unexpected response code '{:?}' when trying to update device!",
-                    other_response.text()
-                );
-            }
-        },
-        Err(err) => {
-            let exc: NetBoxApiError = NetBoxApiError::Reqwest(err);
-            Err(exc)
+    match dcim_devices_partial_update(client, payload, id)? {
+        DcimDevicesPartialUpdateResponse::Http200(updated_device) => {
+            println!("Device updated successfully!");
+            Ok(updated_device.id)
+        }
+        DcimDevicesPartialUpdateResponse::Other(other_response) => {
+            panic!(
+                "Unexpected response code '{:?}' when trying to update device!",
+                other_response.text()
+            );
         }
     }
 }
@@ -289,29 +265,22 @@ pub fn update_device(
 pub fn create_vm(
     client: &ThanixClient,
     payload: WritableVirtualMachineWithConfigContextRequest,
-) -> Result<i64, NetBoxApiError> {
+) -> NazaraResult<i64> {
     println!("Creating virtual machine in NetBox...");
-
-    match virtualization_virtual_machines_create(client, payload) {
-        Ok(response) => match response {
-            VirtualizationVirtualMachinesCreateResponse::Http201(created_device) => {
-                println!(
-                    " Virtual Machine creation successful! New ID: '{}'.",
-                    created_device.id
-                );
-                Ok(created_device.id)
-            }
-            VirtualizationVirtualMachinesCreateResponse::Other(other_response) => {
-                panic!(
-                    "Unexpected response code '{}' when trying to create a virtual machine: {:?}!",
-                    other_response.status(),
-                    other_response.text()
-                );
-            }
-        },
-        Err(err) => {
-            let exc: NetBoxApiError = NetBoxApiError::Reqwest(err);
-            Err(exc)
+    match virtualization_virtual_machines_create(client, payload)? {
+        VirtualizationVirtualMachinesCreateResponse::Http201(created_device) => {
+            println!(
+                " Virtual Machine creation successful! New ID: '{}'.",
+                created_device.id
+            );
+            Ok(created_device.id)
+        }
+        VirtualizationVirtualMachinesCreateResponse::Other(other_response) => {
+            panic!(
+                "Unexpected response code '{}' when trying to create a virtual machine: {:?}!",
+                other_response.status(),
+                other_response.text()
+            );
         }
     }
 }
@@ -332,25 +301,19 @@ pub fn update_vm(
     client: &ThanixClient,
     payload: PatchedWritableVirtualMachineWithConfigContextRequest,
     id: i64,
-) -> Result<i64, NetBoxApiError> {
+) -> NazaraResult<i64> {
     println!("Updating Virtual machine in NetBox...");
 
-    match virtualization_virtual_machines_partial_update(client, payload, id) {
-        Ok(response) => match response {
-            VirtualizationVirtualMachinesPartialUpdateResponse::Http200(updated_device) => {
-                println!("Device updated successfully!");
-                Ok(updated_device.id)
-            }
-            VirtualizationVirtualMachinesPartialUpdateResponse::Other(other_response) => {
-                panic!(
-                    "Unexpected response code '{}' when trying to update device!",
-                    other_response.status()
-                );
-            }
-        },
-        Err(err) => {
-            let exc: NetBoxApiError = NetBoxApiError::Reqwest(err);
-            Err(exc)
+    match virtualization_virtual_machines_partial_update(client, payload, id)? {
+        VirtualizationVirtualMachinesPartialUpdateResponse::Http200(updated_device) => {
+            println!("Device updated successfully!");
+            Ok(updated_device.id)
+        }
+        VirtualizationVirtualMachinesPartialUpdateResponse::Other(other_response) => {
+            panic!(
+                "Unexpected response code '{}' when trying to update device!",
+                other_response.status()
+            );
         }
     }
 }
@@ -368,31 +331,28 @@ pub fn update_vm(
 /// # Panics
 ///
 /// This function panics if the API request fails.
-pub fn search_mac_address(client: &ThanixClient, mac_address: &str) -> Option<i64> {
+pub fn search_mac_address(client: &ThanixClient, mac_address: &str) -> NazaraResult<Option<i64>> {
     println!("Searching for mac address...");
 
     let mut payload = DcimMacAddressesListQuery::default();
     payload.mac_address__ic = Some(vec![mac_address.to_string()]);
 
-    match dcim_mac_addresses_list(client, payload) {
-        Ok(response) => match response {
-            DcimMacAddressesListResponse::Http200(mut mac_addresses) => {
-                if mac_addresses.results.as_mut().unwrap().len() == 1 {
-                    let result = mac_addresses.results.unwrap();
-                    return Some(result[0].id);
-                }
-                if mac_addresses.results?.is_empty() {
-                    return None;
-                }
-                // FIXME: Remove this panic and swap with error.
-                panic!("Ambiguous search result. MAC Address listed more then once.");
+    match dcim_mac_addresses_list(client, payload)? {
+        DcimMacAddressesListResponse::Http200(mac_addresses) => {
+            let addresses = mac_addresses
+                .results
+                .ok_or(NazaraError::Other("FIXME".into()))?;
+            if addresses.len() == 1 {
+                return Ok(Some(addresses[0].id));
             }
-            DcimMacAddressesListResponse::Other(other) => {
-                panic!("{}", other.text().unwrap());
+            if addresses.is_empty() {
+                return Ok(None);
             }
-        },
-        Err(e) => {
-            panic!("{}", e);
+            // FIXME: Remove this panic and swap with error.
+            panic!("Ambiguous search result. MAC Address listed more then once.");
+        }
+        DcimMacAddressesListResponse::Other(other) => {
+            panic!("{}", other.text().unwrap());
         }
     }
 }
@@ -409,29 +369,18 @@ pub fn search_mac_address(client: &ThanixClient, mac_address: &str) -> Option<i6
 /// - `Ok(i64)` - Returns the ID of the newly created MAC address.
 /// - `Err(NetBoxAPIError)` - Returns an Error in case the request fails or get an unexpected
 /// response.
-pub fn create_mac_address(
-    client: &ThanixClient,
-    payload: MACAddressRequest,
-) -> Result<i64, NetBoxApiError> {
+pub fn create_mac_address(client: &ThanixClient, payload: MACAddressRequest) -> NazaraResult<i64> {
     println!("Creating MAC address in NetBox...");
-
-    match dcim_mac_addresses_create(client, payload) {
-        Ok(response) => match response {
-            thanix_client::paths::DcimMacAddressesCreateResponse::Http201(result) => {
-                println!(
-                    " MAC Address created successfully. New MAC Address-ID: '{}'",
-                    result.id
-                );
-                Ok(result.id)
-            }
-            thanix_client::paths::DcimMacAddressesCreateResponse::Other(other_response) => {
-                let exc: NetBoxApiError = NetBoxApiError::Other(other_response.text().unwrap());
-                Err(exc)
-            }
-        },
-        Err(e) => {
-            let exc = NetBoxApiError::Reqwest(e);
-            Err(exc)
+    match dcim_mac_addresses_create(client, payload)? {
+        thanix_client::paths::DcimMacAddressesCreateResponse::Http201(result) => {
+            println!(
+                " MAC Address created successfully. New MAC Address-ID: '{}'",
+                result.id
+            );
+            Ok(result.id)
+        }
+        thanix_client::paths::DcimMacAddressesCreateResponse::Other(other_response) => {
+            Err(NazaraError::Other(other_response.text().unwrap()))
         }
     }
 }
@@ -447,21 +396,14 @@ pub fn update_mac_address(
     client: &ThanixClient,
     payload: MACAddressRequest,
     mac_address_id: i64,
-) -> Result<i64, NetBoxApiError> {
-    match dcim_mac_addresses_update(client, payload, mac_address_id) {
-        Ok(response) => match response {
-            thanix_client::paths::DcimMacAddressesUpdateResponse::Http200(result) => {
-                println!("MAC Address '{}' updated successfully.", result.id);
-                Ok(result.id)
-            }
-            thanix_client::paths::DcimMacAddressesUpdateResponse::Other(other) => {
-                let exc: NetBoxApiError = NetBoxApiError::Other(other.text().unwrap());
-                Err(exc)
-            }
-        },
-        Err(e) => {
-            let exc = NetBoxApiError::Reqwest(e);
-            Err(exc)
+) -> NazaraResult<i64> {
+    match dcim_mac_addresses_update(client, payload, mac_address_id)? {
+        thanix_client::paths::DcimMacAddressesUpdateResponse::Http200(result) => {
+            println!("MAC Address '{}' updated successfully.", result.id);
+            Ok(result.id)
+        }
+        thanix_client::paths::DcimMacAddressesUpdateResponse::Other(other) => {
+            Err(NazaraError::Other(other.text().unwrap()))
         }
     }
 }
@@ -565,26 +507,19 @@ pub fn search_vm_interface(client: &ThanixClient, vm_id: i64, name: &String) -> 
 pub fn create_interface(
     client: &ThanixClient,
     payload: WritableInterfaceRequest,
-) -> Result<i64, NetBoxApiError> {
+) -> NazaraResult<i64> {
     println!("Creating network interface in NetBox...");
 
-    match dcim_interfaces_create(client, payload) {
-        Ok(response) => match response {
-            thanix_client::paths::DcimInterfacesCreateResponse::Http201(result) => {
-                println!(
-                    " Interface created successfully. New Interface-ID: '{}'",
-                    result.id
-                );
-                Ok(result.id)
-            }
-            thanix_client::paths::DcimInterfacesCreateResponse::Other(other_response) => {
-                let exc: NetBoxApiError = NetBoxApiError::Other(other_response.text().unwrap());
-                Err(exc)
-            }
-        },
-        Err(e) => {
-            let exc = NetBoxApiError::Reqwest(e);
-            Err(exc)
+    match dcim_interfaces_create(client, payload)? {
+        thanix_client::paths::DcimInterfacesCreateResponse::Http201(result) => {
+            println!(
+                " Interface created successfully. New Interface-ID: '{}'",
+                result.id
+            );
+            Ok(result.id)
+        }
+        thanix_client::paths::DcimInterfacesCreateResponse::Other(other_response) => {
+            Err(NazaraError::Other(other_response.text().unwrap()))
         }
     }
 }
@@ -592,26 +527,18 @@ pub fn create_interface(
 pub fn create_vm_interface(
     client: &ThanixClient,
     payload: WritableVMInterfaceRequest,
-) -> Result<i64, NetBoxApiError> {
+) -> NazaraResult<i64> {
     println!("Creating network interface in NetBox...");
-
-    match virtualization_interfaces_create(client, payload) {
-        Ok(response) => match response {
-            VirtualizationInterfacesCreateResponse::Http201(result) => {
-                println!(
-                    " Interface created successfully. New Interface-ID: '{}'",
-                    result.id
-                );
-                Ok(result.id)
-            }
-            VirtualizationInterfacesCreateResponse::Other(other_response) => {
-                let exc: NetBoxApiError = NetBoxApiError::Other(other_response.text().unwrap());
-                Err(exc)
-            }
-        },
-        Err(e) => {
-            let exc = NetBoxApiError::Reqwest(e);
-            Err(exc)
+    match virtualization_interfaces_create(client, payload)? {
+        VirtualizationInterfacesCreateResponse::Http201(result) => {
+            println!(
+                " Interface created successfully. New Interface-ID: '{}'",
+                result.id
+            );
+            Ok(result.id)
+        }
+        VirtualizationInterfacesCreateResponse::Other(other_response) => {
+            Err(NazaraError::Other(other_response.text().unwrap()))
         }
     }
 }
@@ -631,21 +558,14 @@ pub fn update_interface(
     client: &ThanixClient,
     payload: WritableInterfaceRequest,
     interface_id: i64,
-) -> Result<i64, NetBoxApiError> {
-    match dcim_interfaces_update(client, payload, interface_id) {
-        Ok(response) => match response {
-            thanix_client::paths::DcimInterfacesUpdateResponse::Http200(result) => {
-                println!("Interface '{}' updated successfully.", result.id);
-                Ok(result.id)
-            }
-            thanix_client::paths::DcimInterfacesUpdateResponse::Other(other) => {
-                let exc: NetBoxApiError = NetBoxApiError::Other(other.text().unwrap());
-                Err(exc)
-            }
-        },
-        Err(e) => {
-            let exc = NetBoxApiError::Reqwest(e);
-            Err(exc)
+) -> NazaraResult<i64> {
+    match dcim_interfaces_update(client, payload, interface_id)? {
+        thanix_client::paths::DcimInterfacesUpdateResponse::Http200(result) => {
+            println!("Interface '{}' updated successfully.", result.id);
+            Ok(result.id)
+        }
+        thanix_client::paths::DcimInterfacesUpdateResponse::Other(other) => {
+            Err(NazaraError::Other(other.text().unwrap()))
         }
     }
 }
@@ -654,21 +574,14 @@ pub fn update_vm_interface(
     client: &ThanixClient,
     payload: WritableVMInterfaceRequest,
     interface_id: i64,
-) -> Result<i64, NetBoxApiError> {
-    match virtualization_interfaces_update(client, payload, interface_id) {
-        Ok(response) => match response {
-            VirtualizationInterfacesUpdateResponse::Http200(result) => {
-                println!("Interface '{}' updated successfully.", result.id);
-                Ok(result.id)
-            }
-            VirtualizationInterfacesUpdateResponse::Other(other) => {
-                let exc: NetBoxApiError = NetBoxApiError::Other(other.text().unwrap());
-                Err(exc)
-            }
-        },
-        Err(e) => {
-            let exc = NetBoxApiError::Reqwest(e);
-            Err(exc)
+) -> NazaraResult<i64> {
+    match virtualization_interfaces_update(client, payload, interface_id)? {
+        VirtualizationInterfacesUpdateResponse::Http200(result) => {
+            println!("Interface '{}' updated successfully.", result.id);
+            Ok(result.id)
+        }
+        VirtualizationInterfacesUpdateResponse::Other(other) => {
+            Err(NazaraError::Other(other.text().unwrap()))
         }
     }
 }
@@ -759,10 +672,7 @@ pub fn search_vm_ip(client: &ThanixClient, address: &String, vm_ip: Option<i64>)
 /// # Returns
 /// - `Ok(i64)` - If the creation of the IP address was successful.
 /// - `Err(NetBoxApiError)` - If the creation or request itself fail.
-pub fn create_ip(
-    client: &ThanixClient,
-    payload: WritableIPAddressRequest,
-) -> Result<i64, NetBoxApiError> {
+pub fn create_ip(client: &ThanixClient, payload: WritableIPAddressRequest) -> NazaraResult<i64> {
     println!("Creating new IP address object...");
 
     match ipam_ip_addresses_create(client, payload) {
@@ -775,16 +685,14 @@ pub fn create_ip(
                 Ok(result.id)
             }
             thanix_client::paths::IpamIpAddressesCreateResponse::Other(other_response) => {
-                let exc: NetBoxApiError = NetBoxApiError::Other(other_response.text().unwrap());
-                Err(exc)
+                Err(NazaraError::Other(other_response.text().unwrap()))
             }
         },
         Err(e) => {
             eprintln!(
                 "Error while decoding NetBox response while creating IP address. This probably is still fine and a problem with NetBox.\nError: {e}"
             );
-            let exc = NetBoxApiError::Other(e.to_string());
-            Err(exc)
+            Err(NazaraError::Other(e.to_string()))
         }
     }
 }
@@ -805,17 +713,17 @@ pub fn patch_ip(
     client: &ThanixClient,
     payload: PatchedWritableIPAddressRequest,
     id: i64,
-) -> Result<i64, NetBoxApiError> {
+) -> NazaraResult<i64> {
     println!("Patching IPs for given interface...");
 
     match ipam_ip_addresses_partial_update(client, payload, id) {
         Ok(response) => match response {
             IpamIpAddressesPartialUpdateResponse::Http200(result) => Ok(result.id),
             IpamIpAddressesPartialUpdateResponse::Other(other) => {
-                Err(NetBoxApiError::Other(other.text().unwrap()))
+                Err(NazaraError::Other(other.text().unwrap()))
             }
         },
-        Err(e) => Err(NetBoxApiError::Reqwest(e)),
+        Err(e) => Err(NazaraError::Reqwest(e)),
     }
 }
 
@@ -824,7 +732,7 @@ pub fn patch_ip(
 /// - `state`: The API client instance to use.
 /// - `payload`: The payload to use.
 #[allow(unused)]
-pub fn get_interface(state: &ThanixClient, id: i64) -> Result<Interface, NetBoxApiError> {
+pub fn get_interface(state: &ThanixClient, id: i64) -> NazaraResult<Interface> {
     println!("Trying to get interface '{}'...", &id);
 
     match dcim_interfaces_retrieve(state, id) {
@@ -834,16 +742,13 @@ pub fn get_interface(state: &ThanixClient, id: i64) -> Result<Interface, NetBoxA
                     interface
                 }
                 thanix_client::paths::DcimInterfacesRetrieveResponse::Other(response) => {
-                    let err: NetBoxApiError = NetBoxApiError::Other(response.text().unwrap());
+                    let err = NazaraError::Other(response.text().unwrap());
                     return Err(err);
                 }
             };
             Ok(interface)
         }
-        Err(e) => {
-            let err: NetBoxApiError = NetBoxApiError::Reqwest(e);
-            Err(err)
-        }
+        Err(e) => Err(NazaraError::Reqwest(e)),
     }
 }
 
@@ -851,7 +756,7 @@ pub fn get_interface(state: &ThanixClient, id: i64) -> Result<Interface, NetBoxA
 ///
 /// - `state`: The API client instance to use.
 #[allow(unused)]
-pub fn get_interface_list(state: &ThanixClient) -> Result<Option<Vec<Interface>>, NetBoxApiError> {
+pub fn get_interface_list(state: &ThanixClient) -> NazaraResult<Option<Vec<Interface>>> {
     println!("Retrieving list of interfaces...");
 
     match dcim_interfaces_list(state, DcimInterfacesListQuery::default()) {
@@ -861,16 +766,12 @@ pub fn get_interface_list(state: &ThanixClient) -> Result<Option<Vec<Interface>>
                     interfaces.results
                 }
                 thanix_client::paths::DcimInterfacesListResponse::Other(other) => {
-                    let err: NetBoxApiError = NetBoxApiError::Other(other.text().unwrap());
-                    return Err(err);
+                    return Err(NazaraError::Other(other.text().unwrap()));
                 }
             };
             Ok(interfaces)
         }
-        Err(e) => {
-            let err: NetBoxApiError = NetBoxApiError::Reqwest(e);
-            Err(err)
-        }
+        Err(e) => Err(NazaraError::Reqwest(e)),
     }
 }
 
@@ -882,7 +783,7 @@ pub fn get_interface_list(state: &ThanixClient) -> Result<Option<Vec<Interface>>
 pub fn get_interface_by_name(
     state: &ThanixClient,
     payload: &WritableInterfaceRequest,
-) -> Result<Interface, NetBoxApiError> {
+) -> NazaraResult<Interface> {
     println!(
         "Trying to retrieve interface by name '{}'...",
         &payload.name
@@ -895,8 +796,7 @@ pub fn get_interface_by_name(
                     interfaces.results.unwrap()
                 }
                 thanix_client::paths::DcimInterfacesListResponse::Other(response) => {
-                    let err: NetBoxApiError = NetBoxApiError::Other(response.text().unwrap());
-                    return Err(err);
+                    return Err(NazaraError::Other(response.text().unwrap()));
                 }
             };
 
@@ -905,14 +805,11 @@ pub fn get_interface_by_name(
                     return Ok(interface);
                 }
             }
-            Err(NetBoxApiError::Other(format!(
+            Err(NazaraError::Other(format!(
                 "No interface '{}' with name found. Creation possibly failed.",
                 &payload.name
             )))
         }
-        Err(e) => {
-            let err: NetBoxApiError = NetBoxApiError::Reqwest(e);
-            Err(err)
-        }
+        Err(e) => Err(NazaraError::Reqwest(e)),
     }
 }

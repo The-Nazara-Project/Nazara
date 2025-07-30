@@ -110,6 +110,7 @@
 
 mod collectors;
 pub mod configuration;
+pub mod error;
 pub mod publisher;
 
 use clap::Parser;
@@ -122,8 +123,13 @@ use configuration::parser::set_up_configuration;
 use publisher::*;
 use reqwest::blocking::Client;
 use serde_json::Value;
-use std::{collections::HashMap, error::Error};
+use std::collections::HashMap;
 use thanix_client::util::ThanixClient;
+
+pub use error::NazaraError;
+
+#[cfg(target_os = "linux")]
+use crate::error::NazaraResult;
 
 /// This struct represents your machine.
 /// It holds all information collected and allows for sharing this
@@ -174,7 +180,7 @@ struct Args {
 }
 
 #[cfg(target_os = "linux")]
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> NazaraResult<()> {
     let args: Args = Args::parse();
 
     const ASCII_ART: &str = r#"
@@ -206,9 +212,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Passing a name in any way is mandatory for a virtual machine.
     if machine.dmi_information.system_information.is_virtual && machine.name.is_none() {
-        return Err(
+        return Err(NazaraError::Other(
             "No name has been provided for this virtual machine! Providing a name as search parameter is mandatory for virtual machines.".into(),
-        );
+        ));
     }
 
     // If we only want to do a dry run, we only have to print the collected information.
