@@ -204,10 +204,7 @@ fn main() -> NazaraResult<()> {
         name: None,
         dmi_information: dmi::construct_dmi_information()?,
         network_information: network::construct_network_information()?,
-        custom_information: match execute(args.plugin) {
-            Ok(info) => Some(info),
-            Err(e) => panic!("{}", e.to_string()),
-        },
+        custom_information: Some(execute(args.plugin)?),
     };
 
     // Passing a name in any way is mandatory for a virtual machine.

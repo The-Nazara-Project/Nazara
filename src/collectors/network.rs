@@ -50,10 +50,14 @@ pub fn construct_network_information() -> NazaraResult<Vec<NetworkInformation>> 
     let mut result = Vec::new();
 
     let my_fut = async {
-        let (connection, handle, _) = new_connection().unwrap();
+        let (connection, handle, _) = new_connection()?;
         tokio::spawn(connection);
         let mut links = handle.link().get().execute();
-        while let Some(msg) = links.try_next().await.unwrap() {
+        while let Some(msg) = links
+            .try_next()
+            .await
+            .map_err(|e| NazaraError::NetlinkError(e.to_string()))?
+        {
             let mut net_int = NetworkInformation::default();
             net_int.index = Some(msg.header.index);
 
@@ -105,8 +109,11 @@ pub fn construct_network_information() -> NazaraResult<Vec<NetworkInformation>> 
         {
             let target_intf = result
                 .iter_mut()
+                // This unwrap is not easily avoidable.
                 .find(|x| x.index.unwrap() == msg.header.index)
-                .unwrap();
+                .ok_or(NazaraError::NetlinkError(
+                    "No matching interface for a Netlink message header".into(),
+                ))?;
             for nia in msg.attributes.into_iter() {
                 match nia {
                     AddressAttribute::Address(addr) => {
@@ -144,7 +151,7 @@ pub fn construct_network_information() -> NazaraResult<Vec<NetworkInformation>> 
     let t: NazaraResult<()> = tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()
-        .unwrap()
+        .map_err(|_| NazaraError::Other("Unable to start tokio runtime".into()))?
         .block_on(my_fut);
     t?;
 

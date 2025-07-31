@@ -13,18 +13,19 @@ use serde_json::Value;
 use thanix_client::{
     paths::{
         DcimDevicesCreateResponse, DcimDevicesListQuery, DcimDevicesListResponse,
-        DcimDevicesPartialUpdateResponse, DcimInterfacesListQuery, DcimInterfacesListResponse,
-        DcimMacAddressesListQuery, DcimMacAddressesListResponse, IpamIpAddressesListQuery,
-        IpamIpAddressesListResponse, IpamIpAddressesPartialUpdateResponse,
-        VirtualizationInterfacesCreateResponse, VirtualizationInterfacesListQuery,
-        VirtualizationInterfacesListResponse, VirtualizationInterfacesUpdateResponse,
-        VirtualizationVirtualMachinesCreateResponse, VirtualizationVirtualMachinesListQuery,
-        VirtualizationVirtualMachinesListResponse,
+        DcimDevicesPartialUpdateResponse, DcimInterfacesCreateResponse, DcimInterfacesListQuery,
+        DcimInterfacesListResponse, DcimInterfacesUpdateResponse, DcimMacAddressesListQuery,
+        DcimMacAddressesListResponse, DcimMacAddressesUpdateResponse,
+        IpamIpAddressesCreateResponse, IpamIpAddressesListQuery, IpamIpAddressesListResponse,
+        IpamIpAddressesPartialUpdateResponse, VirtualizationInterfacesCreateResponse,
+        VirtualizationInterfacesListQuery, VirtualizationInterfacesListResponse,
+        VirtualizationInterfacesUpdateResponse, VirtualizationVirtualMachinesCreateResponse,
+        VirtualizationVirtualMachinesListQuery, VirtualizationVirtualMachinesListResponse,
         VirtualizationVirtualMachinesPartialUpdateResponse, dcim_devices_create, dcim_devices_list,
         dcim_devices_partial_update, dcim_interfaces_create, dcim_interfaces_list,
-        dcim_interfaces_retrieve, dcim_interfaces_update, dcim_mac_addresses_create,
-        dcim_mac_addresses_list, dcim_mac_addresses_update, ipam_ip_addresses_create,
-        ipam_ip_addresses_list, ipam_ip_addresses_partial_update, virtualization_interfaces_create,
+        dcim_interfaces_update, dcim_mac_addresses_create, dcim_mac_addresses_list,
+        dcim_mac_addresses_update, ipam_ip_addresses_create, ipam_ip_addresses_list,
+        ipam_ip_addresses_partial_update, virtualization_interfaces_create,
         virtualization_interfaces_list, virtualization_interfaces_update,
         virtualization_virtual_machines_create, virtualization_virtual_machines_list,
         virtualization_virtual_machines_partial_update,
@@ -125,64 +126,44 @@ fn get_major_verison(version: &str) -> Option<u32> {
 /// - Search results are indecisive. E.g more than one result.
 /// - The API request returns an unexpected response code.
 /// - The API request fails (e.g the connection fails).
-pub fn search_device(client: &ThanixClient, name: &str, serial: &str) -> Option<i64> {
+pub fn search_device(client: &ThanixClient, name: &str, serial: &str) -> NazaraResult<Option<i64>> {
     println!("Checking if device is already registered...");
     let payload = DcimDevicesListQuery {
         name: Some(vec![name.to_owned()]),
         serial: Some(vec![serial.to_owned()]),
         ..Default::default()
     };
-
-    match dcim_devices_list(client, payload) {
-        Ok(response) => match response {
-            DcimDevicesListResponse::Http200(device_list) => {
-                if device_list.results.as_ref()?.len() == 1 {
-                    return Some(device_list.results?.first()?.id);
-                }
-                if device_list.results?.is_empty() {
-                    return None;
-                }
-                panic!(
-                    "Ambiguous search result. Device listed more than once. Please check your data."
-                );
-            }
-            DcimDevicesListResponse::Other(other) => {
-                panic!("{}", other.text().unwrap());
-            }
-        },
-        Err(e) => {
-            panic!("{}", e);
-        }
+    match dcim_devices_list(client, payload)? {
+        DcimDevicesListResponse::Http200(device_list) => Ok(device_list
+            .results
+            .ok_or(NazaraError::NetBoxMissingField(
+                "PaginatedDeviceWithConfigContextList".into(),
+                "results".into(),
+            ))?
+            .first()
+            .map(|x| x.id)),
+        DcimDevicesListResponse::Other(res) => Err(NazaraError::UnexpectedResponse(res)),
     }
 }
 
-pub fn search_vm(client: &ThanixClient, name: &str, serial: &str) -> Option<i64> {
+pub fn search_vm(client: &ThanixClient, name: &str, serial: &str) -> NazaraResult<Option<i64>> {
     println!("Checking if virtual machine is already registered...");
     let payload = VirtualizationVirtualMachinesListQuery {
         name: Some(vec![name.to_owned()]),
         serial: Some(vec![serial.to_owned()]),
         ..Default::default()
     };
-
-    match virtualization_virtual_machines_list(client, payload) {
-        Ok(response) => match response {
-            VirtualizationVirtualMachinesListResponse::Http200(device_list) => {
-                if device_list.results.as_ref()?.len() == 1 {
-                    return Some(device_list.results?.first()?.id);
-                }
-                if device_list.results?.is_empty() {
-                    return None;
-                }
-                panic!(
-                    "Ambiguous search result. Device listed more than once. Please check your data."
-                );
-            }
-            VirtualizationVirtualMachinesListResponse::Other(other) => {
-                panic!("{}", other.text().unwrap());
-            }
-        },
-        Err(e) => {
-            panic!("{}", e);
+    match virtualization_virtual_machines_list(client, payload)? {
+        VirtualizationVirtualMachinesListResponse::Http200(device_list) => Ok(device_list
+            .results
+            .ok_or(NazaraError::NetBoxMissingField(
+                "PaginatedVirtualMachineWithConfigContextList".into(),
+                "results".into(),
+            ))?
+            .first()
+            .map(|x| x.id)),
+        VirtualizationVirtualMachinesListResponse::Other(res) => {
+            Err(NazaraError::UnexpectedResponse(res))
         }
     }
 }
@@ -211,12 +192,7 @@ pub fn create_device(
             );
             Ok(created_device.id)
         }
-        DcimDevicesCreateResponse::Other(other_response) => {
-            panic!(
-                "Unexpected response code '{}' when trying to create a device!",
-                other_response.status()
-            );
-        }
+        DcimDevicesCreateResponse::Other(res) => Err(NazaraError::UnexpectedResponse(res)),
     }
 }
 
@@ -228,10 +204,6 @@ pub fn create_device(
 /// - `client`: The API client instance to use.
 /// - `payload`: The payload for the API request.
 /// - `id`: The ID of the device to update.
-///
-/// # Panics
-///
-/// This function may panic if NetBox doesn't return a `200` response code.
 pub fn update_device(
     client: &ThanixClient,
     payload: PatchedWritableDeviceWithConfigContextRequest,
@@ -243,12 +215,7 @@ pub fn update_device(
             println!("Device updated successfully!");
             Ok(updated_device.id)
         }
-        DcimDevicesPartialUpdateResponse::Other(other_response) => {
-            panic!(
-                "Unexpected response code '{:?}' when trying to update device!",
-                other_response.text()
-            );
-        }
+        DcimDevicesPartialUpdateResponse::Other(res) => Err(NazaraError::UnexpectedResponse(res)),
     }
 }
 
@@ -258,10 +225,6 @@ pub fn update_device(
 /// # Parameters
 /// - `client: &ThanixClient` - The [`ThanixClient`] instance to use for communication.
 /// - `payload: &WritableDeviceWithConfigContextRequest` - The information about the device serving as a request body.
-///
-/// # Panics
-///
-/// This function panics if the response code is not `201`.
 pub fn create_vm(
     client: &ThanixClient,
     payload: WritableVirtualMachineWithConfigContextRequest,
@@ -275,12 +238,8 @@ pub fn create_vm(
             );
             Ok(created_device.id)
         }
-        VirtualizationVirtualMachinesCreateResponse::Other(other_response) => {
-            panic!(
-                "Unexpected response code '{}' when trying to create a virtual machine: {:?}!",
-                other_response.status(),
-                other_response.text()
-            );
+        VirtualizationVirtualMachinesCreateResponse::Other(res) => {
+            Err(NazaraError::UnexpectedResponse(res))
         }
     }
 }
@@ -293,10 +252,6 @@ pub fn create_vm(
 /// - `client`: The API client instance to use.
 /// - `payload`: The payload for the API request.
 /// - `id`: The ID of the device to update.
-///
-/// # Panics
-///
-/// This function may panic if NetBox doesn't return a `200` response code.
 pub fn update_vm(
     client: &ThanixClient,
     payload: PatchedWritableVirtualMachineWithConfigContextRequest,
@@ -309,11 +264,8 @@ pub fn update_vm(
             println!("Device updated successfully!");
             Ok(updated_device.id)
         }
-        VirtualizationVirtualMachinesPartialUpdateResponse::Other(other_response) => {
-            panic!(
-                "Unexpected response code '{}' when trying to update device!",
-                other_response.status()
-            );
+        VirtualizationVirtualMachinesPartialUpdateResponse::Other(res) => {
+            Err(NazaraError::UnexpectedResponse(res))
         }
     }
 }
@@ -338,22 +290,15 @@ pub fn search_mac_address(client: &ThanixClient, mac_address: &str) -> NazaraRes
     payload.mac_address__ic = Some(vec![mac_address.to_string()]);
 
     match dcim_mac_addresses_list(client, payload)? {
-        DcimMacAddressesListResponse::Http200(mac_addresses) => {
-            let addresses = mac_addresses
-                .results
-                .ok_or(NazaraError::Other("FIXME".into()))?;
-            if addresses.len() == 1 {
-                return Ok(Some(addresses[0].id));
-            }
-            if addresses.is_empty() {
-                return Ok(None);
-            }
-            // FIXME: Remove this panic and swap with error.
-            panic!("Ambiguous search result. MAC Address listed more then once.");
-        }
-        DcimMacAddressesListResponse::Other(other) => {
-            panic!("{}", other.text().unwrap());
-        }
+        DcimMacAddressesListResponse::Http200(mac_addresses) => Ok(mac_addresses
+            .results
+            .ok_or(NazaraError::NetBoxMissingField(
+                "PaginatedMACAddressList".into(),
+                "results".into(),
+            ))?
+            .first()
+            .map(|x| x.id)),
+        DcimMacAddressesListResponse::Other(res) => Err(NazaraError::UnexpectedResponse(res)),
     }
 }
 
@@ -379,8 +324,8 @@ pub fn create_mac_address(client: &ThanixClient, payload: MACAddressRequest) -> 
             );
             Ok(result.id)
         }
-        thanix_client::paths::DcimMacAddressesCreateResponse::Other(other_response) => {
-            Err(NazaraError::Other(other_response.text().unwrap()))
+        thanix_client::paths::DcimMacAddressesCreateResponse::Other(res) => {
+            Err(NazaraError::UnexpectedResponse(res))
         }
     }
 }
@@ -398,13 +343,11 @@ pub fn update_mac_address(
     mac_address_id: i64,
 ) -> NazaraResult<i64> {
     match dcim_mac_addresses_update(client, payload, mac_address_id)? {
-        thanix_client::paths::DcimMacAddressesUpdateResponse::Http200(result) => {
+        DcimMacAddressesUpdateResponse::Http200(result) => {
             println!("MAC Address '{}' updated successfully.", result.id);
             Ok(result.id)
         }
-        thanix_client::paths::DcimMacAddressesUpdateResponse::Other(other) => {
-            Err(NazaraError::Other(other.text().unwrap()))
-        }
+        DcimMacAddressesUpdateResponse::Other(res) => Err(NazaraError::UnexpectedResponse(res)),
     }
 }
 
@@ -419,48 +362,37 @@ pub fn update_mac_address(
 /// # Returns
 ///
 /// `Some(i64)` as the ID of the interface object if found. If not, returns `None`.
-///
-/// # Panics
-///
-/// This function panics in these cases:
-/// - The search results are inconclusive (interface is listed multiple times).
-/// - The request returns an unexpected response code.
-/// - The request fails (e.g the connection fails).
-pub fn search_interface(client: &ThanixClient, device_id: i64, name: &String) -> Option<i64> {
+pub fn search_interface(
+    client: &ThanixClient,
+    device_id: i64,
+    name: &String,
+) -> NazaraResult<Option<i64>> {
     println!("Searching for interface '{name}'...");
 
-    let payload: DcimInterfacesListQuery = DcimInterfacesListQuery {
+    let payload = DcimInterfacesListQuery {
         device_id: Some(vec![device_id]),
         name: Some(vec![name.clone()]),
         ..Default::default()
     };
 
-    match dcim_interfaces_list(client, payload) {
-        Ok(response) => match response {
-            DcimInterfacesListResponse::Http200(mut interfaces) => {
-                if interfaces.results.as_mut().unwrap().len() == 1 {
-                    let result = interfaces.results.unwrap();
-                    return Some(result[0].id);
-                }
-                if interfaces.results.unwrap().is_empty() {
-                    return None;
-                }
-                panic!("Ambiguous search result. Interface listed more than once.");
-            }
-            DcimInterfacesListResponse::Other(res) => {
-                panic!(
-                    "Unexpected response code '{}' when trying to search for interface!",
-                    res.status()
-                );
-            }
-        },
-        Err(e) => {
-            panic!("{}", e);
-        }
+    match dcim_interfaces_list(client, payload)? {
+        DcimInterfacesListResponse::Http200(interfaces) => Ok(interfaces
+            .results
+            .ok_or(NazaraError::NetBoxMissingField(
+                "PaginatedInterfaceList".into(),
+                "results".into(),
+            ))?
+            .first()
+            .map(|x| x.id)),
+        DcimInterfacesListResponse::Other(res) => Err(NazaraError::UnexpectedResponse(res)),
     }
 }
 
-pub fn search_vm_interface(client: &ThanixClient, vm_id: i64, name: &String) -> Option<i64> {
+pub fn search_vm_interface(
+    client: &ThanixClient,
+    vm_id: i64,
+    name: &String,
+) -> NazaraResult<Option<i64>> {
     println!("Searching for interface '{name}'...");
 
     let payload = VirtualizationInterfacesListQuery {
@@ -469,27 +401,17 @@ pub fn search_vm_interface(client: &ThanixClient, vm_id: i64, name: &String) -> 
         ..Default::default()
     };
 
-    match virtualization_interfaces_list(client, payload) {
-        Ok(response) => match response {
-            VirtualizationInterfacesListResponse::Http200(mut interfaces) => {
-                if interfaces.results.as_mut().unwrap().len() == 1 {
-                    let result = interfaces.results.unwrap();
-                    return Some(result[0].id);
-                }
-                if interfaces.results.unwrap().is_empty() {
-                    return None;
-                }
-                panic!("Ambiguous search result. Interface listed more than once.");
-            }
-            VirtualizationInterfacesListResponse::Other(res) => {
-                panic!(
-                    "Unexpected response code '{}' when trying to search for interface!",
-                    res.status()
-                );
-            }
-        },
-        Err(e) => {
-            panic!("{}", e);
+    match virtualization_interfaces_list(client, payload)? {
+        VirtualizationInterfacesListResponse::Http200(interfaces) => Ok(interfaces
+            .results
+            .ok_or(NazaraError::NetBoxMissingField(
+                "PaginatedVMInterfaceList".into(),
+                "results".into(),
+            ))?
+            .first()
+            .map(|x| x.id)),
+        VirtualizationInterfacesListResponse::Other(res) => {
+            Err(NazaraError::UnexpectedResponse(res))
         }
     }
 }
@@ -511,16 +433,14 @@ pub fn create_interface(
     println!("Creating network interface in NetBox...");
 
     match dcim_interfaces_create(client, payload)? {
-        thanix_client::paths::DcimInterfacesCreateResponse::Http201(result) => {
+        DcimInterfacesCreateResponse::Http201(result) => {
             println!(
                 " Interface created successfully. New Interface-ID: '{}'",
                 result.id
             );
             Ok(result.id)
         }
-        thanix_client::paths::DcimInterfacesCreateResponse::Other(other_response) => {
-            Err(NazaraError::Other(other_response.text().unwrap()))
-        }
+        DcimInterfacesCreateResponse::Other(res) => Err(NazaraError::UnexpectedResponse(res)),
     }
 }
 
@@ -537,8 +457,8 @@ pub fn create_vm_interface(
             );
             Ok(result.id)
         }
-        VirtualizationInterfacesCreateResponse::Other(other_response) => {
-            Err(NazaraError::Other(other_response.text().unwrap()))
+        VirtualizationInterfacesCreateResponse::Other(res) => {
+            Err(NazaraError::UnexpectedResponse(res))
         }
     }
 }
@@ -560,13 +480,11 @@ pub fn update_interface(
     interface_id: i64,
 ) -> NazaraResult<i64> {
     match dcim_interfaces_update(client, payload, interface_id)? {
-        thanix_client::paths::DcimInterfacesUpdateResponse::Http200(result) => {
+        DcimInterfacesUpdateResponse::Http200(result) => {
             println!("Interface '{}' updated successfully.", result.id);
             Ok(result.id)
         }
-        thanix_client::paths::DcimInterfacesUpdateResponse::Other(other) => {
-            Err(NazaraError::Other(other.text().unwrap()))
-        }
+        DcimInterfacesUpdateResponse::Other(res) => Err(NazaraError::UnexpectedResponse(res)),
     }
 }
 
@@ -580,8 +498,8 @@ pub fn update_vm_interface(
             println!("Interface '{}' updated successfully.", result.id);
             Ok(result.id)
         }
-        VirtualizationInterfacesUpdateResponse::Other(other) => {
-            Err(NazaraError::Other(other.text().unwrap()))
+        VirtualizationInterfacesUpdateResponse::Other(res) => {
+            Err(NazaraError::UnexpectedResponse(res))
         }
     }
 }
@@ -595,70 +513,48 @@ pub fn update_vm_interface(
 ///
 /// # Returns
 /// * `Option<i64>` - The ID of the IP address if it was found, `None` if it wasn't found.
-///
-/// # Panics
-///
-/// This function panics if the search result is ambiguous or an unexpected response code is
-/// received.
-pub fn search_ip(client: &ThanixClient, address: &String, device_id: Option<i64>) -> Option<i64> {
+pub fn search_ip(
+    client: &ThanixClient,
+    address: &String,
+    device_id: Option<i64>,
+) -> NazaraResult<Option<i64>> {
     println!("Searching for IP Address '{address}'...");
-    let payload: IpamIpAddressesListQuery = IpamIpAddressesListQuery {
+    let payload = IpamIpAddressesListQuery {
         address: Some(vec![address.clone()]),
         device_id: device_id.map(|x| vec![x]),
         ..Default::default()
     };
-
-    // FIXME: Switch from panicking to returning a NetBoxApiError as is done everywhere else.
-    // No panic should be used in cases the user can fix the problem.
-    match ipam_ip_addresses_list(client, payload).unwrap() {
-        IpamIpAddressesListResponse::Http200(addresses) => {
-            if addresses.results.as_ref()?.len() == 1 {
-                return Some(addresses.results?.first()?.id);
-            }
-            if addresses.results?.is_empty() {
-                return None;
-            }
-            panic!(
-                "Ambiguous search result. IP address listed more than once. Please check your data."
-            );
-        }
-        IpamIpAddressesListResponse::Other(res) => {
-            panic!(
-                "Unexpected response code '{}' when trying to search for IP addresses!",
-                res.status()
-            );
-        }
-    }
+    submit_ip_query(client, payload)
 }
 
-pub fn search_vm_ip(client: &ThanixClient, address: &String, vm_ip: Option<i64>) -> Option<i64> {
+pub fn search_vm_ip(
+    client: &ThanixClient,
+    address: &String,
+    vm_ip: Option<i64>,
+) -> NazaraResult<Option<i64>> {
     println!("Searching for IP Address '{address}'...");
-    let payload: IpamIpAddressesListQuery = IpamIpAddressesListQuery {
+    let payload = IpamIpAddressesListQuery {
         address: Some(vec![address.clone()]),
         virtual_machine_id: vm_ip.map(|x| vec![x]),
         ..Default::default()
     };
+    submit_ip_query(client, payload)
+}
 
-    // FIXME: Switch from panicking to returning a NetBoxApiError as is done everywhere else.
-    // No panic should be used in cases the user can fix the problem.
-    match ipam_ip_addresses_list(client, payload).unwrap() {
-        IpamIpAddressesListResponse::Http200(addresses) => {
-            if addresses.results.as_ref()?.len() == 1 {
-                return Some(addresses.results?.first()?.id);
-            }
-            if addresses.results?.is_empty() {
-                return None;
-            }
-            panic!(
-                "Ambiguous search result. IP address listed more than once. Please check your data."
-            );
-        }
-        IpamIpAddressesListResponse::Other(res) => {
-            panic!(
-                "Unexpected response code '{}' when trying to search for IP addresses!",
-                res.status()
-            );
-        }
+fn submit_ip_query(
+    client: &ThanixClient,
+    payload: IpamIpAddressesListQuery,
+) -> NazaraResult<Option<i64>> {
+    match ipam_ip_addresses_list(client, payload)? {
+        IpamIpAddressesListResponse::Http200(addresses) => Ok(addresses
+            .results
+            .ok_or(NazaraError::NetBoxMissingField(
+                "PaginatedIPAddressList".into(),
+                "results".into(),
+            ))?
+            .first()
+            .map(|x| x.id)),
+        IpamIpAddressesListResponse::Other(res) => Err(NazaraError::UnexpectedResponse(res)),
     }
 }
 
@@ -674,26 +570,15 @@ pub fn search_vm_ip(client: &ThanixClient, address: &String, vm_ip: Option<i64>)
 /// - `Err(NetBoxApiError)` - If the creation or request itself fail.
 pub fn create_ip(client: &ThanixClient, payload: WritableIPAddressRequest) -> NazaraResult<i64> {
     println!("Creating new IP address object...");
-
-    match ipam_ip_addresses_create(client, payload) {
-        Ok(response) => match response {
-            thanix_client::paths::IpamIpAddressesCreateResponse::Http201(result) => {
-                println!(
-                    " IP Address created successfully. New IP-ID: '{}'",
-                    result.id
-                );
-                Ok(result.id)
-            }
-            thanix_client::paths::IpamIpAddressesCreateResponse::Other(other_response) => {
-                Err(NazaraError::Other(other_response.text().unwrap()))
-            }
-        },
-        Err(e) => {
-            eprintln!(
-                "Error while decoding NetBox response while creating IP address. This probably is still fine and a problem with NetBox.\nError: {e}"
+    match ipam_ip_addresses_create(client, payload)? {
+        IpamIpAddressesCreateResponse::Http201(result) => {
+            println!(
+                " IP Address created successfully. New IP-ID: '{}'",
+                result.id
             );
-            Err(NazaraError::Other(e.to_string()))
+            Ok(result.id)
         }
+        IpamIpAddressesCreateResponse::Other(res) => Err(NazaraError::UnexpectedResponse(res)),
     }
 }
 
@@ -716,62 +601,25 @@ pub fn patch_ip(
 ) -> NazaraResult<i64> {
     println!("Patching IPs for given interface...");
 
-    match ipam_ip_addresses_partial_update(client, payload, id) {
-        Ok(response) => match response {
-            IpamIpAddressesPartialUpdateResponse::Http200(result) => Ok(result.id),
-            IpamIpAddressesPartialUpdateResponse::Other(other) => {
-                Err(NazaraError::Other(other.text().unwrap()))
-            }
-        },
-        Err(e) => Err(NazaraError::Reqwest(e)),
-    }
-}
-
-/// Gets an interface by ID.
-///
-/// - `state`: The API client instance to use.
-/// - `payload`: The payload to use.
-#[allow(unused)]
-pub fn get_interface(state: &ThanixClient, id: i64) -> NazaraResult<Interface> {
-    println!("Trying to get interface '{}'...", &id);
-
-    match dcim_interfaces_retrieve(state, id) {
-        Ok(response) => {
-            let interface: Interface = match response {
-                thanix_client::paths::DcimInterfacesRetrieveResponse::Http200(interface) => {
-                    interface
-                }
-                thanix_client::paths::DcimInterfacesRetrieveResponse::Other(response) => {
-                    let err = NazaraError::Other(response.text().unwrap());
-                    return Err(err);
-                }
-            };
-            Ok(interface)
+    match ipam_ip_addresses_partial_update(client, payload, id)? {
+        IpamIpAddressesPartialUpdateResponse::Http200(result) => Ok(result.id),
+        IpamIpAddressesPartialUpdateResponse::Other(res) => {
+            Err(NazaraError::UnexpectedResponse(res))
         }
-        Err(e) => Err(NazaraError::Reqwest(e)),
     }
 }
 
 /// Gets a list of Interfaces.
 ///
 /// - `state`: The API client instance to use.
-#[allow(unused)]
-pub fn get_interface_list(state: &ThanixClient) -> NazaraResult<Option<Vec<Interface>>> {
+pub fn get_interface_list(state: &ThanixClient) -> NazaraResult<Vec<Interface>> {
     println!("Retrieving list of interfaces...");
 
-    match dcim_interfaces_list(state, DcimInterfacesListQuery::default()) {
-        Ok(response) => {
-            let interfaces = match response {
-                thanix_client::paths::DcimInterfacesListResponse::Http200(interfaces) => {
-                    interfaces.results
-                }
-                thanix_client::paths::DcimInterfacesListResponse::Other(other) => {
-                    return Err(NazaraError::Other(other.text().unwrap()));
-                }
-            };
-            Ok(interfaces)
-        }
-        Err(e) => Err(NazaraError::Reqwest(e)),
+    match dcim_interfaces_list(state, DcimInterfacesListQuery::default())? {
+        DcimInterfacesListResponse::Http200(interfaces) => interfaces.results.ok_or(
+            NazaraError::NetBoxMissingField("PaginatedInterfaceList".into(), "results".into()),
+        ),
+        DcimInterfacesListResponse::Other(res) => Err(NazaraError::UnexpectedResponse(res)),
     }
 }
 
@@ -779,7 +627,6 @@ pub fn get_interface_list(state: &ThanixClient) -> NazaraResult<Option<Vec<Inter
 ///
 /// - `state`: The API client instance to use.
 /// - `payload`: The payload to send.
-#[allow(unused)]
 pub fn get_interface_by_name(
     state: &ThanixClient,
     payload: &WritableInterfaceRequest,
@@ -788,28 +635,11 @@ pub fn get_interface_by_name(
         "Trying to retrieve interface by name '{}'...",
         &payload.name
     );
-
-    match dcim_interfaces_list(state, DcimInterfacesListQuery::default()) {
-        Ok(response) => {
-            let interface_list = match response {
-                thanix_client::paths::DcimInterfacesListResponse::Http200(interfaces) => {
-                    interfaces.results.unwrap()
-                }
-                thanix_client::paths::DcimInterfacesListResponse::Other(response) => {
-                    return Err(NazaraError::Other(response.text().unwrap()));
-                }
-            };
-
-            for interface in interface_list {
-                if interface.name == Some(payload.clone().name) {
-                    return Ok(interface);
-                }
-            }
-            Err(NazaraError::Other(format!(
-                "No interface '{}' with name found. Creation possibly failed.",
-                &payload.name
-            )))
-        }
-        Err(e) => Err(NazaraError::Reqwest(e)),
-    }
+    get_interface_list(state)?
+        .into_iter()
+        .find(|x| x.name.clone().is_some_and(|n| n == payload.name))
+        .ok_or(NazaraError::Other(format!(
+            "No interface '{}' with name found. Creation possibly failed.",
+            &payload.name
+        )))
 }

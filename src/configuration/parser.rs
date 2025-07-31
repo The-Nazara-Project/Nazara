@@ -88,23 +88,19 @@ pub fn set_up_configuration(uri: Option<&str>, token: Option<&str>) -> NazaraRes
     if file_exists(&get_config_path(true)) {
         println!("Configuration file already exists. Validating...");
         // TODO Rewrite validation logic to properly condition here
-        match ConfigData::validate_config_file() {
-            Ok(_) => {
-                println!("Configuration file valid. Loading defaults...");
-                conf_data = ConfigData::read_config_file();
+        ConfigData::validate_config_file()?;
+        println!("Configuration file valid. Loading defaults...");
+        conf_data = ConfigData::read_config_file()?;
 
-                if let Some(x) = uri {
-                    conf_data.netbox.netbox_uri = x.to_owned();
-                }
-
-                if let Some(x) = token {
-                    conf_data.netbox.netbox_api_token = x.to_owned();
-                }
-
-                return Ok(conf_data);
-            }
-            Err(err) => return Err(err),
+        if let Some(x) = uri {
+            conf_data.netbox.netbox_uri = x.to_owned();
         }
+
+        if let Some(x) = token {
+            conf_data.netbox.netbox_api_token = x.to_owned();
+        }
+
+        return Ok(conf_data);
     }
 
     println!("No config file found. Creating default...");
@@ -113,17 +109,17 @@ pub fn set_up_configuration(uri: Option<&str>, token: Option<&str>) -> NazaraRes
     println!("Default configuration file created successfully.");
 
     if uri.is_none() || token.is_none() {
-        panic!(
-            "{}",
-            NazaraError::MissingConfigOptionError(String::from("netbox_uri, netbox_token"))
-        );
+        return Err(NazaraError::MissingConfigOptionError(String::from(
+            "netbox_uri, netbox_token",
+        )));
     }
 
-    conf_data = ConfigData::read_config_file();
+    conf_data = ConfigData::read_config_file()?;
 
-    if uri.is_some() && token.is_some() && token.is_some() {
-        conf_data.netbox.netbox_uri = uri.unwrap().to_owned();
-        conf_data.netbox.netbox_api_token = token.unwrap().to_owned();
+    // FIXME: This is a good place for if-let chains, but some older compilers don't support that.
+    if let (Some(u), Some(t)) = (uri, token) {
+        conf_data.netbox.netbox_uri = u.to_owned();
+        conf_data.netbox.netbox_api_token = t.to_owned();
     }
 
     println!("Configuration loaded.");
@@ -229,17 +225,13 @@ impl ConfigData {
 
     /// Opens and reads the config file and writes the set parameters into a
     /// [`ConfigData`] object, which is then returned.
-    ///
-    /// # Panics
-    ///
-    /// This function will panic if it cannot read the config file.
-    fn read_config_file() -> ConfigData {
-        let mut file = File::open(get_config_path(true)).unwrap();
+    fn read_config_file() -> NazaraResult<ConfigData> {
+        let mut file = File::open(get_config_path(true))?;
 
         let mut contents = String::new();
-        file.read_to_string(&mut contents).unwrap();
+        file.read_to_string(&mut contents)?;
 
-        toml::from_str(&contents).unwrap()
+        toml::from_str(&contents).map_err(|x| x.into())
     }
 
     /// Returns NetBox URL. Necessary for payload generation.
