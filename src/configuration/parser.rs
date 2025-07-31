@@ -73,13 +73,6 @@ pub struct VmConfig {
 /// * `uri: Option<&str>` - The URI of the NetBox instance
 /// * `token: Option<&str>` - The API tokent to be used
 /// * `name: Option<&str>` - The name of the machine to register
-///
-/// # Panics
-///
-/// The function panics under these conditions:
-/// - If the initialization of the config file raises an error.
-/// - When using a default (empty) configuration file and not providing all required CLI arguments.
-/// - If the configuration file cannot be read.
 pub fn set_up_configuration(uri: Option<&str>, token: Option<&str>) -> NazaraResult<ConfigData> {
     let mut conf_data;
 
@@ -166,11 +159,6 @@ impl ConfigData {
     /// * `uri: Option<&str>` - The URI of the NetBox instance
     /// * `token: Option<&str>` - The API tokent to be used
     /// * `name: Option<&str>` - The name of the machine to register
-    ///
-    /// # Panics
-    ///
-    /// If it is not able to create a new config file at `$HOME/.config/nazara/config.toml` or if it cannot write the defaults
-    /// to the file, the function panics as this is the main method of configuring the program.
     fn initialize_config_file(uri: Option<&str>, token: Option<&str>) -> NazaraResult<()> {
         let file = include_str!("config_template.toml");
         let mut contents = file.to_owned();

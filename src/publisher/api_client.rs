@@ -119,13 +119,6 @@ fn get_major_verison(version: &str) -> Option<u32> {
 ///
 /// # Returns
 /// - `Option<i64>` - The ID of the device, if it exists. Else `None`.
-///
-/// # Panics
-///
-/// This function panics under following conditions:
-/// - Search results are indecisive. E.g more than one result.
-/// - The API request returns an unexpected response code.
-/// - The API request fails (e.g the connection fails).
 pub fn search_device(client: &ThanixClient, name: &str, serial: &str) -> NazaraResult<Option<i64>> {
     println!("Checking if device is already registered...");
     let payload = DcimDevicesListQuery {
@@ -174,10 +167,6 @@ pub fn search_vm(client: &ThanixClient, name: &str, serial: &str) -> NazaraResul
 /// # Parameters
 /// - `client: &ThanixClient` - The [`ThanixClient`] instance to use for communication.
 /// - `payload: &WritableDeviceWithConfigContextRequest` - The information about the device serving as a request body.
-///
-/// # Panics
-///
-/// This function panics if the response code is not `201`.
 pub fn create_device(
     client: &ThanixClient,
     payload: WritableDeviceWithConfigContextRequest,
@@ -279,10 +268,6 @@ pub fn update_vm(
 /// # Returns
 ///
 /// - `Option<i64>` - If it is found, will return the ID of the MAC address object in NetBox, else will return `None`.
-///
-/// # Panics
-///
-/// This function panics if the API request fails.
 pub fn search_mac_address(client: &ThanixClient, mac_address: &str) -> NazaraResult<Option<i64>> {
     println!("Searching for mac address...");
 
@@ -312,8 +297,7 @@ pub fn search_mac_address(client: &ThanixClient, mac_address: &str) -> NazaraRes
 /// # Returns
 ///
 /// - `Ok(i64)` - Returns the ID of the newly created MAC address.
-/// - `Err(NetBoxAPIError)` - Returns an Error in case the request fails or get an unexpected
-/// response.
+/// - `Err(NetBoxAPIError)` - Returns an Error in case the request fails or get an unexpected response.
 pub fn create_mac_address(client: &ThanixClient, payload: MACAddressRequest) -> NazaraResult<i64> {
     println!("Creating MAC address in NetBox...");
     match dcim_mac_addresses_create(client, payload)? {
@@ -612,6 +596,7 @@ pub fn patch_ip(
 /// Gets a list of Interfaces.
 ///
 /// - `state`: The API client instance to use.
+#[allow(unused)]
 pub fn get_interface_list(state: &ThanixClient) -> NazaraResult<Vec<Interface>> {
     println!("Retrieving list of interfaces...");
 
@@ -627,6 +612,7 @@ pub fn get_interface_list(state: &ThanixClient) -> NazaraResult<Vec<Interface>> 
 ///
 /// - `state`: The API client instance to use.
 /// - `payload`: The payload to send.
+#[allow(unused)]
 pub fn get_interface_by_name(
     state: &ThanixClient,
     payload: &WritableInterfaceRequest,
