@@ -69,10 +69,9 @@ pub struct VmConfig {
 /// If command line arguments are given, the parameters read from the file will be overwritten.
 ///
 /// # Parameters
-///
-/// * `uri: Option<&str>` - The URI of the NetBox instance
-/// * `token: Option<&str>` - The API tokent to be used
-/// * `name: Option<&str>` - The name of the machine to register
+/// - `uri`: The URI of the NetBox instance
+/// - `token`: The API tokent to be used
+/// - `name`: The name of the machine to register
 pub fn set_up_configuration(uri: Option<&str>, token: Option<&str>) -> NazaraResult<ConfigData> {
     let mut conf_data;
 
@@ -123,12 +122,10 @@ pub fn set_up_configuration(uri: Option<&str>, token: Option<&str>) -> NazaraRes
 /// Returns true if the file exists.
 ///
 /// # Parameters
-///
-/// * `path: &Path` - The filepath to check.
+/// - `path`: The filepath to check.
 ///
 /// # Returns
-///
-/// True/False depending on whether the file exists.
+/// True if the file exists.
 fn file_exists(path: &Path) -> bool {
     if let Ok(metadata) = fs::metadata(path) {
         metadata.is_file()
@@ -141,7 +138,6 @@ fn file_exists(path: &Path) -> bool {
 /// This function will fetch the path to the home directory from the `$HOME` environment variable.
 ///
 /// # Panics
-///
 /// This function panics if no `$HOME` variable can be found.
 fn get_config_path(with_file: bool) -> PathBuf {
     let home_dir = std::env::var("HOME").expect("No $HOME variable found!");
@@ -155,10 +151,9 @@ impl ConfigData {
     /// Initializes a new default configuration file if none exists.
     ///
     /// # Parameters
-    ///
-    /// * `uri: Option<&str>` - The URI of the NetBox instance
-    /// * `token: Option<&str>` - The API tokent to be used
-    /// * `name: Option<&str>` - The name of the machine to register
+    /// - `uri`: The URI of the NetBox instance
+    /// - `token`: The API tokent to be used
+    /// - `name`: The name of the machine to register
     fn initialize_config_file(uri: Option<&str>, token: Option<&str>) -> NazaraResult<()> {
         let file = include_str!("config_template.toml");
         let mut contents = file.to_owned();

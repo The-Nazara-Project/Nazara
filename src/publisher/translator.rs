@@ -34,13 +34,12 @@ use thanix_client::types::{
 /// Certain information provided in the config file will be overwritten if a different one is detected by the collector!
 ///
 /// # Parameters
-/// - `state: &ThanixClient` - API Client instance used for search and validation.
-/// - `machine: &Machine` -  Collected information about the device.
-/// - `config_data: ConfigData` -  Additional information about the device provided by config file or CLI.
+/// - `state`: API Client instance used for search and validation.
+/// - `machine`: Collected information about the device.
+/// - `config_data`: Additional information about the device provided by config file or CLI.
 ///
 /// # Returns
-///
-/// - `WritableDeviceWithConfigContextRequest` - A device payload.
+/// A device payload.
 pub fn information_to_device(
     machine: &Machine,
     common: &CommonConfig,
@@ -80,11 +79,14 @@ pub fn information_to_existing_device(
 }
 
 /// Translate gathered information about the virtual machine into a usable Payload.
-/// Returns a payload for the VM POST or UPDATE request.
 ///
+/// # Parameters
 /// - `state`: The client instance to be used for communication.
 /// - `machine`: The collected information about the virtual machine.
 /// - `config_data`: Data parsed from the `nazar-config.toml`.
+///
+/// # Returns
+/// A payload for the VM POST or UPDATE request.
 pub fn information_to_vm(
     machine: &Machine,
     common: &CommonConfig,
@@ -136,12 +138,12 @@ pub fn information_to_existing_vm(
 /// Translates gathered information into a Interface payload.
 ///
 /// # Parameters
-/// - `interface: &NetworkInformation` - The interface to be translated into a payload.
-/// - `config_data: &ConfigData` - The configuration data.
-/// - `device_id: &i64` - The ID of the device that this interface belongs to.
+/// - `interface`: The interface to be translated into a payload.
+/// - `config_data`: The configuration data.
+/// - `device_id`: The ID of the device that this interface belongs to.
 ///
 /// # Returns
-/// - `WritableInterfaceRequest` - The payload to use for Interface operations.
+/// The payload to use for Interface operations.
 pub fn information_to_interface(
     config_data: &CommonConfig,
     interface: &NetworkInformation,
@@ -198,8 +200,8 @@ pub fn information_to_vm_interface(
 /// Returns the payload necessary to create a new IP address.
 ///
 /// # Parameters
-/// - `interface_address: IpAddr` - The IpAddress of the interface to register.
-/// - `interface_id: i64` - ID of the network interface this IP belongs to.
+/// - `interface_address`: The IpAddress of the interface to register.
+/// - `interface_id`: ID of the network interface this IP belongs to.
 pub fn information_to_ip(
     interface_address: IpAddr,
     interface_id: i64,

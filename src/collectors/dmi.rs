@@ -1,10 +1,9 @@
 //! This module provides logic to collect and process system information by using SMBIOS and DMI tables.
 
+use crate::{NazaraError, error::NazaraResult};
 use dmidecode::{Structure, processor::ProcessorType};
 use serde::Serialize;
 use std::fs;
-
-use crate::NazaraError;
 
 #[derive(Serialize, Debug)]
 pub struct DmiInformation {
@@ -64,12 +63,11 @@ pub struct CpuInformation {
 /// Parses SMBIOS and DMI tables from the sysfs.
 ///
 /// # Returns
-///
-/// Returns an error if:
+/// DMI information, or an error if:
 /// - The SMBIOS header or DMI table cannot be read from filesystem.
 /// - The DMI entry point search fails.
 /// - Any of the required structures (system, chassis, CPU) are missing or malformed.
-pub fn construct_dmi_information() -> Result<DmiInformation, NazaraError> {
+pub fn construct_dmi_information() -> NazaraResult<DmiInformation> {
     println!("Collecting DMI Information...");
 
     // Get the SMBIOS header and DMI table from sysfs.

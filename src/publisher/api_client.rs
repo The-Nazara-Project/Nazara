@@ -39,16 +39,17 @@ use thanix_client::{
     util::ThanixClient,
 };
 
-/// Tests the connection to the NetBox API and verifies if your `thanix_client` version is compatible
+/// Tests the connection to the NetBox API and verifies if your [`thanix_client`] version is compatible
 /// with your NetBox version.
 ///
-/// Returns `Ok(())` if the connection to the API is successful and the `thanix_client` version is
-/// compatible with the used NetBox version.
-/// Returns an `Err` with `publisher_exceptions::NetBoxApiError` if the connection fails or the
-/// `thanix_client` version is not compatible with your NetBox version.
-///
 ///	# Parameters
-/// * `client: &ThanixClient` - The client instance to be used for communication.
+/// - `client`: The client instance to be used for communication.
+///
+/// # Returns
+/// `Ok(())` if the connection to the API is successful and the [`thanix_client`] version is
+/// compatible with the used NetBox version.
+/// Otherwise an `Err` with [`NazaraError::NetBoxApiError`] if the connection fails or the
+/// [`thanix_client`] version is not compatible with your NetBox version.
 pub fn test_connection(client: &ThanixClient) -> Result<(), NazaraError> {
     let url: String = format!("{}/api/status/", client.base_url);
 
@@ -86,8 +87,8 @@ pub fn test_connection(client: &ThanixClient) -> Result<(), NazaraError> {
 /// version `v2.x` will be compatible with NetBox version `v4.x` and above.
 ///
 /// # Parameters
-/// * `netbox_version: &str` - The version of the NetBox instance extracted from the response.
-/// * `thanix_version: &str` - The version of the installed `thanix_client` dependency.
+/// - `netbox_version`: The version of the NetBox instance extracted from the response.
+/// - `thanix_version`: The version of the installed `thanix_client` dependency.
 fn check_version_compatiblity(netbox_version: &str, thanix_version: &str) -> bool {
     println!("Checking API client compatibility with used NetBox version...");
     let netbox_major = get_major_verison(netbox_version);
@@ -101,10 +102,12 @@ fn check_version_compatiblity(netbox_version: &str, thanix_version: &str) -> boo
 }
 
 /// Gets the major version from the given version String.
-/// Returns `Some(u32)` if the version can be parsed to an `u32`.
 ///
 /// # Parameters
 /// - `version`: String representation of the application version.
+///
+/// # Returns
+/// `Some(u32)` if the version can be parsed to an `u32`.
 fn get_major_verison(version: &str) -> Option<u32> {
     version.split('.').next()?.parse().ok()
 }
@@ -112,13 +115,13 @@ fn get_major_verison(version: &str) -> Option<u32> {
 /// Search a device by sending a `DcimDevicesListQuery` with given search parameters.
 /// Returns the ID of the device if it exists.
 ///
-///	# Parameters
-/// - `client: &ThanixClient` - The API client instance to use.
-/// - `name: &str` - The name of the machine to search for.
-/// - `serial: &str` - The serial number of the machine.
+/// # Parameters
+/// - `client`: The API client instance to use.
+/// - `name`: The name of the machine to search for.
+/// - `serial:` The serial number of the machine.
 ///
 /// # Returns
-/// - `Option<i64>` - The ID of the device, if it exists. Else `None`.
+/// The ID of the device, if it exists. Else `None`.
 pub fn search_device(client: &ThanixClient, name: &str, serial: &str) -> NazaraResult<Option<i64>> {
     println!("Checking if device is already registered...");
     let payload = DcimDevicesListQuery {
@@ -165,8 +168,8 @@ pub fn search_vm(client: &ThanixClient, name: &str, serial: &str) -> NazaraResul
 /// Returns the ID of the newly created Device object.
 ///
 /// # Parameters
-/// - `client: &ThanixClient` - The [`ThanixClient`] instance to use for communication.
-/// - `payload: &WritableDeviceWithConfigContextRequest` - The information about the device serving as a request body.
+/// - `client`: The [`ThanixClient`] instance to use for communication.
+/// - `payload`: The information about the device serving as a request body.
 pub fn create_device(
     client: &ThanixClient,
     payload: WritableDeviceWithConfigContextRequest,
@@ -186,13 +189,15 @@ pub fn create_device(
 }
 
 /// Updates a device with a given ID.
-/// Returns the ID of the updated device.
 /// Will simply overwrite the given device object in NetBox with the collected information.
 ///
 /// # Parameters
 /// - `client`: The API client instance to use.
 /// - `payload`: The payload for the API request.
 /// - `id`: The ID of the device to update.
+///
+/// # Returns
+/// The ID of the updated device.
 pub fn update_device(
     client: &ThanixClient,
     payload: PatchedWritableDeviceWithConfigContextRequest,
@@ -209,11 +214,13 @@ pub fn update_device(
 }
 
 /// Send request to create a new device in NetBox.
-/// Returns the ID of the newly created Device object.
 ///
 /// # Parameters
-/// - `client: &ThanixClient` - The [`ThanixClient`] instance to use for communication.
-/// - `payload: &WritableDeviceWithConfigContextRequest` - The information about the device serving as a request body.
+/// - `client`: The [`ThanixClient`] instance to use for communication.
+/// - `payload`: The information about the device serving as a request body.
+///
+/// # Returns
+/// Returns the ID of the newly created Device object.
 pub fn create_vm(
     client: &ThanixClient,
     payload: WritableVirtualMachineWithConfigContextRequest,
@@ -234,13 +241,15 @@ pub fn create_vm(
 }
 
 /// Updates a device with a given ID.
-/// Returns the ID of the updated device.
 /// Will simply overwrite the given device object in NetBox with the collected information.
 ///
 /// # Parameters
 /// - `client`: The API client instance to use.
 /// - `payload`: The payload for the API request.
 /// - `id`: The ID of the device to update.
+///
+/// # Returns
+/// Returns the ID of the updated device.
 pub fn update_vm(
     client: &ThanixClient,
     payload: PatchedWritableVirtualMachineWithConfigContextRequest,
@@ -262,12 +271,11 @@ pub fn update_vm(
 /// Searches for a given MAC address object.
 ///
 /// # Parameters
-/// - `client: &ThanixClient` - The API client instance to use.
-/// - `mac_address: &str` - The MAC address to search for.
+/// - `client`: The API client instance to use.
+/// - `mac_address`: The MAC address to search for.
 ///
 /// # Returns
-///
-/// - `Option<i64>` - If it is found, will return the ID of the MAC address object in NetBox, else will return `None`.
+/// If it is found, the ID of the MAC address object in NetBox, else will return `None`.
 pub fn search_mac_address(client: &ThanixClient, mac_address: &str) -> NazaraResult<Option<i64>> {
     println!("Searching for mac address...");
 
@@ -290,14 +298,11 @@ pub fn search_mac_address(client: &ThanixClient, mac_address: &str) -> NazaraRes
 /// Creates new MAC address object.
 ///
 /// # Parameters
-///
-/// * `client: &ThanixClient` - The API client instance to use.
-/// * `payload: MACAddressRequest` - The API request payload.
+/// - `client`: The API client instance to use.
+/// - `payload`: The API request payload.
 ///
 /// # Returns
-///
-/// - `Ok(i64)` - Returns the ID of the newly created MAC address.
-/// - `Err(NetBoxAPIError)` - Returns an Error in case the request fails or get an unexpected response.
+/// The ID of the newly created MAC address.
 pub fn create_mac_address(client: &ThanixClient, payload: MACAddressRequest) -> NazaraResult<i64> {
     println!("Creating MAC address in NetBox...");
     match dcim_mac_addresses_create(client, payload)? {
@@ -317,9 +322,9 @@ pub fn create_mac_address(client: &ThanixClient, payload: MACAddressRequest) -> 
 /// Updates a MAC address object.
 ///
 /// # Parameters
-/// * `client: &ThanixClient` - The API client instance to use.
-/// * `payload: MACAddressRequest` - The MAC address payload to update the MAC address with.
-/// * `mac_address_id: i64` - The ID of the MAC address to update.
+/// - `client`: The API client instance to use.
+/// - `payload`: The MAC address payload to update the MAC address with.
+/// - `mac_address_id`: The ID of the MAC address to update.
 #[allow(unused)]
 pub fn update_mac_address(
     client: &ThanixClient,
@@ -336,16 +341,14 @@ pub fn update_mac_address(
 }
 
 /// Searches for interfaces with a given search parameters.
-/// Returns the ID of the interface when it is found, else returns `None`
 ///
 /// # Parameters
-/// - `client: &ThanixClient`: The `ThanixClient` instance to use for communication.
-/// - `device_id: i64`: The ID of the device this interface is linked to.
-/// - `name: &String`: The name of this interface.
+/// - `client`: The `ThanixClient` instance to use for communication.
+/// - `device_id`: The ID of the device this interface is linked to.
+/// - `name`: The name of this interface.
 ///
 /// # Returns
-///
-/// `Some(i64)` as the ID of the interface object if found. If not, returns `None`.
+/// Returns the ID of the interface when it is found, else returns `None`.
 pub fn search_interface(
     client: &ThanixClient,
     device_id: i64,
@@ -377,7 +380,7 @@ pub fn search_vm_interface(
     vm_id: i64,
     name: &String,
 ) -> NazaraResult<Option<i64>> {
-    println!("Searching for interface '{name}'...");
+    println!("Searching for VM interface '{name}'...");
 
     let payload = VirtualizationInterfacesListQuery {
         virtual_machine_id: Some(vec![vm_id]),
@@ -401,15 +404,13 @@ pub fn search_vm_interface(
 }
 
 /// Creates an interface object in NetBox.
-/// Returns the ID of the interface object.
 ///
 /// # Parameters
-/// - `client: &ThanixClient` - The client instance necessary for communication.
-/// - `payload: WritableInterfaceRequest` - The payload for the API request.
+/// - `client`: The client instance necessary for communication.
+/// - `payload`: The payload for the API request.
 ///
 /// # Returns
-/// - `Ok(i64)` - ID of the interface, If the creation was successful.
-/// - `Err(NetBoxApiError)` - If the creation was unsuccessful or the request itself failed.
+/// The ID of the interface object if the creation was successful.
 pub fn create_interface(
     client: &ThanixClient,
     payload: WritableInterfaceRequest,
@@ -451,13 +452,12 @@ pub fn create_vm_interface(
 /// Returns the ID of the updated interface.
 ///
 /// # Parameters
-/// - `client: &ThanixClient` - The API client instance to use.
-/// - `payload: WritableInterfaceRequest` - The API request payload to use.
-/// - `interface_id: i64` - The ID of the interface to update.
+/// - `client`: The API client instance to use.
+/// - `payload`: The API request payload to use.
+/// - `interface_id`: The ID of the interface to update.
 ///
 /// # Returns
-/// - `Ok(i64)` - ID of the updated interface if the update was successful.
-/// - `Err(NetBoxApiError)` - If the update or request has failed.
+/// The ID of the updated interface if the update was successful.
 pub fn update_interface(
     client: &ThanixClient,
     payload: WritableInterfaceRequest,
@@ -491,12 +491,12 @@ pub fn update_vm_interface(
 /// Search given IP Address.
 ///
 /// # Parameters
-/// * `client: &ThanixClient` - The API client instance to use.
-/// * `address: &String` - The address to search for.
-/// * `device_id: Option<i64>` - The ID of the device this address is linked to, if any.
+/// - `client`: The API client instance to use.
+/// - `address`: The address to search for.
+/// - `device_id`: The ID of the device this address is linked to, if any.
 ///
 /// # Returns
-/// * `Option<i64>` - The ID of the IP address if it was found, `None` if it wasn't found.
+/// The ID of the IP address if it was found, otherwise `None`.
 pub fn search_ip(
     client: &ThanixClient,
     address: &String,
@@ -543,15 +543,13 @@ fn submit_ip_query(
 }
 
 /// Creates new IP adress object.
-/// Returns the ID of the new IPAddress object.
 ///
 /// # Parameters
-/// - `client: &ThanixClient` - The client instance necessary for communication.
-/// - `payload: WritableIPAddressRequest` - The payload to send.
+/// - `client`: The client instance necessary for communication.
+/// - `payload`: The payload to send.
 ///
 /// # Returns
-/// - `Ok(i64)` - If the creation of the IP address was successful.
-/// - `Err(NetBoxApiError)` - If the creation or request itself fail.
+/// Returns the ID of the new IPAddress object if the creation of the IP address was successful.
 pub fn create_ip(client: &ThanixClient, payload: WritableIPAddressRequest) -> NazaraResult<i64> {
     println!("Creating new IP address object...");
     match ipam_ip_addresses_create(client, payload)? {
@@ -567,17 +565,14 @@ pub fn create_ip(client: &ThanixClient, payload: WritableIPAddressRequest) -> Na
 }
 
 /// Patches a given IP address object.
-/// Returns the ID of the updated object.
 ///
 /// # Parameters
-/// - `client: &ThanixClient` - The API client instance to use.
-/// - `payload: PatchedWritableIPAddressRequest`: The API call payload.
-/// - `id: i64`: The ID of the IP Address to update.
+/// - `client`: The API client instance to use.
+/// - `payload`: The API call payload.
+/// - `id`: The ID of the IP Address to update.
 ///
 /// # Returns
-///
-/// - `Ok(i64)` - The ID of the patched IP address object, if successful.
-/// - `Err(NetBoxApiError)` - If the request fails or an unexpected response is received.
+/// The ID of the patched IP address object, if successful.
 pub fn patch_ip(
     client: &ThanixClient,
     payload: PatchedWritableIPAddressRequest,
@@ -595,6 +590,7 @@ pub fn patch_ip(
 
 /// Gets a list of Interfaces.
 ///
+/// # Parameters
 /// - `state`: The API client instance to use.
 #[allow(unused)]
 pub fn get_interface_list(state: &ThanixClient) -> NazaraResult<Vec<Interface>> {
@@ -610,6 +606,7 @@ pub fn get_interface_list(state: &ThanixClient) -> NazaraResult<Vec<Interface>> 
 
 /// Attempts to retrieve an interface by its name.
 ///
+/// # Parameters
 /// - `state`: The API client instance to use.
 /// - `payload`: The payload to send.
 #[allow(unused)]

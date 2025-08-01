@@ -14,10 +14,10 @@ use crate::error::NazaraResult;
 /// Executes a given script.
 ///
 /// # Parameters
-/// * `path: ` - The Path of the script to execute relative to the CWD. (If none, the plugins directory will be searched).
+/// - `path`: The Path of the script to execute relative to the CWD. (If none, the plugins directory will be searched).
 ///
 /// # Returns
-/// * `Ok(HashMap<String, Value, RandomState>)` - The information collected form the plugin.
+/// The information collected form the plugin.
 pub fn execute(path: Option<String>) -> NazaraResult<HashMap<String, Value>> {
     let script_path = match path.as_deref() {
         Some(p) => Path::new(p),
@@ -52,9 +52,12 @@ pub fn execute(path: Option<String>) -> NazaraResult<HashMap<String, Value>> {
 }
 
 /// Validates the output of the given plugin to ensure it is valid JSON.
-/// Returns a [`CollectorError::InvalidPluginOutput`] if the output is not valid JSON.
 ///
+/// # Parameters
 /// - `output`: The output string to validate.
+///
+/// # Returns
+/// A [`NazaraError::InvalidPluginOutput`] if the output is not valid JSON.
 fn validate(output: &str) -> NazaraResult<()> {
     serde_json::from_str::<Value>(output)
         .map(|_| ())
