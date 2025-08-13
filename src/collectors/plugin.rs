@@ -3,29 +3,26 @@
 //!
 //! Currently, Nazara is set to handle `bash`, `python` and `Lua` scripts.
 
-use crate::collectors::errors::CollectorError;
 use serde_json::{self, Value};
 use std::collections::HashMap;
-use std::hash::RandomState;
+use std::path::Path;
 use std::process::Command;
-use std::{error::Error, path::Path};
+
+use crate::NazaraError;
+use crate::error::NazaraResult;
 
 /// Executes a given script.
 ///
 /// # Parameters
-/// * `path: ` - The Path of the script to execute relative to the CWD. (If none, the plugins directory will be searched).
+/// - `path`: The Path of the script to execute relative to the CWD. (If none, the plugins directory will be searched).
 ///
 /// # Returns
-/// * `Ok(HashMap<String, Value, RandomState>)` - The information collected form the plugin.
-pub fn execute(
-    path: Option<String>,
-) -> Result<HashMap<String, Value, RandomState>, Box<dyn Error>> {
+/// The information collected form the plugin.
+pub fn execute(path: Option<String>) -> NazaraResult<HashMap<String, Value>> {
     let script_path = match path.as_deref() {
         Some(p) => Path::new(p),
         None => {
-            println!(
-                "\x1b[36m[info]\x1b[0m No plugin path provided. Custom field parameters ignored."
-            );
+            println!("No plugin path provided. Custom field parameters ignored.");
             return Ok(HashMap::new());
         }
     };
@@ -42,28 +39,29 @@ pub fn execute(
     let output = Command::new("bash").arg(script_path).output()?;
 
     if !output.status.success() {
-        let err = CollectorError::PluginExecution(
+        return Err(NazaraError::PluginExecution(
             "Either you have a syntax error in your code or the file does not exist.".to_string(),
-        );
-        return Err(err.into());
+        ));
     }
 
     let stdout_str = String::from_utf8(output.stdout)?;
 
     validate(&stdout_str)?; // Validate JSON format
 
-    let json_output: HashMap<String, Value> = serde_json::from_str(&stdout_str)?;
-    Ok(json_output)
+    Ok(serde_json::from_str(&stdout_str)?)
 }
 
 /// Validates the output of the given plugin to ensure it is valid JSON.
-/// Returns a [`CollectorError::InvalidPluginOutput`] if the output is not valid JSON.
 ///
+/// # Parameters
 /// - `output`: The output string to validate.
-fn validate(output: &str) -> Result<(), CollectorError> {
+///
+/// # Returns
+/// A [`NazaraError::InvalidPluginOutput`] if the output is not valid JSON.
+fn validate(output: &str) -> NazaraResult<()> {
     serde_json::from_str::<Value>(output)
         .map(|_| ())
-        .map_err(CollectorError::InvalidPluginOutput)
+        .map_err(NazaraError::InvalidPluginOutput)
 }
 
 #[cfg(test)]
@@ -101,7 +99,7 @@ mod tests {
 
         let result = validate(invalid_json);
         assert!(result.is_err());
-        if let Err(CollectorError::InvalidPluginOutput(e)) = result {
+        if let Err(NazaraError::InvalidPluginOutput(e)) = result {
             // Convert the error to a string and check its content
             let error_message = e.to_string();
             assert!(

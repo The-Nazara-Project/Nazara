@@ -1,9 +1,9 @@
 //! This module provides logic to collect and process system information by using SMBIOS and DMI tables.
 
-use super::errors::CollectorError;
+use crate::{NazaraError, error::NazaraResult};
 use dmidecode::{Structure, processor::ProcessorType};
 use serde::Serialize;
-use std::{error::Error, fs};
+use std::fs;
 
 #[derive(Serialize, Debug)]
 pub struct DmiInformation {
@@ -63,12 +63,11 @@ pub struct CpuInformation {
 /// Parses SMBIOS and DMI tables from the sysfs.
 ///
 /// # Returns
-///
-/// Returns an error if:
+/// DMI information, or an error if:
 /// - The SMBIOS header or DMI table cannot be read from filesystem.
 /// - The DMI entry point search fails.
 /// - Any of the required structures (system, chassis, CPU) are missing or malformed.
-pub fn construct_dmi_information() -> Result<DmiInformation, Box<dyn Error>> {
+pub fn construct_dmi_information() -> NazaraResult<DmiInformation> {
     println!("Collecting DMI Information...");
 
     // Get the SMBIOS header and DMI table from sysfs.
@@ -83,7 +82,7 @@ pub fn construct_dmi_information() -> Result<DmiInformation, Box<dyn Error>> {
     // Iterate over the DMI tables.
     for table in entry.structures(&dmi) {
         let Ok(t) = table else {
-            eprintln!("[warn] DMI tables contain malformed structure: {table:?}");
+            println!("DMI tables contain malformed structure: {table:?}");
             continue;
         };
 
@@ -130,13 +129,13 @@ pub fn construct_dmi_information() -> Result<DmiInformation, Box<dyn Error>> {
     }
 
     Ok(DmiInformation {
-        system_information: system_information.ok_or(CollectorError::UnableToCollectData(
+        system_information: system_information.ok_or(NazaraError::UnableToCollectData(
             "Couldn't collect system information".to_owned(),
         ))?,
-        chassis_information: chassis_information.ok_or(CollectorError::UnableToCollectData(
+        chassis_information: chassis_information.ok_or(NazaraError::UnableToCollectData(
             "Couldn't collect chassis information".to_owned(),
         ))?,
-        cpu_information: cpu_information.ok_or(CollectorError::UnableToCollectData(
+        cpu_information: cpu_information.ok_or(NazaraError::UnableToCollectData(
             "Couldn't collect CPU information".to_owned(),
         ))?,
     })
