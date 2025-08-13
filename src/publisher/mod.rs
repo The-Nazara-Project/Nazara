@@ -9,11 +9,12 @@
 //! [`crate::publisher::api_client`] modules respectively.
 
 mod api_client;
-pub mod error;
 pub mod trans_validation;
 pub mod translator;
 
+use crate::NazaraError;
 use crate::configuration::parser::{CommonConfig, MachineConfig};
+use crate::error::NazaraResult;
 use crate::publisher::api_client::{
     create_mac_address, create_vm, create_vm_interface, patch_ip, search_mac_address, search_vm,
     search_vm_interface, search_vm_ip, update_vm, update_vm_interface,
@@ -33,7 +34,6 @@ use crate::{
 };
 pub use api_client::test_connection;
 use api_client::update_interface;
-use error::NetBoxApiError;
 use serde_json::Value;
 use std::collections::HashMap;
 use thanix_client::paths::{
@@ -50,18 +50,17 @@ use thanix_client::{types::WritableIPAddressRequest, util::ThanixClient};
 /// Register this machine or VM in NetBox.
 ///
 /// # Parameters
-/// * `client: &ThanixClient` - A client instance.
-/// * `machine: Machine` - Information about the host machine collected by the [`super::collectors`] module.
-/// * `config_data: ConfigData` - Nazara's configuration.
+/// - `client`: A client instance.
+/// - `machine`: Information about the host machine collected by the [`super::collectors`] module.
+/// - `config_data`: Nazara's configuration.
 ///
 /// # Returns
-///
-/// An empty `Ok()` or a `NetBoxApiError` instance depending on operation outcome.
+/// An empty `Ok()` or a [`NazaraError::NetBoxApiError`] depending on operation outcome.
 pub fn register_machine(
     client: &ThanixClient,
     machine: Machine,
     config_data: ConfigData,
-) -> Result<(), NetBoxApiError> {
+) -> NazaraResult<()> {
     println!("Starting registration process. This may take a while...");
 
     match &config_data.machine {
@@ -72,7 +71,8 @@ pub fn register_machine(
                 client,
                 &config_data.common.name,
                 &machine.dmi_information.system_information.serial,
-            ) else {
+            )?
+            else {
                 let payload = information_to_device(&machine, &config_data.common, x);
                 let device_id = create_device(client, payload)?;
 
@@ -84,7 +84,7 @@ pub fn register_machine(
 
                     create_ips(client, interface, interface_id, false)?;
                 }
-                println!("\x1b[32m[success]\x1b[0m Registration process completed!");
+                println!("Registration process completed!");
                 return Ok(());
             };
 
@@ -93,7 +93,7 @@ pub fn register_machine(
 
             let mut nwi_id;
             for interface in &machine.network_information {
-                match search_interface(client, updated_id, &interface.name) {
+                match search_interface(client, updated_id, &interface.name)? {
                     Some(interface_id) => {
                         nwi_id = update_nwi(
                             client,
@@ -116,10 +116,10 @@ pub fn register_machine(
 
                 let (ipv4, ipv6) = search_device_ips(client, interface, None)?;
                 if let Some(ip) = interface.v4ip {
-                    let ipv4 = ipv4.expect(&format!(
+                    let ipv4 = ipv4.ok_or(NazaraError::NetBoxApiError(format!(
                         "IPv4 address \"{}\" was not registered in NetBox",
                         ip
-                    ));
+                    )))?;
 
                     if let IpamIpAddressesRetrieveResponse::Http200(a) =
                         ipam_ip_addresses_retrieve(client, ipv4)?
@@ -142,10 +142,10 @@ pub fn register_machine(
                 }
 
                 if let Some(ip) = interface.v6ip {
-                    let ipv6 = ipv6.expect(&format!(
+                    let ipv6 = ipv6.ok_or(NazaraError::NetBoxApiError(format!(
                         "IPv6 address \"{}\" was not registered in NetBox",
                         ip
-                    ));
+                    )))?;
 
                     if let IpamIpAddressesRetrieveResponse::Http200(a) =
                         ipam_ip_addresses_retrieve(client, ipv6)?
@@ -167,7 +167,7 @@ pub fn register_machine(
                     }
                 }
             }
-            println!("\x1b[32m[success]\x1b[0m Update process completed!");
+            println!("Update process completed!");
         }
         MachineConfig::VM(x) => {
             println!("Registering virtual machine");
@@ -176,7 +176,8 @@ pub fn register_machine(
                 client,
                 &config_data.common.name,
                 &machine.dmi_information.system_information.serial,
-            ) else {
+            )?
+            else {
                 let payload = information_to_vm(&machine, &config_data.common, x);
                 let vm_id = create_vm(client, payload)?;
 
@@ -193,7 +194,7 @@ pub fn register_machine(
             let updated_id = update_vm(client, payload, vm_id)?;
             let mut nwi_id;
             for interface in &machine.network_information {
-                match search_vm_interface(client, updated_id, &interface.name) {
+                match search_vm_interface(client, updated_id, &interface.name)? {
                     Some(interface_id) => {
                         nwi_id = update_vm_nwi(
                             client,
@@ -280,30 +281,34 @@ pub fn register_machine(
 }
 
 /// Create new Network Interface object in NetBox.
-/// Returns the ID of the newly created interface.
 ///
 /// # Parameters
-/// * `client: &ThanixClient` - The API client instance to use.
-/// * `device_id: i64` - The device this interface belongs to.
-/// * `interface: &NetworkInformation` - The interface to create.
-/// * `config_data: &ConfigData` - The configuration read from the config file.
+/// - `client`: The API client instance to use.
+/// - `device_id`: The device this interface belongs to.
+/// - `interface`: The interface to create.
+/// - `config_data`: The configuration read from the config file.
 ///
 /// # Returns
-/// * `Ok(i64)` - The ID of the newly created Interface.
-/// * `Err(NetBoxApiError)` - Error with information about the operation's failure.
+/// The ID of the newly created interface.
 fn create_nwi(
     client: &ThanixClient,
     device_id: i64,
     interface: &NetworkInformation,
     common: &CommonConfig,
-) -> Result<i64, NetBoxApiError> {
+) -> NazaraResult<i64> {
     // Check if MAC exists before creating the interface, create the MAC if it doesn't exist
-    let mac = match search_mac_address(client, interface.mac_addr.clone().unwrap().as_str()) {
+    let intf = interface
+        .mac_addr
+        .clone()
+        .ok_or(NazaraError::NetBoxApiError(
+            "Missing \"mac_addr\" field".into(),
+        ))?;
+    let mac = match search_mac_address(client, &intf)? {
         Some(x) => x,
         None => create_mac_address(
             client,
             MACAddressRequest {
-                mac_address: interface.mac_addr.clone().unwrap(),
+                mac_address: intf.clone(),
                 custom_fields: Some(HashMap::new()),
                 ..Default::default()
             },
@@ -317,10 +322,10 @@ fn create_nwi(
 
     // Assign Intf to MAC
     let mut patch = PatchedMACAddressRequest::default();
-    patch.mac_address = Some(interface.mac_addr.clone().unwrap());
+    patch.mac_address = Some(intf);
     patch.assigned_object_id = Some(Some(intf_id as u64));
     patch.assigned_object_type = Some(Some("dcim.interface".to_string()));
-    dcim_mac_addresses_partial_update(client, patch, mac).map_err(NetBoxApiError::from)?;
+    dcim_mac_addresses_partial_update(client, patch, mac)?;
 
     // Update Intf with primary MAC
     let mut intf_patch = PatchedWritableInterfaceRequest::default();
@@ -335,14 +340,21 @@ fn create_vm_nwi(
     device_id: i64,
     interface: &NetworkInformation,
     common: &CommonConfig,
-) -> Result<i64, NetBoxApiError> {
+) -> NazaraResult<i64> {
     // Check if MAC exists before creating the interface, create the MAC if it doesn't exist
-    let mac = match search_mac_address(client, interface.mac_addr.clone().unwrap().as_str()) {
+    let mac_addr = interface
+        .mac_addr
+        .clone()
+        .ok_or(NazaraError::NetBoxApiError(
+            "Missing \"mac_addr\" field".into(),
+        ))?;
+
+    let mac = match search_mac_address(client, &mac_addr)? {
         Some(x) => x,
         None => create_mac_address(
             client,
             MACAddressRequest {
-                mac_address: interface.mac_addr.clone().unwrap(),
+                mac_address: mac_addr.clone(),
                 custom_fields: Some(HashMap::new()),
                 ..Default::default()
             },
@@ -356,10 +368,10 @@ fn create_vm_nwi(
 
     // Assign Intf to MAC
     let mut patch = PatchedMACAddressRequest::default();
-    patch.mac_address = Some(interface.mac_addr.clone().unwrap());
+    patch.mac_address = Some(mac_addr);
     patch.assigned_object_id = Some(Some(intf_id as u64));
     patch.assigned_object_type = Some(Some("virtualization.vminterface".to_string()));
-    dcim_mac_addresses_partial_update(client, patch, mac).map_err(NetBoxApiError::from)?;
+    dcim_mac_addresses_partial_update(client, patch, mac)?;
 
     // Update Intf with primary MAC
     let mut intf_patch = PatchedWritableVMInterfaceRequest::default();
@@ -371,30 +383,39 @@ fn create_vm_nwi(
 
 /// Update a given NWI.
 /// Creates a new Interface API payload and invokes the API call to update the interface.
-/// Returns the ID of the interface.
 ///
 /// # Parameters
-/// * `client: &ThanixClient` - The API client instance to use.
-/// * `device_id: i64` - The ID of the device this NWI belongs to.
-/// * `interface: &NetworkInformation` - The information of the interface to update.
-/// * `config_data &ConfigData` - The configuration data.
-/// * `interface_id: &i64` - The ID of the interface to update.
+/// - `client`: The API client instance to use.
+/// - `device_id`: The ID of the device this NWI belongs to.
+/// - `interface`: The information of the interface to update.
+/// - `config_data`: The configuration data.
+/// - `interface_id`: The ID of the interface to update.
+///
+/// # Returns
+/// The ID of the interface.
 fn update_nwi(
     client: &ThanixClient,
     device_id: i64,
     interface: &NetworkInformation,
     config_data: &CommonConfig,
     interface_id: &i64,
-) -> Result<i64, NetBoxApiError> {
+) -> NazaraResult<i64> {
     println!("Updating interface '{interface_id}' belonging to device '{device_id}'");
 
+    let mac_addr = interface
+        .mac_addr
+        .clone()
+        .ok_or(NazaraError::NetBoxApiError(
+            "Missing \"mac_addr\" field".into(),
+        ))?;
+
     // Check if MAC exists before creating the interface, otherwise create the MAC.
-    let mac = match search_mac_address(client, interface.mac_addr.clone().unwrap().as_str()) {
+    let mac = match search_mac_address(client, &mac_addr)? {
         Some(x) => x,
         None => create_mac_address(
             client,
             MACAddressRequest {
-                mac_address: interface.mac_addr.clone().unwrap(),
+                mac_address: mac_addr.clone(),
                 assigned_object_id: Some(device_id as u64),
                 assigned_object_type: Some("dcim.interface".to_string()),
                 custom_fields: Some(HashMap::new()),
@@ -412,7 +433,7 @@ fn update_nwi(
     let mut patch = PatchedMACAddressRequest::default();
     patch.assigned_object_id = Some(Some(*interface_id as u64));
     patch.assigned_object_type = Some(Some("dcim.interface".to_string()));
-    dcim_mac_addresses_partial_update(client, patch, mac).map_err(NetBoxApiError::from)?;
+    dcim_mac_addresses_partial_update(client, patch, mac)?;
 
     // Update Intf with primary MAC
     let mut intf_patch = PatchedWritableInterfaceRequest::default();
@@ -428,16 +449,23 @@ fn update_vm_nwi(
     interface: &NetworkInformation,
     config_data: &CommonConfig,
     interface_id: &i64,
-) -> Result<i64, NetBoxApiError> {
+) -> NazaraResult<i64> {
     println!("Updating interface '{interface_id}' belonging to device '{device_id}'");
 
+    let mac_addr = interface
+        .mac_addr
+        .clone()
+        .ok_or(NazaraError::NetBoxApiError(
+            "Missing \"mac_addr\" field".into(),
+        ))?;
+
     // Check if MAC exists before creating the interface, otherwise create the MAC.
-    let mac = match search_mac_address(client, interface.mac_addr.clone().unwrap().as_str()) {
+    let mac = match search_mac_address(client, &mac_addr)? {
         Some(x) => x,
         None => create_mac_address(
             client,
             MACAddressRequest {
-                mac_address: interface.mac_addr.clone().unwrap(),
+                mac_address: mac_addr,
                 assigned_object_id: Some(device_id as u64),
                 assigned_object_type: Some("virtualization.vminterface".to_string()),
                 custom_fields: Some(HashMap::new()),
@@ -455,7 +483,7 @@ fn update_vm_nwi(
     let mut patch = PatchedMACAddressRequest::default();
     patch.assigned_object_id = Some(Some(*interface_id as u64));
     patch.assigned_object_type = Some(Some("virtualization.vminterface".to_string()));
-    dcim_mac_addresses_partial_update(client, patch, mac).map_err(NetBoxApiError::from)?;
+    dcim_mac_addresses_partial_update(client, patch, mac)?;
 
     // Update Intf with primary MAC
     let mut intf_patch = PatchedWritableVMInterfaceRequest::default();
@@ -466,27 +494,27 @@ fn update_vm_nwi(
 }
 
 /// Search for a pair of IP addresses.
-///
-/// Checks if the `ipv4` and/or `ìpv6` addresses of the given `NetworkInformation` are set and
-/// invokes `search_ip` on each or both of these addresses.
-///
-/// Returns a tuple of the IDs of each the IPv4 and IPv6 addresses if they are registered.
-/// The first field represents the IPv4 Address, the second the IPv6 address.
-/// If one or both are not already registered the value will be `None`.
+/// Checks if the `ipv4` and/or `ìpv6` addresses of the given [`NetworkInformation`] are set and
+/// invokes [`search_ip`] on each or both of these addresses.
 ///
 /// # Parameters
-/// * `client` - The API client instance to use.
-/// * `interface` - The interface this address belongs to.
-/// * `device_id` - The ID of the device these Addresses are linked to.
+/// - `client`: The API client instance to use.
+/// - `interface`: The interface this address belongs to.
+/// - `device_id`: The ID of the device these Addresses are linked to.
+///
+/// # Returns
+/// A tuple of the IDs of each the IPv4 and IPv6 addresses if they are registered.
+/// The first field represents the IPv4 Address, the second the IPv6 address.
+/// If one or both are not already registered the value will be `None`.
 fn search_device_ips(
     client: &ThanixClient,
     interface: &NetworkInformation,
     device_id: Option<i64>,
-) -> Result<(Option<i64>, Option<i64>), NetBoxApiError> {
+) -> NazaraResult<(Option<i64>, Option<i64>)> {
     let mut result: (Option<i64>, Option<i64>) = (None, None);
     if let Some(ipv4_address) = interface.v4ip {
         result = (
-            search_ip(client, &ipv4_address.to_string(), device_id),
+            search_ip(client, &ipv4_address.to_string(), device_id)?,
             result.1,
         );
     }
@@ -494,7 +522,7 @@ fn search_device_ips(
     if let Some(ipv6_address) = interface.v6ip {
         result = (
             result.0,
-            search_ip(client, &ipv6_address.to_string(), device_id),
+            search_ip(client, &ipv6_address.to_string(), device_id)?,
         );
     }
     Ok(result)
@@ -504,11 +532,11 @@ fn search_vm_ips(
     client: &ThanixClient,
     interface: &NetworkInformation,
     vm_id: Option<i64>,
-) -> Result<(Option<i64>, Option<i64>), NetBoxApiError> {
+) -> NazaraResult<(Option<i64>, Option<i64>)> {
     let mut result: (Option<i64>, Option<i64>) = (None, None);
     if let Some(ipv4_address) = interface.v4ip {
         result = (
-            search_vm_ip(client, &ipv4_address.to_string(), vm_id),
+            search_vm_ip(client, &ipv4_address.to_string(), vm_id)?,
             result.1,
         );
     }
@@ -516,7 +544,7 @@ fn search_vm_ips(
     if let Some(ipv6_address) = interface.v6ip {
         result = (
             result.0,
-            search_vm_ip(client, &ipv6_address.to_string(), vm_id),
+            search_vm_ip(client, &ipv6_address.to_string(), vm_id)?,
         );
     }
     Ok(result)
@@ -525,15 +553,15 @@ fn search_vm_ips(
 /// Creates the given interface's IPv4 and/or IPv6 address(es).
 ///
 /// # Parameters
-/// * `client: &ThanixClient` - The API client instance to use.
-/// * `interface: &NetworkInformation` - The interface to get the IP Addresses from.
-/// * `interface_id: i64` - The ID of the interface these addresses belong to.
+/// - `client`: The API client instance to use.
+/// - `interface`: The interface to get the IP Addresses from.
+/// - `interface_id`: The ID of the interface these addresses belong to.
 fn create_ips(
     client: &ThanixClient,
     interface: &NetworkInformation,
     interface_id: i64,
     is_vm: bool,
-) -> Result<(), NetBoxApiError> {
+) -> NazaraResult<()> {
     if let Some(ipv4_address) = interface.v4ip {
         let ipv4_payload: WritableIPAddressRequest =
             translator::information_to_ip(ipv4_address, interface_id, is_vm);

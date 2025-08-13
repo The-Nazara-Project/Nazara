@@ -1,12 +1,13 @@
 //! This module provides logic to collect and process Information about all network interfaces a device has.
 
-use super::errors::CollectorError;
 use futures::TryStreamExt;
 use rtnetlink::new_connection;
 use rtnetlink::packet_route::address::AddressAttribute;
 use rtnetlink::packet_route::link::LinkAttribute;
 use serde::Serialize;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
+
+use crate::{NazaraError, error::NazaraResult};
 
 /// This object contains information about one specific network interface.
 #[derive(Serialize, Debug, Default)]
@@ -41,18 +42,21 @@ pub struct NetworkInformation {
 /// Any collected loopback device is skipped.
 ///
 /// # Returns
-/// * `Ok(Vec<NetworkInformation>)` - A list of all collected network interfaces.
-/// * `Err(CollectorError)` - A `CollectorError` instance containing information about the failure.
-pub fn construct_network_information() -> Result<Vec<NetworkInformation>, CollectorError> {
+/// A list of all collected network interfaces.
+pub fn construct_network_information() -> NazaraResult<Vec<NetworkInformation>> {
     println!("Collecting Network Information...");
 
     let mut result = Vec::new();
 
     let my_fut = async {
-        let (connection, handle, _) = new_connection().unwrap();
+        let (connection, handle, _) = new_connection()?;
         tokio::spawn(connection);
         let mut links = handle.link().get().execute();
-        while let Some(msg) = links.try_next().await.unwrap() {
+        while let Some(msg) = links
+            .try_next()
+            .await
+            .map_err(|e| NazaraError::NetlinkError(e.to_string()))?
+        {
             let mut net_int = NetworkInformation::default();
             net_int.index = Some(msg.header.index);
 
@@ -100,12 +104,15 @@ pub fn construct_network_information() -> Result<Vec<NetworkInformation>, Collec
         while let Some(msg) = foo
             .try_next()
             .await
-            .map_err(|x| CollectorError::InvalidNetworkInterface(x.to_string()))?
+            .map_err(|x| NazaraError::InvalidNetworkInterface(x.to_string()))?
         {
             let target_intf = result
                 .iter_mut()
+                // This unwrap is not easily avoidable.
                 .find(|x| x.index.unwrap() == msg.header.index)
-                .unwrap();
+                .ok_or(NazaraError::NetlinkError(
+                    "No matching interface for a Netlink message header".into(),
+                ))?;
             for nia in msg.attributes.into_iter() {
                 match nia {
                     AddressAttribute::Address(addr) => {
@@ -140,10 +147,10 @@ pub fn construct_network_information() -> Result<Vec<NetworkInformation>, Collec
 
     // The rtlink crate is async only. Because we don't want to introduce async everywhere,
     // just run the future in this thread.
-    let t: Result<(), CollectorError> = tokio::runtime::Builder::new_current_thread()
+    let t: NazaraResult<()> = tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()
-        .unwrap()
+        .map_err(|_| NazaraError::Other("Unable to start tokio runtime".into()))?
         .block_on(my_fut);
     t?;
 
@@ -153,6 +160,6 @@ pub fn construct_network_information() -> Result<Vec<NetworkInformation>, Collec
         .filter(|x| x.name != "lo")
         .collect::<Vec<_>>();
 
-    println!("\x1b[32m[success]\x1b[0m Network Interface collection completed.");
+    println!("Network Interface collection completed.");
     Ok(result)
 }
