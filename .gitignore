@@ -25,3 +25,6 @@ output.json
 
 # Test output
 test/manual/**/output/
+
+# Test netbox data
+.netbox-docker/
