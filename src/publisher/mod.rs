@@ -47,7 +47,250 @@ use thanix_client::types::{
 };
 use thanix_client::{types::WritableIPAddressRequest, util::ThanixClient};
 
-/// Register this machine or VM in NetBox.
+/// Register new device or virtual machine.
+///
+/// # Parameters
+/// * `client: &ThanixClient` - A client instance.
+/// * `machine: Machine` - The Machine to create.
+/// * `config_data: ConfigData` - Nazara's configuration data.
+///
+/// # Returns
+/// An empty `Ok()` or a [`NazaraError::NetBoxApiError`] depending on operation outcome.
+pub fn register_machine(
+    client: &ThanixClient,
+    machine: Machine,
+    config_data: ConfigData,
+) -> NazaraResult<()> {
+    println!("Starting registration process. This may take a while...");
+
+    match &config_data.machine {
+        MachineConfig::Device(config) => {
+            println!("Registering device");
+
+            let payload = information_to_device(&machine, &config_data.common, config);
+            let device_id = create_device(client, payload)?;
+
+            // Create new interface object if no interface ID is given, or the given ID doesn not exist.
+            for interface in &machine.network_information {
+                let interface_id: i64 =
+                    create_nwi(client, device_id, interface, &config_data.common)?;
+
+                create_ips(client, interface, interface_id, false)?;
+            }
+            println!("Registration processs completed!");
+            return Ok(());
+        }
+        MachineConfig::VM(config) => {
+            println!("Registering virtual machine");
+
+            let payload = information_to_vm(&machine, &config_data.common, config);
+            let vm_id = create_vm(client, payload)?;
+
+            for interface in &machine.network_information {
+                let interface_id = create_vm_nwi(client, vm_id, interface, &config_data.common)?;
+
+                create_ips(client, interface, interface_id, true)?;
+            }
+            return Ok(());
+        }
+    }
+}
+
+/// Update device or virtual machine.
+///
+/// # Parameters
+/// * `client: &ThanixClient` - A client instance.
+/// * `machine: Machine` - The information about the machine to update.
+/// * `config_data: ConfigData` - Nazara's configuration data.
+/// * `machine_id: i64` - The ID of the device or VM to update handed over via CLI.
+///
+/// # Returns
+/// An empty `Ok()` or a [`NazaraError::NetBoxApiError`] depending on operation outcome.
+pub fn update_machine(
+    client: &ThanixClient,
+    machine: Machine,
+    config_data: ConfigData,
+    machine_id: i64,
+) -> NazaraResult<()> {
+    println!("Starting update process. This may take a while...");
+
+    match &config_data.machine {
+        MachineConfig::Device(config) => {
+            let payload = information_to_existing_device(&machine, &config_data.common, config);
+            let updated_id = update_device(client, payload, machine_id)?;
+
+            let mut nwi_id;
+            for interface in &machine.network_information {
+                match search_interface(client, updated_id, &interface.name)? {
+                    Some(interface_id) => {
+                        nwi_id = update_nwi(
+                            client,
+                            updated_id,
+                            interface,
+                            &config_data.common,
+                            &interface_id,
+                        )?;
+                    }
+                    None => {
+                        nwi_id = create_nwi(client, updated_id, interface, &config_data.common)?;
+                    }
+                }
+
+                // If the collected interface reports an IP address, the address must exist in NetBox.
+                // If it is not assigned an ID, claim it to this interface.
+                // If it is assigned an ID, it *must* be our interface ID. If it is not, the data is bogus.
+                // Updating interfaces that don't belong to us is undefined behavior because it may interfere with
+                // external services that provide these IP addresses.
+
+                let (ipv4, ipv6) = search_device_ips(client, interface, None)?;
+                if let Some(ip) = interface.v4ip {
+                    let ipv4 = ipv4.ok_or(NazaraError::NetBoxApiError(format!(
+                        "IPv4 address \"{}\" was not registered in NetBox",
+                        ip
+                    )))?;
+
+                    if let IpamIpAddressesRetrieveResponse::Http200(a) =
+                        ipam_ip_addresses_retrieve(client, ipv4)?
+                    {
+                        if let Some(b) = a.assigned_object_id {
+                            assert_eq!(b, nwi_id as u64);
+                        } else {
+                            patch_ip(
+                                client,
+                                PatchedWritableIPAddressRequest {
+                                    status: Some("active".to_string()),
+                                    assigned_object_type: Some(Some("dcim.interface".to_string())),
+                                    assigned_object_id: Some(Some(nwi_id as u64)),
+                                    ..Default::default()
+                                },
+                                ipv4,
+                            )?;
+                        }
+                    }
+                }
+
+                if let Some(ip) = interface.v6ip {
+                    let ipv6 = ipv6.ok_or(NazaraError::NetBoxApiError(format!(
+                        "IPv6 address \"{}\" was not registered in NetBox",
+                        ip
+                    )))?;
+
+                    if let IpamIpAddressesRetrieveResponse::Http200(a) =
+                        ipam_ip_addresses_retrieve(client, ipv6)?
+                    {
+                        if let Some(b) = a.assigned_object_id {
+                            assert_eq!(b, nwi_id as u64);
+                        } else {
+                            patch_ip(
+                                client,
+                                PatchedWritableIPAddressRequest {
+                                    status: Some("active".to_string()),
+                                    assigned_object_type: Some(Some("dcim.interface".to_string())),
+                                    assigned_object_id: Some(Some(nwi_id as u64)),
+                                    ..Default::default()
+                                },
+                                ipv6,
+                            )?;
+                        }
+                    }
+                }
+            }
+            println!("Device update process completed!");
+            return Ok(());
+        }
+        MachineConfig::VM(config) => {
+            let payload = information_to_existing_vm(&machine, &config_data.common, config);
+            let updated_id = update_vm(client, payload, machine_id)?;
+            let mut nwi_id;
+            for interface in &machine.network_information {
+                match search_vm_interface(client, updated_id, &interface.name)? {
+                    Some(interface_id) => {
+                        nwi_id = update_vm_nwi(
+                            client,
+                            updated_id,
+                            interface,
+                            &config_data.common,
+                            &interface_id,
+                        )?;
+                    }
+                    None => {
+                        nwi_id = create_vm_nwi(client, updated_id, interface, &config_data.common)?;
+                    }
+                }
+
+                // If the collected interface reports an IP address, the address must exist in NetBox.
+                // If it is not assigned an ID, claim it to this interface.
+                // If it is assigned an ID, it *must* be our interface ID. If it is not, the data is bogus.
+                // Updating interfaces that don't belong to us is undefined behavior because it may interfere with
+                // external services that provide these IP addresses.
+
+                let (ipv4, ipv6) = search_vm_ips(client, interface, None)?;
+                if let Some(ip) = interface.v4ip {
+                    let ipv4 = ipv4.expect(&format!(
+                        "IPv4 address \"{}\" was not registered in NetBox",
+                        ip
+                    ));
+
+                    if let IpamIpAddressesRetrieveResponse::Http200(a) =
+                        ipam_ip_addresses_retrieve(client, ipv4)?
+                    {
+                        if let Some(b) = a.assigned_object_id {
+                            assert_eq!(b, nwi_id as u64);
+                        } else {
+                            patch_ip(
+                                client,
+                                PatchedWritableIPAddressRequest {
+                                    status: Some("active".to_string()),
+                                    assigned_object_type: Some(Some(
+                                        "virtualization.vminterface".to_string(),
+                                    )),
+                                    assigned_object_id: Some(Some(nwi_id as u64)),
+                                    ..Default::default()
+                                },
+                                ipv4,
+                            )?;
+                        }
+                    }
+                }
+
+                if let Some(ip) = interface.v6ip {
+                    let ipv6 = ipv6.expect(&format!(
+                        "IPv6 address \"{}\" was not registered in NetBox",
+                        ip
+                    ));
+
+                    if let IpamIpAddressesRetrieveResponse::Http200(a) =
+                        ipam_ip_addresses_retrieve(client, ipv6)?
+                    {
+                        if let Some(b) = a.assigned_object_id {
+                            assert_eq!(b, nwi_id as u64);
+                        } else {
+                            patch_ip(
+                                client,
+                                PatchedWritableIPAddressRequest {
+                                    status: Some("active".to_string()),
+                                    assigned_object_type: Some(Some(
+                                        "virtualization.vminterface".to_string(),
+                                    )),
+                                    assigned_object_id: Some(Some(nwi_id as u64)),
+                                    ..Default::default()
+                                },
+                                ipv6,
+                            )?;
+                        }
+                    }
+                }
+            }
+            println!("VM update process completed!");
+            return Ok(());
+        }
+    }
+}
+
+/// Register or update machine depending on search results.
+///
+/// This is Nazara's previous default behaviour, yet it may be unreliable and is therefore discouraged.
+/// And will be completely deprecated in the future.
 ///
 /// # Parameters
 /// - `client`: A client instance.
@@ -56,7 +299,7 @@ use thanix_client::{types::WritableIPAddressRequest, util::ThanixClient};
 ///
 /// # Returns
 /// An empty `Ok()` or a [`NazaraError::NetBoxApiError`] depending on operation outcome.
-pub fn register_machine(
+pub fn auto_register_or_update_machine(
     client: &ThanixClient,
     machine: Machine,
     config_data: ConfigData,
