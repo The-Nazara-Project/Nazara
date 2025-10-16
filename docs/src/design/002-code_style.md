@@ -37,7 +37,7 @@ For an exampel on how that looks, please check and of the `error.rs` files found
 In this example, you can see how we write our custom error types and are able to wrap errors that we receive from other functions
 in order to escalate them properly.
 ```rust
-{{#include ../../../src/configuration/error.rs}}
+{{#include ../../../src/error.rs}}
 ```
 ~~~
 
