@@ -42,8 +42,17 @@
 //! After that, simply run
 //!
 //! ```bash
-//!  nazara
+//!  nazara register
 //! ```
+//!
+//! to register a new machine, or run
+//!
+//! ```bash
+//!  nazara update $MACHINE_ID
+//! ```
+//!
+//! to update an existing one.
+//!
 //!
 //! in your terminal. Nazara will automatically collect all required system information and decide whether to create a new device, or update an existing entry.
 //!
@@ -113,14 +122,16 @@ pub mod configuration;
 pub mod error;
 pub mod publisher;
 
-use clap::Parser;
+use clap::{Parser, Subcommand};
 use collectors::{
     dmi::{self, DmiInformation},
     network::{self, NetworkInformation},
     plugin::execute,
 };
 use configuration::parser::set_up_configuration;
-use publisher::*;
+use publisher::{
+    auto_register_or_update_machine, register_machine, test_connection, update_machine,
+};
 use reqwest::blocking::Client;
 use serde_json::Value;
 use std::collections::HashMap;
@@ -131,23 +142,19 @@ pub use error::NazaraError;
 #[cfg(target_os = "linux")]
 use crate::error::NazaraResult;
 
-/// This struct represents your machine.
-/// It holds all information collected and allows for sharing this
-/// information between Nazara's modules.
-///
-/// It is used in places where it is necessary to have access to various
-/// pieces of collected information from a single source of truth.
-/// It will also be translated into the proper API type by the translator.
-#[derive(Debug)]
-pub struct Machine {
-    /// The name of the system to register. Read from the CLI.
-    pub name: Option<String>,
-    /// Information collected by `dmidecode`.
-    pub dmi_information: DmiInformation,
-    /// List of network interfaces.
-    pub network_information: Vec<NetworkInformation>,
-    /// Custom fields read from config file or via plugins.
-    pub custom_information: Option<HashMap<String, Value>>,
+#[derive(Debug, Subcommand)]
+enum Commands {
+    /// Register a new machine.
+    // Any future arguments for this command into its block.
+    Register,
+    /// Update a given machine by ID.
+    Update {
+        /// The ID of the machine in NetBox
+        #[arg(long)]
+        id: i64,
+    },
+    /// Attempt to detect whether an update or new registration is necessary. (DEPRECATED, old default behaviour)
+    Auto,
 }
 
 /// The arguments that Nazara expects to get via the cli.
@@ -155,7 +162,7 @@ pub struct Machine {
 /// Arguments can be passed like this:
 ///
 /// ```
-/// nazara --uri <NETBOX_URI> --token <NETBOX_TOKEN>
+/// nazara --uri <NETBOX_URI> --token <NETBOX_TOKEN> register
 /// ```
 ///
 /// These arguments override the ones defined in the `$HOME/.config/nazara/config.toml`.
@@ -177,6 +184,38 @@ struct Args {
     /// The Path to a plugin script you want to run
     #[arg(short, long)]
     plugin: Option<String>,
+
+    /// Subcommands either register/update
+    #[command(subcommand)]
+    command: Commands,
+}
+
+/// This struct represents your machine.
+/// It holds all information collected and allows for sharing this
+/// information between Nazara's modules.
+///
+/// It is used in places where it is necessary to have access to various
+/// pieces of collected information from a single source of truth.
+/// It will also be translated into the proper API type by the translator.
+#[derive(Debug)]
+pub struct Machine {
+    /// The name of the system to register. Read from the CLI.
+    pub name: Option<String>,
+    /// Information collected by `dmidecode`.
+    pub dmi_information: DmiInformation,
+    /// List of network interfaces.
+    pub network_information: Vec<NetworkInformation>,
+    /// Custom fields read from config file or via plugins.
+    pub custom_information: Option<HashMap<String, Value>>,
+}
+
+fn warn_auto_deprecated() {
+    let msg = "
+    \x1b[33m[WARNING] +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ [WARNING]\x1b[0m
+    \x1b[33m[WARNING] Running Nazara in 'Auto' mode is deprecated. Please use 'register' or 'update' subcommands instead. [WARNING]\x1b[0m
+    \x1b[33m[WARNING] +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ [WARNING]\x1b[0m
+";
+    eprintln!("{}", msg);
 }
 
 #[cfg(target_os = "linux")]
@@ -231,7 +270,15 @@ fn main() -> NazaraResult<()> {
         test_connection(&client)?;
 
         // Register the machine or VM with NetBox
-        register_machine(&client, machine, config)?;
+        // TODO: Match here for given subcommand
+        match &args.command {
+            Commands::Register => register_machine(&client, machine, config)?,
+            Commands::Update { id } => update_machine(&client, machine, config, id.to_owned())?,
+            Commands::Auto {} => {
+                warn_auto_deprecated();
+                auto_register_or_update_machine(&client, machine, config)?;
+            }
+        }
         println!("All done, have a nice day!");
     }
 

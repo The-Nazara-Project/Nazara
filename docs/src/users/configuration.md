@@ -7,17 +7,23 @@ Nazara accepts these parameters from you:
 - `-d, --dry-run`: Print all collected information without committing it to NetBox.
 - `-u, --uri <URI>`: URI to your NetBox instance.
 - `-t, --token <TOKEN>`: Your API authentication token.
-- `-n, --name <NAME>`: The name of the device.
 - `-p, --plugin <PLUGIN>`: The path to a plugin script you want to use to fill in custom fields.
 - `-h, --help`: Print help.
 - `-V, --version`: Print version.
+
+Afterwards, Nazara expects one of the following operation types to be specified:
+
+- `register`: Register a new device or vm in NetBox.
+- `update --id <device_id>`: To update an existing device or vm.
+- `auto`: Let Nazara decide based on the machine's name and serial number whether
+          registration or update is needed.
 
 ## Configuring via CLI
 
 Here is an example for passing these parameters on using the CLI:
 
 ```bash
-sudo nazara --uri <API_URL> --token <API_TOKEN> --name test_device . . .
+sudo nazara --uri <API_URL> --token <API_TOKEN> <OPERATION> . . .
 ```
 
 When launching Nazara for the first time, a configuration file will be written at `$HOME/.config/nazara/config.toml`.
