@@ -4,18 +4,18 @@ By submitting a contribution to The Nazara Project, you agree that your contribu
 You also grant the project maintainers the right to relicense the project, including your contribution, under any future version of those license(s), or under any other license that is free and open source software (FOSS) and compatible with the current license(s).
 -->
 
-# What does this PR change?
+# What does this PR change and why?
 
 <!-- provide a short description what exactly your PR changes here -->
 
-Tick the applicable box:
+### Tick the applicable box:
+
 - [ ] Add new feature
 - [ ] Behaviour change
+- [ ] Deprecation
 - [ ] Security changes
 - [ ] Tests
 - [ ] Documentation changed
-<br/>
-
 - [ ] General Maintenance
 
 ## Links
@@ -25,9 +25,11 @@ Tick the applicable box:
 Fixes:
 
 <!-- In case your changes track an existing EPIC or larger parent issue, link it below: -->
+
 Tracks:
 
 <!-- Check this box if your PR fixes the issue(s) linked above -->
+
 - [ ] DONE
 
 ## Documentation
@@ -35,7 +37,7 @@ Tracks:
 <!-- provide description about documentation done here or remove this line -->
 
 - No documentation needed
-<br/>
+  <br/>
 
 - [ ] DONE
 
