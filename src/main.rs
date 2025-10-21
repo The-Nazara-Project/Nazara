@@ -70,7 +70,7 @@
 //! Here is an example for passing these parameters on using the CLI:
 //!
 //! ```bash
-//! sudo ./target/release/Nazara --api-url <API_URL> --api-token <API_TOKEN>
+//! sudo ./target/release/Nazara --url <API_URL> --api-token <API_TOKEN>
 //! ```
 //!
 //! ## Configuring via `$HOME/.config/nazara/config.toml`file.
@@ -86,6 +86,19 @@
 //! ```toml
 #![doc = include_str!("configuration/config_template.toml")]
 //! ```
+//!
+//! ### The `config` commands
+//!
+//! Nazara provides you with several commands to manage your configuration files:
+//!
+//! - `write-config`: Write a new config file or overwrite an existing one.
+//! - `check-config`: Validate if your config is still valid.
+//! - `view-config`: Print config to console.
+//!
+//! The `write-config` allows you to change individual parameters, or perform a bulk update by passing a `JSON` structure
+//! via CLI. **These options are exclusive. Passing both is disallowed.**
+//!
+//! For further information on how to configure Nazara, run `nazara --help` or visit [our documentation](https://the-nazara-project.github.io/Nazara/users/configuration.html).
 //!
 //! *Please note that this section is still a work in progress and all information is subject to change.*
 //!
@@ -414,9 +427,6 @@ fn main() -> NazaraResult<()> {
         Commands::Auto {} => {
             warn_auto_deprecated();
             auto_register_or_update_machine(&client, machine, config)?;
-        }
-        Commands::WriteConfig { .. } => {
-            // Already handled further up
         }
         _ => {
             // Already covered further up
