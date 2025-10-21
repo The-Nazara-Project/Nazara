@@ -128,7 +128,9 @@ use collectors::{
     network::{self, NetworkInformation},
     plugin::execute,
 };
-use configuration::parser::set_up_configuration;
+use configuration::parser::{
+    check_config_file, set_up_configuration, view_config_file, write_config_file,
+};
 use publisher::{
     auto_register_or_update_machine, register_machine, test_connection, update_machine,
 };
@@ -149,12 +151,64 @@ enum Commands {
     Register,
     /// Update a given machine by ID.
     Update {
-        /// The ID of the machine in NetBox
+        /// The ID of the machine in NetBox.
         #[arg(long)]
         id: i64,
     },
     /// Attempt to detect whether an update or new registration is necessary. (DEPRECATED, old default behaviour)
     Auto,
+    /// Write new config file or overwrite existing one with new values. Pass JSON for bulk changes.
+    WriteConfig {
+        /// The URI of your NetBox instance. Required if not using '--json'.
+        #[arg(short, long, required_unless_present = "json", conflicts_with = "json")]
+        uri: Option<String>,
+
+        /// Your NetBox authentication token. Required if not using '--json'.
+        #[arg(short, long, required_unless_present = "json", conflicts_with = "json")]
+        token: Option<String>,
+
+        /// The machine's name. (Optional; default: hostname)
+        #[arg(short, long, conflicts_with = "json")]
+        name: Option<String>,
+
+        /// A description of the machine. (Optional)
+        #[arg(short, long, conflicts_with = "json")]
+        description: Option<String>,
+
+        /// A comment for the entry. (Optional; default: 'Automatically registered by Nazara')
+        #[arg(short, long, conflicts_with = "json")]
+        comments: Option<String>,
+
+        /// The status of the machine. (Optional; defaults: 'active')
+        #[arg(short, long, conflicts_with = "json")]
+        status: Option<String>,
+
+        /// Device type ID. (if this is a physical device)
+        #[arg(long, conflicts_with = "json")]
+        device_type: Option<i64>,
+
+        /// Device role ID.
+        #[arg(long, conflicts_with = "json")]
+        role: Option<i64>,
+
+        /// Site ID. (for physical devices)
+        #[arg(long, conflicts_with = "json")]
+        site: Option<i64>,
+
+        /// Cluster ID. (for VMs)
+        #[arg(long, conflicts_with = "json")]
+        cluster_id: Option<i64>,
+
+        /// JSON of your configuration parameters. (Optional; exclusive with other options.)
+        #[arg(long, conflicts_with_all = &[
+            "uri", "token", "name", "descirption", "comments",
+            "status", "device_type", "role", "site", "cluster_id"
+        ])]
+        json: Option<String>,
+    },
+    /// Validate configuration file.
+    CheckConfig,
+    ViewConfig,
 }
 
 /// The arguments that Nazara expects to get via the cli.
@@ -169,23 +223,23 @@ enum Commands {
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about=None)]
 struct Args {
-    /// Only prints collected information to stdout
+    /// Only prints collected information to stdout.
     #[arg(short, long)]
     dry_run: bool,
 
-    /// URI to your NetBox instance
+    /// Temporarily overwrite the url to your NetBox instance.
     #[arg(short, long)]
     uri: Option<String>,
 
-    /// Your API authentication token
+    /// Temporarily use a different authentication token for NetBox.
     #[arg(short, long)]
     token: Option<String>,
 
-    /// The Path to a plugin script you want to run
+    /// The Path to a plugin script you want to run.
     #[arg(short, long)]
     plugin: Option<String>,
 
-    /// Subcommands either register/update
+    /// Subcommands.
     #[command(subcommand)]
     command: Commands,
 }
@@ -218,6 +272,26 @@ fn warn_auto_deprecated() {
     eprintln!("{}", msg);
 }
 
+/// Collect machine information.
+///
+/// Stubs the collector to start putting together all information about the machine.
+///
+/// # Parameters
+///
+/// * `plugin: Option<String>` - The path to a plugin. (optional)
+///
+/// # Returns
+///
+/// Either a `Machine` instance or a `NazaraError`, if collection failed.
+fn start_collection(plugin: Option<String>) -> NazaraResult<Machine> {
+    Ok(Machine {
+        name: None,
+        dmi_information: dmi::construct_dmi_information()?,
+        network_information: network::construct_network_information()?,
+        custom_information: Some(execute(plugin)?),
+    })
+}
+
 #[cfg(target_os = "linux")]
 fn main() -> NazaraResult<()> {
     let args: Args = Args::parse();
@@ -238,13 +312,73 @@ fn main() -> NazaraResult<()> {
     // Welcome Message.
     println!("{ASCII_ART}");
 
-    // Collect machine information.
-    let machine = Machine {
-        name: None,
-        dmi_information: dmi::construct_dmi_information()?,
-        network_information: network::construct_network_information()?,
-        custom_information: Some(execute(args.plugin)?),
-    };
+    match &args.command {
+        Commands::WriteConfig {
+            uri,
+            token,
+            name,
+            description,
+            comments,
+            status,
+            device_type,
+            site,
+            role,
+            cluster_id,
+            json,
+        } => {
+            println!("Writing configuration file...");
+            if let Some(json_str) = json {
+                write_config_file(
+                    "", // ignored in JSON mode
+                    "", // ignored in JSON mode
+                    name.clone(),
+                    description.clone(),
+                    comments.clone(),
+                    status.clone(),
+                    device_type.clone(),
+                    role.clone(),
+                    site.clone(),
+                    cluster_id.clone(),
+                    Some(json_str.clone()),
+                )?;
+            } else {
+                // Enforce required params for manual mode
+                let uri = uri
+                    .as_deref()
+                    .ok_or_else(|| NazaraError::Other("Missing required argument: --uri".into()))?;
+                let token = token.as_deref().ok_or_else(|| {
+                    NazaraError::Other("Missing required argument: --token".into())
+                })?;
+
+                write_config_file(
+                    uri,
+                    token,
+                    name.clone(),
+                    description.clone(),
+                    comments.clone(),
+                    status.clone(),
+                    device_type.clone(),
+                    role.clone(),
+                    site.clone(),
+                    cluster_id.clone(),
+                    None,
+                )?;
+            }
+            println!("Configuration written successfully.");
+            return Ok(());
+        }
+        Commands::CheckConfig => {
+            check_config_file()?;
+            return Ok(());
+        }
+        Commands::ViewConfig => {
+            view_config_file()?;
+            return Ok(());
+        }
+        _ => {} // Other commands handled below.
+    }
+
+    let machine = start_collection(args.plugin.clone())?;
 
     // Passing a name in any way is mandatory for a virtual machine.
     if machine.dmi_information.system_information.is_virtual && machine.name.is_none() {
@@ -257,30 +391,38 @@ fn main() -> NazaraResult<()> {
     if args.dry_run {
         println!("Dry run results:");
         dbg!(&machine);
-    } else {
-        let config = set_up_configuration(args.uri.as_deref(), args.token.as_deref())?;
-
-        let client = ThanixClient {
-            base_url: config.get_netbox_uri().to_string(),
-            authentication_token: config.get_api_token().to_string(),
-            client: Client::new(),
-        };
-
-        println!("Testing connection...");
-        test_connection(&client)?;
-
-        // Register the machine or VM with NetBox
-        // TODO: Match here for given subcommand
-        match &args.command {
-            Commands::Register => register_machine(&client, machine, config)?,
-            Commands::Update { id } => update_machine(&client, machine, config, id.to_owned())?,
-            Commands::Auto {} => {
-                warn_auto_deprecated();
-                auto_register_or_update_machine(&client, machine, config)?;
-            }
-        }
-        println!("All done, have a nice day!");
+        return Ok(());
     }
+
+    // TODO: Do we still need this?
+    let config = set_up_configuration(args.uri.as_deref(), args.token.as_deref())?;
+
+    let client = ThanixClient {
+        base_url: config.get_netbox_uri().to_string(),
+        authentication_token: config.get_api_token().to_string(),
+        client: Client::new(),
+    };
+
+    println!("Testing connection...");
+    test_connection(&client)?;
+
+    // Register the machine or VM with NetBox
+    // TODO: Match here for given subcommand
+    match &args.command {
+        Commands::Register => register_machine(&client, machine, config)?,
+        Commands::Update { id } => update_machine(&client, machine, config, id.to_owned())?,
+        Commands::Auto {} => {
+            warn_auto_deprecated();
+            auto_register_or_update_machine(&client, machine, config)?;
+        }
+        Commands::WriteConfig { .. } => {
+            // Already handled further up
+        }
+        _ => {
+            // Already covered further up
+        }
+    }
+    println!("All done, have a nice day!");
 
     Ok(())
 }
