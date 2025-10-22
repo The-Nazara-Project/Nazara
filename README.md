@@ -129,6 +129,21 @@ When launching Nazara for the first time, a configuration file will be written
 at `$HOME/.config/nazara/config.toml`. If you pass CLI parameters, these will be
 automatically transfered into the config file as well.
 
+### The `config` commands
+
+Nazara provides you with several commands to manage your configuration files:
+
+- `write-config`: Write a new config file or overwrite an existing one.
+- `check-config`: Validate if your config is still valid.
+- `view-config`: Print config to console.
+
+The `write-config` allows you to change individual parameters, or perform a bulk
+update by passing a `JSON` structure via CLI. **These options are exclusive.
+Passing both is disallowed.**
+
+For further information on how to configure Nazara, run `nazara --help` or visit
+[our documentation](https://the-nazara-project.github.io/Nazara/users/configuration.html).
+
 ## Configuring via `$HOME/.config/nazara/config.toml` (recommended)
 
 Nazara's configuration must be located in the root user's home directory at
