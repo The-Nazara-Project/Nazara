@@ -279,11 +279,11 @@ pub struct Machine {
 
 fn warn_auto_deprecated() {
     let msg = "
-    \x1b[33m[WARNING] +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ [WARNING]\x1b[0m
-    \x1b[33m[WARNING] Running Nazara in 'Auto' mode is deprecated. Please use 'register' or 'update' subcommands instead. [WARNING]\x1b[0m
-    \x1b[33m[WARNING] +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ [WARNING]\x1b[0m
+\x1b[33m[WARNING] +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ [WARNING]\x1b[0m
+\x1b[33m[WARNING] Running Nazara in 'Auto' mode is deprecated. Please use 'register' or 'update' subcommands instead. [WARNING]\x1b[0m
+\x1b[33m[WARNING] +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ [WARNING]\x1b[0m
 ";
-    warn!("{}", msg);
+    println!("{}", msg);
 }
 
 /// Collect machine information.
