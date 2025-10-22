@@ -70,7 +70,7 @@
 //! Here is an example for passing these parameters on using the CLI:
 //!
 //! ```bash
-//! sudo ./target/release/Nazara --url <API_URL> --api-token <API_TOKEN>
+//! sudo ./target/release/Nazara --uri <API_URL> --token <API_TOKEN>
 //! ```
 //!
 //! ## Configuring via `$HOME/.config/nazara/config.toml`file.
@@ -340,19 +340,19 @@ fn main() -> NazaraResult<()> {
             json,
         } => {
             println!("Writing configuration file...");
-            if let Some(json_str) = json {
+            if json.is_some() {
                 write_config_file(
                     "", // ignored in JSON mode
                     "", // ignored in JSON mode
-                    name.clone(),
-                    description.clone(),
-                    comments.clone(),
-                    status.clone(),
-                    device_type.clone(),
-                    role.clone(),
-                    site.clone(),
-                    cluster_id.clone(),
-                    Some(json_str.clone()),
+                    name,
+                    description,
+                    comments,
+                    status,
+                    device_type,
+                    role,
+                    site,
+                    cluster_id,
+                    json,
                 )?;
             } else {
                 // Enforce required params for manual mode
@@ -366,15 +366,15 @@ fn main() -> NazaraResult<()> {
                 write_config_file(
                     uri,
                     token,
-                    name.clone(),
-                    description.clone(),
-                    comments.clone(),
-                    status.clone(),
-                    device_type.clone(),
-                    role.clone(),
-                    site.clone(),
-                    cluster_id.clone(),
-                    None,
+                    name,
+                    description,
+                    comments,
+                    status,
+                    device_type,
+                    role,
+                    site,
+                    cluster_id,
+                    &None,
                 )?;
             }
             println!("Configuration written successfully.");
