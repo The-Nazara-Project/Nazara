@@ -133,6 +133,7 @@
 mod collectors;
 pub mod configuration;
 pub mod error;
+pub mod output;
 pub mod publisher;
 
 use clap::{Parser, Subcommand};
@@ -282,7 +283,7 @@ fn warn_auto_deprecated() {
     \x1b[33m[WARNING] Running Nazara in 'Auto' mode is deprecated. Please use 'register' or 'update' subcommands instead. [WARNING]\x1b[0m
     \x1b[33m[WARNING] +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ [WARNING]\x1b[0m
 ";
-    eprintln!("{}", msg);
+    warn!("{}", msg);
 }
 
 /// Collect machine information.
@@ -377,7 +378,7 @@ fn main() -> NazaraResult<()> {
                     &None,
                 )?;
             }
-            println!("Configuration written successfully.");
+            success!("Configuration written successfully.");
             return Ok(());
         }
         Commands::CheckConfig => {
@@ -432,7 +433,7 @@ fn main() -> NazaraResult<()> {
             // Already covered further up
         }
     }
-    println!("All done, have a nice day!");
+    success!("All done, have a nice day!");
 
     Ok(())
 }
