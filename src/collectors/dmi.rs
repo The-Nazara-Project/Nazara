@@ -1,6 +1,6 @@
 //! This module provides logic to collect and process system information by using SMBIOS and DMI tables.
 
-use crate::{NazaraError, error::NazaraResult};
+use crate::{NazaraError, error::NazaraResult, warn};
 use dmidecode::{Structure, processor::ProcessorType};
 use serde::Serialize;
 use std::fs;
@@ -82,7 +82,7 @@ pub fn construct_dmi_information() -> NazaraResult<DmiInformation> {
     // Iterate over the DMI tables.
     for table in entry.structures(&dmi) {
         let Ok(t) = table else {
-            println!("DMI tables contain malformed structure: {table:?}");
+            warn!("DMI tables contain malformed structure: {table:?}");
             continue;
         };
 
