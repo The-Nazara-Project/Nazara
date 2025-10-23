@@ -7,7 +7,7 @@
 //! Errors are escalated upwards.
 extern crate thanix_client;
 
-use crate::{NazaraError, error::NazaraResult};
+use crate::{NazaraError, error::NazaraResult, info, success};
 
 use serde_json::Value;
 use thanix_client::{
@@ -62,13 +62,13 @@ pub fn test_connection(client: &ThanixClient) -> Result<(), NazaraError> {
         )
         .send()?;
 
-    println!("Got response!");
+    success!("Got response!");
     let json: Value = response.json::<Value>()?;
 
     if let Some(netbox_ver) = json.get("netbox-version").and_then(Value::as_str) {
         // Compare netbox version for compatibility
         if check_version_compatiblity(netbox_ver, thanix_client::version::VERSION) {
-            println!("API client version compatible with NetBox version.");
+            info!("API client version compatible with NetBox version.");
             Ok(())
         } else {
             Err(NazaraError::VersionMismatch)
@@ -178,8 +178,8 @@ pub fn create_device(
 
     match dcim_devices_create(client, payload)? {
         DcimDevicesCreateResponse::Http201(created_device) => {
-            println!(
-                " Device creation successful! New Device-ID: '{}'.",
+            success!(
+                "Device creation successful! New Device-ID: '{}'.",
                 created_device.id
             );
             Ok(created_device.id)
@@ -206,7 +206,7 @@ pub fn update_device(
     println!("Updating device in NetBox...");
     match dcim_devices_partial_update(client, payload, id)? {
         DcimDevicesPartialUpdateResponse::Http200(updated_device) => {
-            println!("Device updated successfully!");
+            success!("Device updated successfully!");
             Ok(updated_device.id)
         }
         DcimDevicesPartialUpdateResponse::Other(res) => Err(NazaraError::UnexpectedResponse(res)),
@@ -228,7 +228,7 @@ pub fn create_vm(
     println!("Creating virtual machine in NetBox...");
     match virtualization_virtual_machines_create(client, payload)? {
         VirtualizationVirtualMachinesCreateResponse::Http201(created_device) => {
-            println!(
+            success!(
                 " Virtual Machine creation successful! New ID: '{}'.",
                 created_device.id
             );
@@ -259,7 +259,7 @@ pub fn update_vm(
 
     match virtualization_virtual_machines_partial_update(client, payload, id)? {
         VirtualizationVirtualMachinesPartialUpdateResponse::Http200(updated_device) => {
-            println!("Device updated successfully!");
+            success!("VM updated successfully!");
             Ok(updated_device.id)
         }
         VirtualizationVirtualMachinesPartialUpdateResponse::Other(res) => {
@@ -307,7 +307,7 @@ pub fn create_mac_address(client: &ThanixClient, payload: MACAddressRequest) -> 
     println!("Creating MAC address in NetBox...");
     match dcim_mac_addresses_create(client, payload)? {
         thanix_client::paths::DcimMacAddressesCreateResponse::Http201(result) => {
-            println!(
+            success!(
                 " MAC Address created successfully. New MAC Address-ID: '{}'",
                 result.id
             );
@@ -333,7 +333,7 @@ pub fn update_mac_address(
 ) -> NazaraResult<i64> {
     match dcim_mac_addresses_update(client, payload, mac_address_id)? {
         DcimMacAddressesUpdateResponse::Http200(result) => {
-            println!("MAC Address '{}' updated successfully.", result.id);
+            success!("MAC Address '{}' updated successfully.", result.id);
             Ok(result.id)
         }
         DcimMacAddressesUpdateResponse::Other(res) => Err(NazaraError::UnexpectedResponse(res)),
@@ -419,7 +419,7 @@ pub fn create_interface(
 
     match dcim_interfaces_create(client, payload)? {
         DcimInterfacesCreateResponse::Http201(result) => {
-            println!(
+            success!(
                 " Interface created successfully. New Interface-ID: '{}'",
                 result.id
             );
@@ -436,7 +436,7 @@ pub fn create_vm_interface(
     println!("Creating network interface in NetBox...");
     match virtualization_interfaces_create(client, payload)? {
         VirtualizationInterfacesCreateResponse::Http201(result) => {
-            println!(
+            success!(
                 " Interface created successfully. New Interface-ID: '{}'",
                 result.id
             );
@@ -465,7 +465,7 @@ pub fn update_interface(
 ) -> NazaraResult<i64> {
     match dcim_interfaces_update(client, payload, interface_id)? {
         DcimInterfacesUpdateResponse::Http200(result) => {
-            println!("Interface '{}' updated successfully.", result.id);
+            success!("Interface '{}' updated successfully.", result.id);
             Ok(result.id)
         }
         DcimInterfacesUpdateResponse::Other(res) => Err(NazaraError::UnexpectedResponse(res)),
@@ -479,7 +479,7 @@ pub fn update_vm_interface(
 ) -> NazaraResult<i64> {
     match virtualization_interfaces_update(client, payload, interface_id)? {
         VirtualizationInterfacesUpdateResponse::Http200(result) => {
-            println!("Interface '{}' updated successfully.", result.id);
+            success!("Interface '{}' updated successfully.", result.id);
             Ok(result.id)
         }
         VirtualizationInterfacesUpdateResponse::Other(res) => {
@@ -554,7 +554,7 @@ pub fn create_ip(client: &ThanixClient, payload: WritableIPAddressRequest) -> Na
     println!("Creating new IP address object...");
     match ipam_ip_addresses_create(client, payload)? {
         IpamIpAddressesCreateResponse::Http201(result) => {
-            println!(
+            success!(
                 " IP Address created successfully. New IP-ID: '{}'",
                 result.id
             );

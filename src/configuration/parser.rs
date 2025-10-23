@@ -18,6 +18,8 @@ use std::{fs, path::PathBuf};
 use super::util::replace_key;
 use crate::NazaraError;
 use crate::error::NazaraResult;
+use crate::info;
+use crate::success;
 
 /// Configuration state set by the configuration file.
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -182,7 +184,7 @@ pub fn check_config_file() -> NazaraResult<()> {
     }
     println!("Checking integrity of config file...");
     ConfigData::validate_config_file()?;
-    println!("[success] Configuration file is valid.");
+    success!("Configuration file is valid.");
     Ok(())
 }
 
@@ -259,10 +261,7 @@ fn create_new_config(
     file.write_all(contents.as_bytes())
         .map_err(NazaraError::FileOpError)?;
 
-    println!(
-        "[success] Created new configuration at '{}'",
-        config_path.display()
-    );
+    success!("Created new configuration at '{}'", config_path.display());
     Ok(())
 }
 
@@ -338,8 +337,8 @@ fn update_existing_config(
     }
 
     fs::write(config_path, contents).map_err(NazaraError::FileOpError)?;
-    println!(
-        "[success] Updated existing configuration at {} (preserved comments)",
+    success!(
+        "Updated existing configuration at {} (preserved comments)",
         config_path.display()
     );
     Ok(())
@@ -413,8 +412,8 @@ fn write_config_from_json(config_path: &std::path::Path, json_str: &str) -> Naza
     }
 
     fs::write(config_path, contents).map_err(NazaraError::FileOpError)?;
-    println!(
-        "[success] Configuration written (JSON mode) to '{}'",
+    success!(
+        "Configuration written (JSON mode) to '{}'",
         config_path.display()
     );
     Ok(())
@@ -450,10 +449,10 @@ pub fn set_up_configuration(uri: Option<&str>, token: Option<&str>) -> NazaraRes
         return Ok(conf_data);
     }
 
-    println!("No config file found. Creating default...");
+    info!("No config file found. Creating default...");
 
     ConfigData::initialize_config_file(uri, token)?;
-    println!("Default configuration file created successfully.");
+    success!("Default configuration file created successfully.");
 
     if uri.is_none() || token.is_none() {
         return Err(NazaraError::MissingConfigOptionError(String::from(
@@ -468,7 +467,7 @@ pub fn set_up_configuration(uri: Option<&str>, token: Option<&str>) -> NazaraRes
         conf_data.netbox.netbox_api_token = t.to_owned();
     }
 
-    println!("Configuration loaded.");
+    success!("Configuration loaded.");
     Ok(conf_data)
 }
 

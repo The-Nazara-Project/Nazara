@@ -12,7 +12,6 @@ mod api_client;
 pub mod trans_validation;
 pub mod translator;
 
-use crate::NazaraError;
 use crate::configuration::parser::{CommonConfig, MachineConfig};
 use crate::error::NazaraResult;
 use crate::publisher::api_client::{
@@ -32,6 +31,7 @@ use crate::{
         update_device,
     },
 };
+use crate::{NazaraError, info, success};
 pub use api_client::test_connection;
 use api_client::update_interface;
 use serde_json::Value;
@@ -65,7 +65,7 @@ pub fn register_machine(
 
     match &config_data.machine {
         MachineConfig::Device(config) => {
-            println!("Registering device");
+            println!("Registering device...");
 
             let payload = information_to_device(&machine, &config_data.common, config);
             let device_id = create_device(client, payload)?;
@@ -77,7 +77,7 @@ pub fn register_machine(
 
                 create_ips(client, interface, interface_id, false)?;
             }
-            println!("Registration processs completed!");
+            success!("Registration processs completed!");
             return Ok(());
         }
         MachineConfig::VM(config) => {
@@ -91,6 +91,7 @@ pub fn register_machine(
 
                 create_ips(client, interface, interface_id, true)?;
             }
+            success!("Registration process completed!");
             return Ok(());
         }
     }
@@ -195,7 +196,7 @@ pub fn update_machine(
                     }
                 }
             }
-            println!("Device update process completed!");
+            success!("Device update process completed!");
             return Ok(());
         }
         MachineConfig::VM(config) => {
@@ -281,7 +282,7 @@ pub fn update_machine(
                     }
                 }
             }
-            println!("VM update process completed!");
+            success!("VM update process completed!");
             return Ok(());
         }
     }
@@ -308,7 +309,7 @@ pub fn auto_register_or_update_machine(
 
     match &config_data.machine {
         MachineConfig::Device(x) => {
-            println!("Registering device");
+            println!("Registering device...");
 
             let Some(device_id) = search_device(
                 client,
@@ -327,7 +328,7 @@ pub fn auto_register_or_update_machine(
 
                     create_ips(client, interface, interface_id, false)?;
                 }
-                println!("Registration process completed!");
+                success!("Registration process completed!");
                 return Ok(());
             };
 
@@ -410,7 +411,7 @@ pub fn auto_register_or_update_machine(
                     }
                 }
             }
-            println!("Update process completed!");
+            success!("Update process completed!");
         }
         MachineConfig::VM(x) => {
             println!("Registering virtual machine");
@@ -643,7 +644,7 @@ fn update_nwi(
     config_data: &CommonConfig,
     interface_id: &i64,
 ) -> NazaraResult<i64> {
-    println!("Updating interface '{interface_id}' belonging to device '{device_id}'");
+    info!("Updating interface '{interface_id}' belonging to device '{device_id}'");
 
     let mac_addr = interface
         .mac_addr
@@ -693,7 +694,7 @@ fn update_vm_nwi(
     config_data: &CommonConfig,
     interface_id: &i64,
 ) -> NazaraResult<i64> {
-    println!("Updating interface '{interface_id}' belonging to device '{device_id}'");
+    info!("Updating interface '{interface_id}' belonging to device '{device_id}'");
 
     let mac_addr = interface
         .mac_addr
