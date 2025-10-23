@@ -22,11 +22,11 @@ of Nazara is compatible with which version of NetBox (and if we still support it
 versions of NetBox happen - which usually includes breaking changes - the old version of Nazara will be moved
 to its own branch and tagged accordingly.
 
-|Nazara Version|NetBox Version|Branch|maintained?|
-|-|-|-|-|
-|`v0.1.0_beta.2`|`v4.3.x`|`main`|yes|
-|`v0.1.0_beta.1`|`v4.3.x`|`version/beta-1`|no|
-|`v0.1.0_alpha.2`|`v3.6.x`|`version/alpha-2`|no|
+|Nazara Version  |NetBox Version               |Branch           |maintained?|
+|----------------|-----------------------------|-----------------|---|
+|`v0.1.0_beta.2` |`v4.3.x`, `v4.4.x` and newer |`main`           |yes|
+|`v0.1.0_beta.1` |`v4.3.x`                     |`version/beta-1` |no |
+|`v0.1.0_alpha.2`|`v3.6.x`                     |`version/alpha-2`|no |
 
 Maintenance work on these older versions is not planned currently.
 

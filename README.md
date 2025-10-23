@@ -34,11 +34,11 @@ NetBox. When major ports to newer NetBox versions happen - which usually include
 breaking changes - the old version of Nazara will be moved to its own branch and
 tagged accordingly.
 
-| Nazara Version   | NetBox Version | Branch            | maintained?        |
-| ---------------- | -------------- | ----------------- | ------------------ |
-| `v0.1.0_beta.2`  | `v4.3.x`       | `main`            | :white_check_mark: |
-| `v0.1.0_beta.1`  | `v4.3.x`       | `version/beta-1`  | :x:                |
-| `v0.1.0_alpha.2` | `v3.6.x`       | `version/alpha-2` | :x:                |
+| Nazara Version   | NetBox Version    | Branch            | maintained?        |
+| ---------------- | ----------------- | ----------------- | ------------------ |
+| `v0.1.0_beta.2`  | `v4.3.x`, `v4.4.x`| `main`            | :white_check_mark: |
+| `v0.1.0_beta.1`  | `v4.3.x`          | `version/beta-1`  | :x:                |
+| `v0.1.0_alpha.2` | `v3.6.x`          | `version/alpha-2` | :x:                |
 
 Maintenance work on these older versions is not planned.
 
