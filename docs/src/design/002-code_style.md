@@ -167,10 +167,21 @@ automatically be added by our custom error types when they are given a error mes
 * `\ẋ1b[36m[info]\x1b[0m Information level message.` - Light blue colored `[info]` prefix.
 * `\x1b[33m[warning]\x1b[0m Something went wrong, but we can continue...` - Yellow colored `[warning]` prefix.
 
-~~~admonish warning
-Always remember to close the coloring by resetting the color using the `\x1b[0m` control sequence.
-~~~
+To unify this coloring we have implemented several macros to be used for these status messages. These apply
+formatting and colors automatically and disable colors when the host's terminal does not support it.
 
-~~~admonish note collapsible=true
-These escape sequences, may not be compatible with all terminals. We are working on a fix as a low priority task.
+The macros are called `success!`, `warn!`, `failure!`, `info!` you can find a usage example below.
+
+~~~admonish example title="Example: Status Message Macros" collapsible=true
+```rust
+match some_func(x) => {
+    Ok(_) => {
+        success!("This worked!");
+    },
+    Err(e) => {
+        failure!("An error occured: {}", e);
+        // Handle the error.
+    }
+}
+```
 ~~~
