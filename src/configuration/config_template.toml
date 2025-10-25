@@ -1,4 +1,4 @@
-# Template nazara-config.toml file for v0.1.0-beta.2
+# Template nazara-config.toml file for v0.1.0-beta.3
 
 # Configuration parameters for the NetBox connection
 [netbox]

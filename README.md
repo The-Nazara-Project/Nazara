@@ -21,6 +21,7 @@ information listed below is subject to change.**
 - [Usage](#usage)
 - [Configuration](#configuration)
   - [Configuring via CLI](#configuring-via-cli)
+    - [The `config` commands](#the-config-commands)
   - [Configuring via `$HOME/.config/nazara/config.toml` (recommended)](#configuring-via-homeconfignazaraconfigtoml-recommended)
   - [Configuring custom fields using user plugins](#configuring-custom-fields-using-user-plugins)
 - [Contributing](#contributing)
@@ -36,7 +37,8 @@ tagged accordingly.
 
 | Nazara Version   | NetBox Version    | Branch            | maintained?        |
 | ---------------- | ----------------- | ----------------- | ------------------ |
-| `v0.1.0_beta.2`  | `v4.3.x`, `v4.4.x`| `main`            | :white_check_mark: |
+| `v0.1.0_beta.3`  | `v4.3.x`, `v4.4.x`| `main`            | :white_check_mark: |
+| `v0.1.0_beta.2`  | `v4.3.x`, `v4.4.x`| `version/beta-2`  | :x:                |
 | `v0.1.0_beta.1`  | `v4.3.x`          | `version/beta-1`  | :x:                |
 | `v0.1.0_alpha.2` | `v3.6.x`          | `version/alpha-2` | :x:                |
 
