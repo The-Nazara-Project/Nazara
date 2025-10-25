@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Sat Oct 25 12:58:02 UTC 2025 - Tiara Hock <tiara.dev@proton.me>
+
+- 0.1.0_beta.3
+    * Add configuration management subcommands
+    * Create register and update subcommands for explicit operations
+    * Mark 'auto' mode as deprecated
+    * Fix broken terminal output formatting
+    * Update user, code style and contributing documentation
+    * Update thanix_client version for NetBox v4.4.x compatibility
+
+-------------------------------------------------------------------
 Mon Jul 21 16:36:02 UTC 2025 - Tiara Hock <tiara.dev@proton.me>
 
 - 0.1.0_beta.2
