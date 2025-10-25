@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This script is oriented towards the specific custom fields in SUSE's NetBox instance.
+# This is an example script for use with Nazara's --plugin argument.
 # It mainly collects information about the CPU, RAM and power draw.
 #
 # You can write your own collection script for whatever data you want in the "Custom Fields" section of your
