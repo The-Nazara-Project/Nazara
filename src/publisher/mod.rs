@@ -9,7 +9,6 @@
 //! [`crate::publisher::api_client`] modules respectively.
 
 mod api_client;
-pub mod trans_validation;
 pub mod translator;
 
 use crate::configuration::parser::{CommonConfig, MachineConfig};
