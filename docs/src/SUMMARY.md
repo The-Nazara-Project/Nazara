@@ -6,6 +6,7 @@
     - [Code Style Guide](./design/002-code_style.md)
 - [Contributor Documentation](contributors/index.md)
     - [Setting up a Test Environment](./contributors/test_environment.md)
+    - [Testing VMs](./contributors/test_vms.md)
     - [Contribution Workflow](./contributors/contributing_workflow.md)
     - [Dependency Policy](./contributors/dependencies.md)
     - [Security Policy](./contributors/security.md)
