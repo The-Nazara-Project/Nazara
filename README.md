@@ -156,7 +156,7 @@ that path. Certain parameters are required to be configured there manually. You
 recognize them by their line not being commented out.
 
 Aside from the NetBox system parameters,
-configuration`via the`config.toml`also allows you to add certain
+configuration via the `config.toml`also allows you to add certain
 custom fields to your system information that cannot be automatically selected. A great example would be the`System
 Location`entry. To specify that, simply add the parameter under the`[system]`
 block in your configuration file.
