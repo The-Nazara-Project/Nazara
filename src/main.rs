@@ -155,8 +155,13 @@ use thanix_client::util::ThanixClient;
 
 pub use error::NazaraError;
 
+use crate::configuration::parser::ConfigData;
 #[cfg(target_os = "linux")]
 use crate::error::NazaraResult;
+
+// ================================================
+// =========COMMAND LINE INTERFACE=================
+// ================================================
 
 #[derive(Debug, Subcommand)]
 enum Commands {
@@ -258,6 +263,10 @@ struct Args {
     command: Commands,
 }
 
+// ================================================
+// =========NAZARA INFORMATION STATE===============
+// ================================================
+
 /// This struct represents your machine.
 /// It holds all information collected and allows for sharing this
 /// information between Nazara's modules.
@@ -275,6 +284,219 @@ pub struct Machine {
     pub network_information: Vec<NetworkInformation>,
     /// Custom fields read from config file or via plugins.
     pub custom_information: Option<HashMap<String, Value>>,
+}
+
+/// Represent application state.
+///
+/// # Fields
+/// * `args: Args` - Command line arguments
+/// * `config: Option<ConfigData>` - Application configuration
+/// * `client: Option<ThanixClient>` - API client instance.
+struct Nazara {
+    args: Args,
+    config: Option<ConfigData>,
+    client: Option<ThanixClient>,
+}
+
+impl Nazara {
+    /// Create a new `Nazara` instance representing the entire
+    /// application state.
+    ///
+    /// # Returns
+    ///
+    /// A `Nazara` instance or a `NazaraError`.
+    pub fn new() -> NazaraResult<Self> {
+        let args = Args::parse();
+        Ok(Self {
+            args,
+            config: None,
+            client: None,
+        })
+    }
+
+    /// Run the application.
+    ///
+    /// 1. If any `config` command has been given, their operation is executed
+    /// 2. Collect machine data
+    /// 3. Parse and set up the configuration
+    /// 4. Set up an API client instance
+    /// 5. Execute the specified operation
+    ///
+    /// # Returns
+    /// Returns a `NazaraResult`, escalating any errors to the top, or
+    /// returning an empty `Ok(())`.
+    pub fn run(&mut self) -> NazaraResult<()> {
+        Self::print_banner();
+
+        if let Some(_) = self.handle_config_commands()? {
+            return Ok(());
+        }
+
+        let machine = self.prepare_machine()?;
+
+        // TODO: Do we still need this set_up_configuration call?
+        self.config = Some(set_up_configuration(
+            self.args.uri.as_deref(),
+            self.args.token.as_deref(),
+        )?);
+        self.client = Some(self.prepare_client()?);
+
+        self.execute_operation(machine)?;
+
+        success!("All done, have a nice day!");
+        Ok(())
+    }
+
+    /// Print the welcome banner.
+    fn print_banner() -> () {
+        const ASCII_ART: &str = r#"
+    ███╗   ██╗ █████╗ ███████╗ █████╗ ██████╗  █████╗
+    ████╗  ██║██╔══██╗╚══███╔╝██╔══██╗██╔══██╗██╔══██╗
+    ██╔██╗ ██║███████║  ███╔╝ ███████║██████╔╝███████║
+    ██║╚██╗██║██╔══██║ ███╔╝  ██╔══██║██╔══██╗██╔══██║
+    ██║ ╚████║██║  ██║███████╗██║  ██║██║  ██║██║  ██║
+    ╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝
+    (c) Tiara Hock aka ByteOtter. (github.com/ByteOtter)
+
+    Licensed under the terms of the GPL-v3.0 License.
+    Check github.com/The-Nazara-Project/Nazara/LICENSE for more info.
+"#;
+        println!("{ASCII_ART}");
+    }
+
+    /// Parse the config subcommands.
+    fn handle_config_commands(&self) -> NazaraResult<Option<()>> {
+        match &self.args.command {
+            Commands::WriteConfig {
+                uri,
+                token,
+                name,
+                description,
+                comments,
+                status,
+                device_type,
+                site,
+                role,
+                cluster_id,
+                json,
+            } => {
+                println!("Writing configuration file...");
+                if json.is_some() {
+                    write_config_file(
+                        "", // ignored in JSON mode
+                        "", // ignored in JSON mode
+                        name,
+                        description,
+                        comments,
+                        status,
+                        device_type,
+                        role,
+                        site,
+                        cluster_id,
+                        json,
+                    )?;
+                } else {
+                    // Enforce required params for manual mode
+                    let uri = uri.as_deref().ok_or_else(|| {
+                        NazaraError::Other("Missing required argument: --uri".into())
+                    })?;
+                    let token = token.as_deref().ok_or_else(|| {
+                        NazaraError::Other("Missing required argument: --token".into())
+                    })?;
+
+                    write_config_file(
+                        uri,
+                        token,
+                        name,
+                        description,
+                        comments,
+                        status,
+                        device_type,
+                        role,
+                        site,
+                        cluster_id,
+                        &None,
+                    )?;
+                }
+                success!("Configuration written successfully.");
+                return Ok(Some(()));
+            }
+            Commands::CheckConfig => {
+                check_config_file()?;
+                return Ok(Some(()));
+            }
+            Commands::ViewConfig => {
+                view_config_file()?;
+                return Ok(Some(()));
+            }
+            _ => Ok(None),
+        }
+    }
+
+    /// Prepare machine information by starting the dmi and network collectors.
+    ///
+    /// # Exits
+    ///
+    /// If `--dry-run` has been passed, prints the collected information
+    /// to the terminal and exits the programm with exit code `0`.
+    fn prepare_machine(&self) -> NazaraResult<Machine> {
+        let machine = start_collection(self.args.plugin.clone())?;
+
+        // Passing a name in any way is mandatory for a virtual machine.
+        if machine.dmi_information.system_information.is_virtual && machine.name.is_none() {
+            return Err(NazaraError::Other(
+            "No name has been provided for this virtual machine! Providing a name as search parameter is mandatory for virtual machines.".into(),
+        ));
+        }
+
+        // If we only want to do a dry run, we only have to print the collected information.
+        if self.args.dry_run {
+            println!("Dry run results:");
+            dbg!(&machine);
+            std::process::exit(0)
+        }
+        Ok(machine)
+    }
+
+    /// Prepare `ThanixClient` instance for use,
+    fn prepare_client(&self) -> NazaraResult<ThanixClient> {
+        let config = set_up_configuration(self.args.uri.as_deref(), self.args.token.as_deref())?;
+
+        let client = ThanixClient {
+            base_url: config.get_netbox_uri().to_string(),
+            authentication_token: config.get_api_token().to_string(),
+            client: Client::new(),
+        };
+        println!("Testing connection...");
+        test_connection(&client)?;
+        Ok(client)
+    }
+
+    /// Execute specified operation (register/update)
+    fn execute_operation(&self, machine: Machine) -> NazaraResult<()> {
+        let client = self
+            .client
+            .as_ref()
+            .ok_or_else(|| NazaraError::Other("Client not initialized".into()))?;
+        let config = self
+            .config
+            .as_ref()
+            .ok_or_else(|| NazaraError::Other("Configuration not initialized".into()))?;
+
+        match &self.args.command {
+            Commands::Register => register_machine(client, machine, config.clone())?,
+            Commands::Update { id } => {
+                update_machine(client, machine, config.clone(), id.to_owned())?
+            }
+            Commands::Auto {} => {
+                warn_auto_deprecated();
+                auto_register_or_update_machine(client, machine, config.clone())?;
+            }
+            _ => {}
+        }
+
+        Ok(())
+    }
 }
 
 fn warn_auto_deprecated() {
@@ -306,134 +528,11 @@ fn start_collection(plugin: Option<String>) -> NazaraResult<Machine> {
     })
 }
 
+// ================================================
+// =========NAZARA ENTRY POINT=====================
+// ================================================
+
 #[cfg(target_os = "linux")]
 fn main() -> NazaraResult<()> {
-    let args: Args = Args::parse();
-
-    const ASCII_ART: &str = r#"
-    ███╗   ██╗ █████╗ ███████╗ █████╗ ██████╗  █████╗
-    ████╗  ██║██╔══██╗╚══███╔╝██╔══██╗██╔══██╗██╔══██╗
-    ██╔██╗ ██║███████║  ███╔╝ ███████║██████╔╝███████║
-    ██║╚██╗██║██╔══██║ ███╔╝  ██╔══██║██╔══██╗██╔══██║
-    ██║ ╚████║██║  ██║███████╗██║  ██║██║  ██║██║  ██║
-    ╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝
-    (c) Tiara Hock aka ByteOtter. (github.com/ByteOtter)
-
-    Licensed under the terms of the GPL-v3.0 License.
-    Check github.com/The-Nazara-Project/Nazara/LICENSE for more info.
-"#;
-
-    // Welcome Message.
-    println!("{ASCII_ART}");
-
-    match &args.command {
-        Commands::WriteConfig {
-            uri,
-            token,
-            name,
-            description,
-            comments,
-            status,
-            device_type,
-            site,
-            role,
-            cluster_id,
-            json,
-        } => {
-            println!("Writing configuration file...");
-            if json.is_some() {
-                write_config_file(
-                    "", // ignored in JSON mode
-                    "", // ignored in JSON mode
-                    name,
-                    description,
-                    comments,
-                    status,
-                    device_type,
-                    role,
-                    site,
-                    cluster_id,
-                    json,
-                )?;
-            } else {
-                // Enforce required params for manual mode
-                let uri = uri
-                    .as_deref()
-                    .ok_or_else(|| NazaraError::Other("Missing required argument: --uri".into()))?;
-                let token = token.as_deref().ok_or_else(|| {
-                    NazaraError::Other("Missing required argument: --token".into())
-                })?;
-
-                write_config_file(
-                    uri,
-                    token,
-                    name,
-                    description,
-                    comments,
-                    status,
-                    device_type,
-                    role,
-                    site,
-                    cluster_id,
-                    &None,
-                )?;
-            }
-            success!("Configuration written successfully.");
-            return Ok(());
-        }
-        Commands::CheckConfig => {
-            check_config_file()?;
-            return Ok(());
-        }
-        Commands::ViewConfig => {
-            view_config_file()?;
-            return Ok(());
-        }
-        _ => {} // Other commands handled below.
-    }
-
-    let machine = start_collection(args.plugin.clone())?;
-
-    // Passing a name in any way is mandatory for a virtual machine.
-    if machine.dmi_information.system_information.is_virtual && machine.name.is_none() {
-        return Err(NazaraError::Other(
-            "No name has been provided for this virtual machine! Providing a name as search parameter is mandatory for virtual machines.".into(),
-        ));
-    }
-
-    // If we only want to do a dry run, we only have to print the collected information.
-    if args.dry_run {
-        println!("Dry run results:");
-        dbg!(&machine);
-        return Ok(());
-    }
-
-    // TODO: Do we still need this?
-    let config = set_up_configuration(args.uri.as_deref(), args.token.as_deref())?;
-
-    let client = ThanixClient {
-        base_url: config.get_netbox_uri().to_string(),
-        authentication_token: config.get_api_token().to_string(),
-        client: Client::new(),
-    };
-
-    println!("Testing connection...");
-    test_connection(&client)?;
-
-    // Register the machine or VM with NetBox
-    // TODO: Match here for given subcommand
-    match &args.command {
-        Commands::Register => register_machine(&client, machine, config)?,
-        Commands::Update { id } => update_machine(&client, machine, config, id.to_owned())?,
-        Commands::Auto {} => {
-            warn_auto_deprecated();
-            auto_register_or_update_machine(&client, machine, config)?;
-        }
-        _ => {
-            // Already covered further up
-        }
-    }
-    success!("All done, have a nice day!");
-
-    Ok(())
+    Nazara::new()?.run()
 }
