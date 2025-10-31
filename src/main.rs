@@ -253,6 +253,10 @@ struct Args {
     #[arg(short, long)]
     plugin: Option<String>,
 
+    /// DHCP Mode prevents the creation/update of IP address entries. (default: False)
+    #[arg(long, default_value_t = false)]
+    dhcp_mode: bool,
+
     /// Subcommands.
     #[command(subcommand)]
     command: Commands,
@@ -420,11 +424,17 @@ fn main() -> NazaraResult<()> {
     println!("Testing connection...");
     test_connection(&client)?;
 
+    if args.dhcp_mode {
+        info!("Running in DHCP Mode. IP address creation/update is skipped.")
+    }
+
     // Register the machine or VM with NetBox
     // TODO: Match here for given subcommand
     match &args.command {
-        Commands::Register => register_machine(&client, machine, config)?,
-        Commands::Update { id } => update_machine(&client, machine, config, id.to_owned())?,
+        Commands::Register => register_machine(&client, machine, config, args.dhcp_mode)?,
+        Commands::Update { id } => {
+            update_machine(&client, machine, config, id.to_owned(), args.dhcp_mode)?
+        }
         Commands::Auto {} => {
             warn_auto_deprecated();
             auto_register_or_update_machine(&client, machine, config)?;

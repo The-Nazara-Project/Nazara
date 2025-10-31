@@ -59,6 +59,7 @@ pub fn register_machine(
     client: &ThanixClient,
     machine: Machine,
     config_data: ConfigData,
+    dhcp_mode: bool,
 ) -> NazaraResult<()> {
     println!("Starting registration process. This may take a while...");
 
@@ -74,7 +75,9 @@ pub fn register_machine(
                 let interface_id: i64 =
                     create_nwi(client, device_id, interface, &config_data.common)?;
 
-                create_ips(client, interface, interface_id, false)?;
+                if !dhcp_mode {
+                    create_ips(client, interface, interface_id, false)?;
+                }
             }
             success!("Registration processs completed!");
             return Ok(());
@@ -88,7 +91,9 @@ pub fn register_machine(
             for interface in &machine.network_information {
                 let interface_id = create_vm_nwi(client, vm_id, interface, &config_data.common)?;
 
-                create_ips(client, interface, interface_id, true)?;
+                if !dhcp_mode {
+                    create_ips(client, interface, interface_id, true)?;
+                }
             }
             success!("Registration process completed!");
             return Ok(());
@@ -111,6 +116,7 @@ pub fn update_machine(
     machine: Machine,
     config_data: ConfigData,
     machine_id: i64,
+    dhcp_mode: bool,
 ) -> NazaraResult<()> {
     println!("Starting update process. This may take a while...");
 
@@ -142,55 +148,61 @@ pub fn update_machine(
                 // Updating interfaces that don't belong to us is undefined behavior because it may interfere with
                 // external services that provide these IP addresses.
 
-                let (ipv4, ipv6) = search_device_ips(client, interface, None)?;
-                if let Some(ip) = interface.v4ip {
-                    let ipv4 = ipv4.ok_or(NazaraError::NetBoxApiError(format!(
-                        "IPv4 address \"{}\" was not registered in NetBox",
-                        ip
-                    )))?;
+                if !dhcp_mode {
+                    let (ipv4, ipv6) = search_device_ips(client, interface, None)?;
+                    if let Some(ip) = interface.v4ip {
+                        let ipv4 = ipv4.ok_or(NazaraError::NetBoxApiError(format!(
+                            "IPv4 address \"{}\" was not registered in NetBox",
+                            ip
+                        )))?;
 
-                    if let IpamIpAddressesRetrieveResponse::Http200(a) =
-                        ipam_ip_addresses_retrieve(client, ipv4)?
-                    {
-                        if let Some(b) = a.assigned_object_id {
-                            assert_eq!(b, nwi_id as u64);
-                        } else {
-                            patch_ip(
-                                client,
-                                PatchedWritableIPAddressRequest {
-                                    status: Some("active".to_string()),
-                                    assigned_object_type: Some(Some("dcim.interface".to_string())),
-                                    assigned_object_id: Some(Some(nwi_id as u64)),
-                                    ..Default::default()
-                                },
-                                ipv4,
-                            )?;
+                        if let IpamIpAddressesRetrieveResponse::Http200(a) =
+                            ipam_ip_addresses_retrieve(client, ipv4)?
+                        {
+                            if let Some(b) = a.assigned_object_id {
+                                assert_eq!(b, nwi_id as u64);
+                            } else {
+                                patch_ip(
+                                    client,
+                                    PatchedWritableIPAddressRequest {
+                                        status: Some("active".to_string()),
+                                        assigned_object_type: Some(Some(
+                                            "dcim.interface".to_string(),
+                                        )),
+                                        assigned_object_id: Some(Some(nwi_id as u64)),
+                                        ..Default::default()
+                                    },
+                                    ipv4,
+                                )?;
+                            }
                         }
                     }
-                }
 
-                if let Some(ip) = interface.v6ip {
-                    let ipv6 = ipv6.ok_or(NazaraError::NetBoxApiError(format!(
-                        "IPv6 address \"{}\" was not registered in NetBox",
-                        ip
-                    )))?;
+                    if let Some(ip) = interface.v6ip {
+                        let ipv6 = ipv6.ok_or(NazaraError::NetBoxApiError(format!(
+                            "IPv6 address \"{}\" was not registered in NetBox",
+                            ip
+                        )))?;
 
-                    if let IpamIpAddressesRetrieveResponse::Http200(a) =
-                        ipam_ip_addresses_retrieve(client, ipv6)?
-                    {
-                        if let Some(b) = a.assigned_object_id {
-                            assert_eq!(b, nwi_id as u64);
-                        } else {
-                            patch_ip(
-                                client,
-                                PatchedWritableIPAddressRequest {
-                                    status: Some("active".to_string()),
-                                    assigned_object_type: Some(Some("dcim.interface".to_string())),
-                                    assigned_object_id: Some(Some(nwi_id as u64)),
-                                    ..Default::default()
-                                },
-                                ipv6,
-                            )?;
+                        if let IpamIpAddressesRetrieveResponse::Http200(a) =
+                            ipam_ip_addresses_retrieve(client, ipv6)?
+                        {
+                            if let Some(b) = a.assigned_object_id {
+                                assert_eq!(b, nwi_id as u64);
+                            } else {
+                                patch_ip(
+                                    client,
+                                    PatchedWritableIPAddressRequest {
+                                        status: Some("active".to_string()),
+                                        assigned_object_type: Some(Some(
+                                            "dcim.interface".to_string(),
+                                        )),
+                                        assigned_object_id: Some(Some(nwi_id as u64)),
+                                        ..Default::default()
+                                    },
+                                    ipv6,
+                                )?;
+                            }
                         }
                     }
                 }
@@ -224,59 +236,61 @@ pub fn update_machine(
                 // Updating interfaces that don't belong to us is undefined behavior because it may interfere with
                 // external services that provide these IP addresses.
 
-                let (ipv4, ipv6) = search_vm_ips(client, interface, None)?;
-                if let Some(ip) = interface.v4ip {
-                    let ipv4 = ipv4.expect(&format!(
-                        "IPv4 address \"{}\" was not registered in NetBox",
-                        ip
-                    ));
+                if !dhcp_mode {
+                    let (ipv4, ipv6) = search_vm_ips(client, interface, None)?;
+                    if let Some(ip) = interface.v4ip {
+                        let ipv4 = ipv4.expect(&format!(
+                            "IPv4 address \"{}\" was not registered in NetBox",
+                            ip
+                        ));
 
-                    if let IpamIpAddressesRetrieveResponse::Http200(a) =
-                        ipam_ip_addresses_retrieve(client, ipv4)?
-                    {
-                        if let Some(b) = a.assigned_object_id {
-                            assert_eq!(b, nwi_id as u64);
-                        } else {
-                            patch_ip(
-                                client,
-                                PatchedWritableIPAddressRequest {
-                                    status: Some("active".to_string()),
-                                    assigned_object_type: Some(Some(
-                                        "virtualization.vminterface".to_string(),
-                                    )),
-                                    assigned_object_id: Some(Some(nwi_id as u64)),
-                                    ..Default::default()
-                                },
-                                ipv4,
-                            )?;
+                        if let IpamIpAddressesRetrieveResponse::Http200(a) =
+                            ipam_ip_addresses_retrieve(client, ipv4)?
+                        {
+                            if let Some(b) = a.assigned_object_id {
+                                assert_eq!(b, nwi_id as u64);
+                            } else {
+                                patch_ip(
+                                    client,
+                                    PatchedWritableIPAddressRequest {
+                                        status: Some("active".to_string()),
+                                        assigned_object_type: Some(Some(
+                                            "virtualization.vminterface".to_string(),
+                                        )),
+                                        assigned_object_id: Some(Some(nwi_id as u64)),
+                                        ..Default::default()
+                                    },
+                                    ipv4,
+                                )?;
+                            }
                         }
                     }
-                }
 
-                if let Some(ip) = interface.v6ip {
-                    let ipv6 = ipv6.expect(&format!(
-                        "IPv6 address \"{}\" was not registered in NetBox",
-                        ip
-                    ));
+                    if let Some(ip) = interface.v6ip {
+                        let ipv6 = ipv6.expect(&format!(
+                            "IPv6 address \"{}\" was not registered in NetBox",
+                            ip
+                        ));
 
-                    if let IpamIpAddressesRetrieveResponse::Http200(a) =
-                        ipam_ip_addresses_retrieve(client, ipv6)?
-                    {
-                        if let Some(b) = a.assigned_object_id {
-                            assert_eq!(b, nwi_id as u64);
-                        } else {
-                            patch_ip(
-                                client,
-                                PatchedWritableIPAddressRequest {
-                                    status: Some("active".to_string()),
-                                    assigned_object_type: Some(Some(
-                                        "virtualization.vminterface".to_string(),
-                                    )),
-                                    assigned_object_id: Some(Some(nwi_id as u64)),
-                                    ..Default::default()
-                                },
-                                ipv6,
-                            )?;
+                        if let IpamIpAddressesRetrieveResponse::Http200(a) =
+                            ipam_ip_addresses_retrieve(client, ipv6)?
+                        {
+                            if let Some(b) = a.assigned_object_id {
+                                assert_eq!(b, nwi_id as u64);
+                            } else {
+                                patch_ip(
+                                    client,
+                                    PatchedWritableIPAddressRequest {
+                                        status: Some("active".to_string()),
+                                        assigned_object_type: Some(Some(
+                                            "virtualization.vminterface".to_string(),
+                                        )),
+                                        assigned_object_id: Some(Some(nwi_id as u64)),
+                                        ..Default::default()
+                                    },
+                                    ipv6,
+                                )?;
+                            }
                         }
                     }
                 }
