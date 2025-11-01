@@ -160,107 +160,11 @@ use crate::configuration::parser::ConfigData;
 use crate::error::NazaraResult;
 
 // ================================================
-// =========COMMAND LINE INTERFACE=================
+// =========NAZARA ENTRY POINT=====================
 // ================================================
-
-#[derive(Debug, Subcommand)]
-enum Commands {
-    /// Register a new machine.
-    // Any future arguments for this command into its block.
-    Register,
-    /// Update a given machine by ID.
-    Update {
-        /// The ID of the machine in NetBox.
-        #[arg(long)]
-        id: i64,
-    },
-    /// Attempt to detect whether an update or new registration is necessary. (DEPRECATED, old default behaviour)
-    Auto,
-    /// Write new config file or overwrite existing one with new values. Pass JSON for bulk changes.
-    WriteConfig {
-        /// The URI of your NetBox instance. Required if not using '--json'.
-        #[arg(short, long, required_unless_present = "json", conflicts_with = "json")]
-        uri: Option<String>,
-
-        /// Your NetBox authentication token. Required if not using '--json'.
-        #[arg(short, long, required_unless_present = "json", conflicts_with = "json")]
-        token: Option<String>,
-
-        /// The machine's name. (Optional; default: hostname)
-        #[arg(short, long, conflicts_with = "json")]
-        name: Option<String>,
-
-        /// A description of the machine. (Optional)
-        #[arg(short, long, conflicts_with = "json")]
-        description: Option<String>,
-
-        /// A comment for the entry. (Optional; default: 'Automatically registered by Nazara')
-        #[arg(short, long, conflicts_with = "json")]
-        comments: Option<String>,
-
-        /// The status of the machine. (Optional; defaults: 'active')
-        #[arg(short, long, conflicts_with = "json")]
-        status: Option<String>,
-
-        /// Device type ID. (if this is a physical device)
-        #[arg(long, conflicts_with = "json")]
-        device_type: Option<i64>,
-
-        /// Device role ID.
-        #[arg(long, conflicts_with = "json")]
-        role: Option<i64>,
-
-        /// Site ID. (for physical devices)
-        #[arg(long, conflicts_with = "json")]
-        site: Option<i64>,
-
-        /// Cluster ID. (for VMs)
-        #[arg(long, conflicts_with = "json")]
-        cluster_id: Option<i64>,
-
-        /// JSON of your configuration parameters. (Optional; exclusive with other options.)
-        #[arg(long, conflicts_with_all = &[
-            "uri", "token", "name", "descirption", "comments",
-            "status", "device_type", "role", "site", "cluster_id"
-        ])]
-        json: Option<String>,
-    },
-    /// Validate configuration file.
-    CheckConfig,
-    ViewConfig,
-}
-
-/// The arguments that Nazara expects to get via the cli.
-///
-/// Arguments can be passed like this:
-///
-/// ```
-/// nazara --uri <NETBOX_URI> --token <NETBOX_TOKEN> register
-/// ```
-///
-/// These arguments override the ones defined in the `$HOME/.config/nazara/config.toml`.
-#[derive(Parser, Debug)]
-#[command(author, version, about, long_about=None)]
-struct Args {
-    /// Only prints collected information to stdout.
-    #[arg(short, long)]
-    dry_run: bool,
-
-    /// Temporarily overwrite the url to your NetBox instance.
-    #[arg(short, long)]
-    uri: Option<String>,
-
-    /// Temporarily use a different authentication token for NetBox.
-    #[arg(short, long)]
-    token: Option<String>,
-
-    /// The Path to a plugin script you want to run.
-    #[arg(short, long)]
-    plugin: Option<String>,
-
-    /// Subcommands.
-    #[command(subcommand)]
-    command: Commands,
+#[cfg(target_os = "linux")]
+fn main() -> NazaraResult<()> {
+    Nazara::new()?.run()
 }
 
 // ================================================
@@ -529,10 +433,105 @@ fn start_collection(plugin: Option<String>) -> NazaraResult<Machine> {
 }
 
 // ================================================
-// =========NAZARA ENTRY POINT=====================
+// =========COMMAND LINE INTERFACE=================
 // ================================================
 
-#[cfg(target_os = "linux")]
-fn main() -> NazaraResult<()> {
-    Nazara::new()?.run()
+#[derive(Debug, Subcommand)]
+enum Commands {
+    /// Register a new machine.
+    // Any future arguments for this command into its block.
+    Register,
+    /// Update a given machine by ID.
+    Update {
+        /// The ID of the machine in NetBox.
+        #[arg(long)]
+        id: i64,
+    },
+    /// Attempt to detect whether an update or new registration is necessary. (DEPRECATED, old default behaviour)
+    Auto,
+    /// Write new config file or overwrite existing one with new values. Pass JSON for bulk changes.
+    WriteConfig {
+        /// The URI of your NetBox instance. Required if not using '--json'.
+        #[arg(short, long, required_unless_present = "json", conflicts_with = "json")]
+        uri: Option<String>,
+
+        /// Your NetBox authentication token. Required if not using '--json'.
+        #[arg(short, long, required_unless_present = "json", conflicts_with = "json")]
+        token: Option<String>,
+
+        /// The machine's name. (Optional; default: hostname)
+        #[arg(short, long, conflicts_with = "json")]
+        name: Option<String>,
+
+        /// A description of the machine. (Optional)
+        #[arg(short, long, conflicts_with = "json")]
+        description: Option<String>,
+
+        /// A comment for the entry. (Optional; default: 'Automatically registered by Nazara')
+        #[arg(short, long, conflicts_with = "json")]
+        comments: Option<String>,
+
+        /// The status of the machine. (Optional; defaults: 'active')
+        #[arg(short, long, conflicts_with = "json")]
+        status: Option<String>,
+
+        /// Device type ID. (if this is a physical device)
+        #[arg(long, conflicts_with = "json")]
+        device_type: Option<i64>,
+
+        /// Device role ID.
+        #[arg(long, conflicts_with = "json")]
+        role: Option<i64>,
+
+        /// Site ID. (for physical devices)
+        #[arg(long, conflicts_with = "json")]
+        site: Option<i64>,
+
+        /// Cluster ID. (for VMs)
+        #[arg(long, conflicts_with = "json")]
+        cluster_id: Option<i64>,
+
+        /// JSON of your configuration parameters. (Optional; exclusive with other options.)
+        #[arg(long, conflicts_with_all = &[
+            "uri", "token", "name", "descirption", "comments",
+            "status", "device_type", "role", "site", "cluster_id"
+        ])]
+        json: Option<String>,
+    },
+    /// Validate configuration file.
+    CheckConfig,
+    ViewConfig,
+}
+
+/// The arguments that Nazara expects to get via the cli.
+///
+/// Arguments can be passed like this:
+///
+/// ```
+/// nazara --uri <NETBOX_URI> --token <NETBOX_TOKEN> register
+/// ```
+///
+/// These arguments override the ones defined in the `$HOME/.config/nazara/config.toml`.
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about=None)]
+struct Args {
+    /// Only prints collected information to stdout.
+    #[arg(short, long)]
+    dry_run: bool,
+
+    /// Temporarily overwrite the url to your NetBox instance.
+    #[arg(short, long)]
+    uri: Option<String>,
+
+    /// Temporarily use a different authentication token for NetBox.
+    #[arg(short, long)]
+    token: Option<String>,
+
+    /// The Path to a plugin script you want to run.
+    #[arg(short, long)]
+    plugin: Option<String>,
+
+    /// Subcommands.
+    #[command(subcommand)]
+    command: Commands,
 }
