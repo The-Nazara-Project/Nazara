@@ -500,6 +500,7 @@ enum Commands {
     },
     /// Validate configuration file.
     CheckConfig,
+    /// Print currently active config options.
     ViewConfig,
 }
 
