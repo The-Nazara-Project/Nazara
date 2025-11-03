@@ -232,6 +232,10 @@ impl Nazara {
     pub fn run(&mut self) -> NazaraResult<()> {
         Self::print_banner();
 
+        if self.args.dhcp_mode {
+            info!("Running in DHCP mode. IP address creation/update is skipped.")
+        }
+
         if let Some(_) = self.handle_config_commands()? {
             return Ok(());
         }
@@ -388,13 +392,24 @@ impl Nazara {
             .ok_or_else(|| NazaraError::Other("Configuration not initialized".into()))?;
 
         match &self.args.command {
-            Commands::Register => register_machine(client, machine, config.clone())?,
-            Commands::Update { id } => {
-                update_machine(client, machine, config.clone(), id.to_owned())?
+            Commands::Register => {
+                register_machine(client, machine, config.clone(), self.args.dhcp_mode)?
             }
+            Commands::Update { id } => update_machine(
+                client,
+                machine,
+                config.clone(),
+                id.to_owned(),
+                self.args.dhcp_mode,
+            )?,
             Commands::Auto {} => {
                 warn_auto_deprecated();
-                auto_register_or_update_machine(client, machine, config.clone())?;
+                auto_register_or_update_machine(
+                    client,
+                    machine,
+                    config.clone(),
+                    self.args.dhcp_mode,
+                )?;
             }
             _ => {}
         }
@@ -531,6 +546,10 @@ struct Args {
     /// The Path to a plugin script you want to run.
     #[arg(short, long)]
     plugin: Option<String>,
+
+    /// Disallow IP creation/update if IPs are managed by DHCP or other outside source.
+    #[arg(long, default_value_t = false)]
+    dhcp_mode: bool,
 
     /// Subcommands.
     #[command(subcommand)]
