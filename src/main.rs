@@ -493,7 +493,7 @@ enum Commands {
 
         /// JSON of your configuration parameters. (Optional; exclusive with other options.)
         #[arg(long, conflicts_with_all = &[
-            "uri", "token", "name", "descirption", "comments",
+            "uri", "token", "name", "description", "comments",
             "status", "device_type", "role", "site", "cluster_id"
         ])]
         json: Option<String>,
