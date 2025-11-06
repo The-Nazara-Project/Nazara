@@ -8,6 +8,7 @@ netbox_uri = ""
 # Common settings that always have to be provided.
 [common]
 # Custom name of the device or VM. (optional, fallback: hostname)
+# You can concatenate this name with the hostname by ending it with '@'.
 name = ""
 description = ""
 # A comment left by Nazara if anything gets modified by it.
