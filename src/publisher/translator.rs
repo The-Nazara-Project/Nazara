@@ -46,10 +46,10 @@ pub fn information_to_device(
     device: &DeviceConfig,
 ) -> WritableDeviceWithConfigContextRequest {
     WritableDeviceWithConfigContextRequest {
-        name: common
-            .name
-            .clone()
-            .or_else(|| Some(machine.dmi_information.system_information.hostname.clone())),
+        name: Some(compute_effective_name(
+            &common.name,
+            &machine.dmi_information.system_information.hostname,
+        )),
         device_type: Value::from(device.device_type),
         role: Value::from(device.role),
         serial: machine.dmi_information.system_information.serial.clone(),
@@ -68,12 +68,10 @@ pub fn information_to_existing_device(
     device: &DeviceConfig,
 ) -> PatchedWritableDeviceWithConfigContextRequest {
     PatchedWritableDeviceWithConfigContextRequest {
-        name: Some(
-            common
-                .name
-                .clone()
-                .or_else(|| Some(machine.dmi_information.system_information.hostname.clone())),
-        ),
+        name: Some(Some(compute_effective_name(
+            &common.name,
+            &machine.dmi_information.system_information.hostname,
+        ))),
         device_type: Some(Value::from(device.device_type)),
         role: Some(Value::from(device.role)),
         serial: Some(machine.dmi_information.system_information.serial.clone()),
@@ -101,10 +99,10 @@ pub fn information_to_vm(
     vm: &VmConfig,
 ) -> WritableVirtualMachineWithConfigContextRequest {
     WritableVirtualMachineWithConfigContextRequest {
-        name: common
-            .name
-            .clone()
-            .unwrap_or_else(|| machine.dmi_information.system_information.hostname.clone()),
+        name: compute_effective_name(
+            &common.name,
+            &machine.dmi_information.system_information.hostname,
+        ),
         serial: machine.dmi_information.system_information.serial.clone(),
         status: common.status.clone(),
         comments: common.comments.clone(),
@@ -127,10 +125,10 @@ pub fn information_to_existing_vm(
     vm: &VmConfig,
 ) -> PatchedWritableVirtualMachineWithConfigContextRequest {
     PatchedWritableVirtualMachineWithConfigContextRequest {
-        name: common
-            .name
-            .clone()
-            .or_else(|| Some(machine.dmi_information.system_information.hostname.clone())),
+        name: Some(compute_effective_name(
+            &common.name,
+            &machine.dmi_information.system_information.hostname,
+        )),
         serial: Some(machine.dmi_information.system_information.serial.clone()),
         status: Some(common.status.clone()),
         comments: Some(common.comments.clone()),
@@ -242,5 +240,29 @@ pub fn information_to_ip(
         comments: String::from("Automatically created by Nazara."),
         custom_fields: Some(HashMap::new()),
         ..Default::default()
+    }
+}
+
+/// Will compose the name of the device/VM entry.
+///
+/// If the configured name ends with '@' this name will be concatenated
+/// with the detected hostname to create something like machine@host.name
+///
+/// # Parameters
+/// * `config_name: &Option<String>` - The name read from the config file.
+/// * `hostname: &str` - The hostname read from the system.
+///
+/// # Returns
+/// The concatenated name as `String`.
+fn compute_effective_name(config_name: &Option<String>, hostname: &str) -> String {
+    match config_name {
+        Some(name) => {
+            if name.ends_with('@') {
+                format!("{}{}", name, hostname)
+            } else {
+                name.clone()
+            }
+        }
+        None => hostname.to_string(),
     }
 }
