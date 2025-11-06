@@ -43,7 +43,7 @@ pub struct NetboxConfig {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CommonConfig {
-    pub name: String,
+    pub name: Option<String>,
     pub description: String,
     pub comments: String,
     pub status: String,

@@ -46,7 +46,10 @@ pub fn information_to_device(
     device: &DeviceConfig,
 ) -> WritableDeviceWithConfigContextRequest {
     WritableDeviceWithConfigContextRequest {
-        name: Some(common.name.clone()),
+        name: common
+            .name
+            .clone()
+            .or_else(|| Some(machine.dmi_information.system_information.hostname.clone())),
         device_type: Value::from(device.device_type),
         role: Value::from(device.role),
         serial: machine.dmi_information.system_information.serial.clone(),
@@ -65,7 +68,12 @@ pub fn information_to_existing_device(
     device: &DeviceConfig,
 ) -> PatchedWritableDeviceWithConfigContextRequest {
     PatchedWritableDeviceWithConfigContextRequest {
-        name: Some(Some(common.name.clone())),
+        name: Some(
+            common
+                .name
+                .clone()
+                .or_else(|| Some(machine.dmi_information.system_information.hostname.clone())),
+        ),
         device_type: Some(Value::from(device.device_type)),
         role: Some(Value::from(device.role)),
         serial: Some(machine.dmi_information.system_information.serial.clone()),
@@ -93,7 +101,10 @@ pub fn information_to_vm(
     vm: &VmConfig,
 ) -> WritableVirtualMachineWithConfigContextRequest {
     WritableVirtualMachineWithConfigContextRequest {
-        name: common.name.clone(),
+        name: common
+            .name
+            .clone()
+            .unwrap_or_else(|| machine.dmi_information.system_information.hostname.clone()),
         serial: machine.dmi_information.system_information.serial.clone(),
         status: common.status.clone(),
         comments: common.comments.clone(),
@@ -116,7 +127,10 @@ pub fn information_to_existing_vm(
     vm: &VmConfig,
 ) -> PatchedWritableVirtualMachineWithConfigContextRequest {
     PatchedWritableVirtualMachineWithConfigContextRequest {
-        name: Some(common.name.clone()),
+        name: common
+            .name
+            .clone()
+            .or_else(|| Some(machine.dmi_information.system_information.hostname.clone())),
         serial: Some(machine.dmi_information.system_information.serial.clone()),
         status: Some(common.status.clone()),
         comments: Some(common.comments.clone()),
