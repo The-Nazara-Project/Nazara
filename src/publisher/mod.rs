@@ -305,6 +305,11 @@ pub fn auto_register_or_update_machine(
     config_data: ConfigData,
 ) -> NazaraResult<()> {
     println!("Starting registration process. This may take a while...");
+    let search_name: &str = config_data
+        .common
+        .name
+        .as_deref()
+        .unwrap_or(&machine.dmi_information.system_information.hostname);
 
     match &config_data.machine {
         MachineConfig::Device(x) => {
@@ -312,7 +317,7 @@ pub fn auto_register_or_update_machine(
 
             let Some(device_id) = search_device(
                 client,
-                &config_data.common.name,
+                search_name,
                 &machine.dmi_information.system_information.serial,
             )?
             else {
@@ -417,7 +422,7 @@ pub fn auto_register_or_update_machine(
 
             let Some(vm_id) = search_vm(
                 client,
-                &config_data.common.name,
+                search_name,
                 &machine.dmi_information.system_information.serial,
             )?
             else {

@@ -18,6 +18,8 @@ pub struct DmiInformation {
 /// Basic information of the machine extracted from dmidecode.
 #[derive(Serialize, Debug)]
 pub struct SystemInformation {
+    /// The hostname of the machine. (default for naming the entry)
+    pub hostname: String,
     /// The name of the machine's manufacturer (e.g. LENOVO).
     pub vendor: String,
     /// The model number of the machine.
@@ -69,6 +71,10 @@ pub struct CpuInformation {
 /// - Any of the required structures (system, chassis, CPU) are missing or malformed.
 pub fn construct_dmi_information() -> NazaraResult<DmiInformation> {
     println!("Collecting DMI Information...");
+    // Read hostname
+    let hostname = fs::read_to_string("/proc/sys/kernel/hostname")
+        .map(|s| s.trim_end().to_string())
+        .unwrap_or_else(|_| "unknown".to_string());
 
     // Get the SMBIOS header and DMI table from sysfs.
     let buf = fs::read("/sys/firmware/dmi/tables/smbios_entry_point")?;
@@ -89,6 +95,7 @@ pub fn construct_dmi_information() -> NazaraResult<DmiInformation> {
         match t {
             Structure::System(x) => {
                 system_information = Some(SystemInformation {
+                    hostname: hostname.to_owned(),
                     vendor: x.manufacturer.to_owned(),
                     model: x.product.to_owned(),
                     // If we have a UUID, construct one from the buffer, otherwise an empty string.

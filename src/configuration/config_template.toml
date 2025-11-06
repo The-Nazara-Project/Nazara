@@ -7,7 +7,7 @@ netbox_uri = ""
 
 # Common settings that always have to be provided.
 [common]
-# The name of the device/VM.
+# Custom name of the device or VM. (optional, fallback: hostname)
 name = ""
 description = ""
 # A comment left by Nazara if anything gets modified by it.
