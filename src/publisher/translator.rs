@@ -254,7 +254,7 @@ pub fn information_to_ip(
 ///
 /// # Returns
 /// The concatenated name as `String`.
-fn compute_effective_name(config_name: &Option<String>, hostname: &str) -> String {
+pub fn compute_effective_name(config_name: &Option<String>, hostname: &str) -> String {
     match config_name {
         Some(name) => {
             if name.ends_with('@') {

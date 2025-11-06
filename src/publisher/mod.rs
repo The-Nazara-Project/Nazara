@@ -18,8 +18,8 @@ use crate::publisher::api_client::{
     search_vm_interface, search_vm_ip, update_vm, update_vm_interface,
 };
 use crate::publisher::translator::{
-    information_to_device, information_to_existing_device, information_to_existing_vm,
-    information_to_vm,
+    compute_effective_name, information_to_device, information_to_existing_device,
+    information_to_existing_vm, information_to_vm,
 };
 use crate::{
     Machine,
@@ -305,11 +305,10 @@ pub fn auto_register_or_update_machine(
     config_data: ConfigData,
 ) -> NazaraResult<()> {
     println!("Starting registration process. This may take a while...");
-    let search_name: &str = config_data
-        .common
-        .name
-        .as_deref()
-        .unwrap_or(&machine.dmi_information.system_information.hostname);
+    let search_name: String = compute_effective_name(
+        &config_data.common.name,
+        &machine.dmi_information.system_information.hostname,
+    );
 
     match &config_data.machine {
         MachineConfig::Device(x) => {
@@ -317,7 +316,7 @@ pub fn auto_register_or_update_machine(
 
             let Some(device_id) = search_device(
                 client,
-                search_name,
+                &search_name,
                 &machine.dmi_information.system_information.serial,
             )?
             else {
@@ -422,7 +421,7 @@ pub fn auto_register_or_update_machine(
 
             let Some(vm_id) = search_vm(
                 client,
-                search_name,
+                &search_name,
                 &machine.dmi_information.system_information.serial,
             )?
             else {
