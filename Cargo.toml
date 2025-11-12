@@ -7,7 +7,6 @@ description = "A CLI application to create and update machines and VMs in NetBox
 readme = "README.md"
 repository = "https://github.com/The-Nazara-Project/Nazara"
 license = "GPL-3.0"
-license-file = "./LICENSE"
 documentation = "https://the-nazara-project.github.io/Nazara/"
 homepage = "https://github.com/The-Nazara-Project/Nazara"
 
