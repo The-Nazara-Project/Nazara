@@ -47,6 +47,10 @@ pub struct CommonConfig {
     pub description: String,
     pub comments: String,
     pub status: String,
+    #[serde(default)]
+    pub primary_ip4: Option<String>,
+    #[serde(default)]
+    pub primary_ip6: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -128,6 +132,8 @@ pub fn write_config_file(
     description: &Option<String>,
     comments: &Option<String>,
     status: &Option<String>,
+    primary_ip4: &Option<String>,
+    primary_ip6: &Option<String>,
     device_type: &Option<i64>,
     role: &Option<i64>,
     site: &Option<i64>,
@@ -152,6 +158,8 @@ pub fn write_config_file(
             description,
             comments,
             status,
+            primary_ip4,
+            primary_ip6,
             device_type,
             role,
             site,
@@ -290,6 +298,8 @@ fn update_existing_config(
     description: &Option<String>,
     comments: &Option<String>,
     status: &Option<String>,
+    primary_ip4: &Option<String>,
+    primary_ip6: &Option<String>,
     device_type: &Option<i64>,
     role: &Option<i64>,
     site: &Option<i64>,
@@ -313,6 +323,12 @@ fn update_existing_config(
     }
     if let Some(v) = status {
         contents = replace_key(contents, "common", "status", &v);
+    }
+    if let Some(v) = primary_ip4 {
+        contents = replace_key(contents, "common", "primary_ip4", v);
+    }
+    if let Some(v) = primary_ip6 {
+        contents = replace_key(contents, "common", "primary_ip6", v);
     }
 
     // Machine-specific
@@ -392,6 +408,14 @@ fn write_config_from_json(config_path: &std::path::Path, json_str: &str) -> Naza
         }
         if let Some(status) = common.get("status").and_then(|v| v.as_str()) {
             contents = contents.replace("status = \"active\"", &format!("status = \"{}\"", status));
+        }
+        if let Some(ip4) = common.get("primary_ip4").and_then(|v| v.as_str()) {
+            contents =
+                contents.replace("primary_ip4 = \"\"", &format!("primary_ip4 = \"{}\"", ip4));
+        }
+        if let Some(ip6) = common.get("primary_ip6").and_then(|v| v.as_str()) {
+            contents =
+                contents.replace("primary_ip6 = \"\"", &format!("primary_ip6 = \"{}\"", ip6));
         }
     }
 

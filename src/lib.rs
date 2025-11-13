@@ -270,6 +270,8 @@ impl Nazara {
                 description,
                 comments,
                 status,
+                primary_ipv4,
+                primary_ipv6,
                 device_type,
                 site,
                 role,
@@ -285,6 +287,8 @@ impl Nazara {
                         description,
                         comments,
                         status,
+                        primary_ipv4,
+                        primary_ipv6,
                         device_type,
                         role,
                         site,
@@ -307,6 +311,8 @@ impl Nazara {
                         description,
                         comments,
                         status,
+                        primary_ipv4,
+                        primary_ipv6,
                         device_type,
                         role,
                         site,
@@ -483,10 +489,18 @@ enum Commands {
         #[arg(long, conflicts_with = "json")]
         cluster_id: Option<i64>,
 
+        /// Primary IPv4 address (optional)
+        #[arg(long, conflicts_with = "json")]
+        primary_ipv4: Option<String>,
+
+        /// Primary IPv6 address (optional)
+        #[arg(long, conflicts_with = "json")]
+        primary_ipv6: Option<String>,
+
         /// JSON of your configuration parameters. (Optional; exclusive with other options.)
         #[arg(long, conflicts_with_all = &[
             "uri", "token", "name", "description", "comments",
-            "status", "device_type", "role", "site", "cluster_id"
+            "status", "primary_ipv4", "primary_ipv6", "device_type", "role", "site", "cluster_id"
         ])]
         json: Option<String>,
     },

@@ -58,6 +58,8 @@ pub fn information_to_device(
         comments: common.comments.clone(),
         custom_fields: machine.custom_information.clone(),
         description: common.description.clone(),
+        primary_ip4: None,
+        primary_ip6: None,
         ..Default::default()
     }
 }
