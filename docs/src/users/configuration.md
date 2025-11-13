@@ -51,6 +51,28 @@ config between machines of the same type and function.
 {{#include ../../../src/configuration/config_template.toml}}
 ```
 
+For VMs, the `name` parameter **is required** to be able to distinguish them cleanly.
+
+~~~ admonish tip
+The `name` parameter is optional for devices. If left empty, Nazara will assume the system's hostname as the name
+value for the entry. You can combine both your custom name and the machine's hostname by fixing a `@`
+symbol to the end of the name value. This works on both VMs and devices.
+
+This way a config entry like this:
+
+```toml
+[common]
+name = "aurora@"
+```
+
+turns into:
+
+```toml
+aurora@linux.fritz.box
+```
+in the final entry.
+~~~
+
 ### The `config` commands
 
 Nazara provides you with several commands to manage your configuration files:

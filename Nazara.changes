@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Sat Nov 13 16:58:02 UTC 2025 - Tiara Hock <tiara.dev@proton.me>
+
+- 0.1.0
+    * Allow specifying of primary IPs for VMs and devices
+    * Prepare code structure for dedicated testsuite
+    * Fix a bug with auto mode
+    * Create a VM testing guide for developers
+
+-------------------------------------------------------------------
 Sat Oct 25 12:58:02 UTC 2025 - Tiara Hock <tiara.dev@proton.me>
 
 - 0.1.0_beta.3
