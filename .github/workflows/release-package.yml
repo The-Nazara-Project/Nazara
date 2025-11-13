@@ -1,4 +1,4 @@
-name: Build RPM and DEB for latest Release
+name: Build DEB for latest Release
 
 on:
   release:
@@ -11,74 +11,67 @@ on:
 
 jobs:
   build:
-    name: Build DEB and RPM
+    name: Build DEB
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    - name: Set up Rust
-      uses: actions-rust-lang/setup-rust-toolchain@v1
+      - name: Set up Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
 
-    - name: Install Tools
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y rpm build-essential
-        cargo install cargo-deb
-        cargo install cargo-rpm
+      - name: Install Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential
+          cargo install cargo-deb
 
-    - name: Build .deb package
-      run: cargo deb
+      - name: Build .deb package
+        run: cargo deb
 
-    - name: Build .rpm package
-      run: |
-        cargo rpm build
-        mkdir -p target/release
-        cp target/release/rpmbuild/RPMS/*/*.rpm target/release/
+      - name: Get latest release tag
+        if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+        id: get_tag
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { repo, owner } = context.repo;
+            let tag;
+            if (github.event_name === 'release') {
+              tag = github.event.release.tag_name;
+            } else {
+              const latest = await github.rest.repos.getLatestRelease({ owner, repo });
+              tag = latest.data.tag_name;
+            }
+            return tag;
+          result-encoding: string
 
-    - name: Get latest release tag
-      if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
-      id: get_tag
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const { repo, owner } = context.repo;
-          let tag;
-          if (github.event_name === 'release') {
-            tag = github.event.release.tag_name;
-          } else {
-            const latest = await github.rest.repos.getLatestRelease({ owner, repo });
-            tag = latest.data.tag_name;
-          }
-          return tag;
-        result-encoding: string
+      # Avoid building on a non-tagged commit
+      - name: Check tag commit matches current commit
+        if: github.event_name == 'workflow_dispatch'
+        id: verify_commit
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { repo, owner } = context.repo;
+            const tag = '${{ steps.get_tag.result }}';
+            const tagData = await github.rest.git.getRef({ owner, repo, ref: `tags/${tag}` });
+            const tagSha = tagData.data.object.sha;
 
-    # Avoid building on a non-tagged commit
-    - name: Check tag commit matches current commit
-      if: github.event_name == 'workflow_dispatch'
-      id: verify_commit
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const { repo, owner } = context.repo;
-          const tag = '${{ steps.get_tag.result }}';
-          const tagData = await github.rest.git.getRef({ owner, repo, ref: `tags/${tag}` });
-          const tagSha = tagData.data.object.sha;
+            const headSha = process.env.GITHUB_SHA;
 
-          const headSha = process.env.GITHUB_SHA;
+            if (tagSha !== headSha) {
+              core.setFailed(`Error: Tag ${tag} points to ${tagSha}, but current commit is ${headSha}`);
+            }
 
-          if (tagSha !== headSha) {
-            core.setFailed(`Error: Tag ${tag} points to ${tagSha}, but current commit is ${headSha}`);
-          }
-
-    - name: Upload release assets
-      if: github.event_name == 'release' || github.event_name == 'workflow_dispatch' # only run on release or manual dispatch
-      uses: softprops/action-gh-release@v2
-      with:
-        tag_name: ${{ steps.get_tag.result }}
-        files: |
-          target/debian/*.deb
-          target/release/*.rpm
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload release assets
+        # Only run on release or manual dispatch
+        if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.get_tag.result }}
+          files: |
+            target/debian/*.deb
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
