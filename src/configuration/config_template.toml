@@ -15,6 +15,9 @@ description = ""
 comments = "Automatically registered by Nazara."
 # The current status of the device/VM.
 status = "active"
+# The IP you want to set as primary (optional)
+primary_ip4 = ""
+primary_ip6 = ""
 
 # ---------------------------------------------------------------
 # Use [device] for devices, or [vm] if this is a virtual machine.
