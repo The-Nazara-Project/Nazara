@@ -712,12 +712,15 @@ fn create_ips(
     Ok(())
 }
 
+/// Patch device "primary-ip" fields after registration or on update.
 fn patch_device_primary_ips(
     client: &ThanixClient,
     config_data: &ConfigData,
     machine: &Machine,
     device_id: i64,
 ) -> NazaraResult<()> {
+    println!("Applying primary IPs to entry...");
+
     let mut patch = PatchedWritableDeviceWithConfigContextRequest::default();
 
     if let Some(primary_v4_str) = &config_data.common.primary_ip4 {
@@ -753,12 +756,15 @@ fn patch_device_primary_ips(
     Ok(())
 }
 
+/// Patch VM "primary-ip" fields after registration or on update.
 fn patch_vm_primary_ips(
     client: &ThanixClient,
     config_data: &ConfigData,
     machine: &Machine,
     vm_id: i64,
 ) -> NazaraResult<()> {
+    println!("Applying primary IPs to entry...");
+
     let mut patch = PatchedWritableVirtualMachineWithConfigContextRequest::default();
 
     if let Some(primary_v4_str) = &config_data.common.primary_ip4 {
@@ -790,6 +796,6 @@ fn patch_vm_primary_ips(
     }
 
     update_vm(client, patch, vm_id)?;
-    info!("Patched primary IPs for VM {vm_id}");
+    info!("Patched primary IPs for VM '{vm_id}'");
     Ok(())
 }
