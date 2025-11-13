@@ -1,7 +1,7 @@
 [package]
 name = "nazara"
 authors = ["Tiara Hock <tiara.dev@proton.me>", "Marvin Friedrich <me@mrvn.sh>"]
-version = "0.1.0-beta.3"
+version = "0.1.0"
 edition = "2024"
 description = "A CLI application to create and update machines and VMs in NetBox."
 readme = "README.md"

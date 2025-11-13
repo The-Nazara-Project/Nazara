@@ -7,13 +7,6 @@ new machines in NetBox or population of information fields for existing ones.
 **Nazara is in the early stages of its development. Please note that the
 information listed below is subject to change.**
 
-> [!Note] Nazara is currently in a beta state. Bugs are bound to happen. If you
-> encounter any, please
-> [report them](https://github.com/The-Nazara-Project/Nazara/issues).
->
-> Furthermore, **Nazara currently does not support custom fields for any NetBox
-> object**. Though, this is the next item on our agenda.
-
 - [Compatibility](#compatibility)
 - [Installation](#installation)
   - [Building from source](#building-from-source)
@@ -35,12 +28,13 @@ NetBox. When major ports to newer NetBox versions happen - which usually include
 breaking changes - the old version of Nazara will be moved to its own branch and
 tagged accordingly.
 
-| Nazara Version   | NetBox Version    | Branch            | maintained?        |
-| ---------------- | ----------------- | ----------------- | ------------------ |
-| `v0.1.0_beta.3`  | `v4.3.x`, `v4.4.x`| `main`            | :white_check_mark: |
-| `v0.1.0_beta.2`  | `v4.3.x`, `v4.4.x`| `version/beta-2`  | :x:                |
-| `v0.1.0_beta.1`  | `v4.3.x`          | `version/beta-1`  | :x:                |
-| `v0.1.0_alpha.2` | `v3.6.x`          | `version/alpha-2` | :x:                |
+| Nazara Version   | NetBox Version     | Branch            | maintained?        |
+| ---------------- | ------------------ | ----------------- | ------------------ |
+| `v0.1.0`         | `v4.3.x`, `v4.4.x` | `main`            | :white_check_mark: |
+| `v0.1.0_beta.3`  | `v4.3.x`, `v4.4.x` | `version/beta-3`  | :x:                |
+| `v0.1.0_beta.2`  | `v4.3.x`, `v4.4.x` | `version/beta-2`  | :x:                |
+| `v0.1.0_beta.1`  | `v4.3.x`           | `version/beta-1`  | :x:                |
+| `v0.1.0_alpha.2` | `v3.6.x`           | `version/alpha-2` | :x:                |
 
 Maintenance work on these older versions is not planned.
 
@@ -155,11 +149,12 @@ When launching Nazara for the first time, it will write a stock config file to
 that path. Certain parameters are required to be configured there manually. You
 recognize them by their line not being commented out.
 
-Aside from the NetBox system parameters,
-configuration via the `config.toml`also allows you to add certain
-custom fields to your system information that cannot be automatically selected. A great example would be the`System
-Location`entry. To specify that, simply add the parameter under the`[system]`
-block in your configuration file.
+Aside from the NetBox system parameters, configuration via the `config.toml`also
+allows you to add certain custom fields to your system information that cannot
+be automatically selected. A great example would be the`System
+Location`entry.
+To specify that, simply add the parameter under the`[system]` block in your
+configuration file.
 
 > [!Note] Currently, configuration by config file is the proper way to use
 > Nazara given the amount of data required to register a machine. We are
