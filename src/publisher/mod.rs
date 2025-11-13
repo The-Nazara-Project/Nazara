@@ -41,8 +41,9 @@ use thanix_client::paths::{
     virtualization_interfaces_partial_update,
 };
 use thanix_client::types::{
-    MACAddressRequest, PatchedMACAddressRequest, PatchedWritableIPAddressRequest,
-    PatchedWritableInterfaceRequest, PatchedWritableVMInterfaceRequest,
+    MACAddressRequest, PatchedMACAddressRequest, PatchedWritableDeviceWithConfigContextRequest,
+    PatchedWritableIPAddressRequest, PatchedWritableInterfaceRequest,
+    PatchedWritableVMInterfaceRequest, PatchedWritableVirtualMachineWithConfigContextRequest,
 };
 use thanix_client::{types::WritableIPAddressRequest, util::ThanixClient};
 
@@ -76,6 +77,22 @@ pub fn register_machine(
 
                 create_ips(client, interface, interface_id, false)?;
             }
+
+            // Patch new device with primary IPs if they are set and not empty.
+            if config_data
+                .common
+                .primary_ip4
+                .as_ref()
+                .map_or(false, |s| !s.is_empty())
+                || config_data
+                    .common
+                    .primary_ip6
+                    .as_ref()
+                    .map_or(false, |s| !s.is_empty())
+            {
+                patch_device_primary_ips(client, &config_data, &machine, device_id)?;
+            }
+
             success!("Registration processs completed!");
             return Ok(());
         }
@@ -90,6 +107,22 @@ pub fn register_machine(
 
                 create_ips(client, interface, interface_id, true)?;
             }
+
+            // Patch new device with primary IPs if they are set and not empty.
+            if config_data
+                .common
+                .primary_ip4
+                .as_ref()
+                .map_or(false, |s| !s.is_empty())
+                || config_data
+                    .common
+                    .primary_ip6
+                    .as_ref()
+                    .map_or(false, |s| !s.is_empty())
+            {
+                patch_vm_primary_ips(client, &config_data, &machine, vm_id)?;
+            }
+
             success!("Registration process completed!");
             return Ok(());
         }
@@ -195,6 +228,22 @@ pub fn update_machine(
                     }
                 }
             }
+
+            // Patch primary IPs when one is specified in config.
+            if config_data
+                .common
+                .primary_ip4
+                .as_deref()
+                .map_or(false, |s| !s.is_empty())
+                || config_data
+                    .common
+                    .primary_ip6
+                    .as_deref()
+                    .map_or(false, |s| !s.is_empty())
+            {
+                patch_device_primary_ips(client, &config_data, &machine, updated_id)?;
+            }
+
             success!("Device update process completed!");
             return Ok(());
         }
@@ -281,6 +330,22 @@ pub fn update_machine(
                     }
                 }
             }
+
+            // Patch primary IPs when one is specified in config.
+            if config_data
+                .common
+                .primary_ip4
+                .as_deref()
+                .map_or(false, |s| !s.is_empty())
+                || config_data
+                    .common
+                    .primary_ip6
+                    .as_deref()
+                    .map_or(false, |s| !s.is_empty())
+            {
+                patch_vm_primary_ips(client, &config_data, &machine, updated_id)?;
+            }
+
             success!("VM update process completed!");
             return Ok(());
         }
@@ -644,5 +709,87 @@ fn create_ips(
 
         create_ip(client, ipv6_payload)?;
     };
+    Ok(())
+}
+
+fn patch_device_primary_ips(
+    client: &ThanixClient,
+    config_data: &ConfigData,
+    machine: &Machine,
+    device_id: i64,
+) -> NazaraResult<()> {
+    let mut patch = PatchedWritableDeviceWithConfigContextRequest::default();
+
+    if let Some(primary_v4_str) = &config_data.common.primary_ip4 {
+        for interface in &machine.network_information {
+            if let Some(ipv4) = interface.v4ip {
+                if ipv4.to_string() == *primary_v4_str {
+                    let (ipv4_id, _) = search_device_ips(client, interface, Some(device_id))?;
+                    if let Some(v4_id) = ipv4_id {
+                        patch.primary_ip4 = Some(Some(Value::from(v4_id)));
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    if let Some(primary_v6_str) = &config_data.common.primary_ip6 {
+        for interface in &machine.network_information {
+            if let Some(ipv6) = interface.v6ip {
+                if ipv6.to_string() == *primary_v6_str {
+                    let (_, ipv6_id) = search_device_ips(client, interface, Some(device_id))?;
+                    if let Some(v6_id) = ipv6_id {
+                        patch.primary_ip6 = Some(Some(Value::from(v6_id)));
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    update_device(client, patch, device_id)?;
+    info!("Patched primary IPs for device {device_id}");
+    Ok(())
+}
+
+fn patch_vm_primary_ips(
+    client: &ThanixClient,
+    config_data: &ConfigData,
+    machine: &Machine,
+    vm_id: i64,
+) -> NazaraResult<()> {
+    let mut patch = PatchedWritableVirtualMachineWithConfigContextRequest::default();
+
+    if let Some(primary_v4_str) = &config_data.common.primary_ip4 {
+        for interface in &machine.network_information {
+            if let Some(ipv4) = interface.v4ip {
+                if ipv4.to_string() == *primary_v4_str {
+                    let (ipv4_id, _) = search_vm_ips(client, interface, Some(vm_id))?;
+                    if let Some(v4_id) = ipv4_id {
+                        patch.primary_ip4 = Some(Some(Value::from(v4_id)));
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    if let Some(primary_v6_str) = &config_data.common.primary_ip6 {
+        for interface in &machine.network_information {
+            if let Some(ipv6) = interface.v6ip {
+                if ipv6.to_string() == *primary_v6_str {
+                    let (_, ipv6_id) = search_vm_ips(client, interface, Some(vm_id))?;
+                    if let Some(v6_id) = ipv6_id {
+                        patch.primary_ip6 = Some(Some(Value::from(v6_id)));
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    update_vm(client, patch, vm_id)?;
+    info!("Patched primary IPs for VM {vm_id}");
     Ok(())
 }
