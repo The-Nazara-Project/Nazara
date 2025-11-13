@@ -37,6 +37,8 @@ pub enum NazaraError {
     /// Wraps a `serde_json::Error`. Used to handle failures with response serialization.
     JsonParse(serde_json::Error),
     NetlinkError(String),
+    /// Specified primary IP has not been registered with this device or VM.
+    InvalidPrimaryIp(String),
     /// Expects a `String` message. Used for edge cases and general purpose error cases.
     Other(String),
 }
@@ -119,6 +121,12 @@ impl std::fmt::Display for NazaraError {
             }
             NazaraError::JsonParse(error) => {
                 write!(f, "Error while parsing JSON: {error}")
+            }
+            NazaraError::InvalidPrimaryIp(addr) => {
+                write!(
+                    f,
+                    "Configured primary IP '{addr}' does not belong to any interface registered to this device."
+                )
             }
             NazaraError::Other(msg) => f.write_str(&msg),
         }
