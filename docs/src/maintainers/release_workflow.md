@@ -58,6 +58,21 @@ In order to be able to publish new versions, you must be given permissions to do
 If the publishing fails, please reach out to the Project Owner.
 ~~~
 
-## 4. Updating Distribution Packages
+## 4. Create a New Release
+
+The next step includes creating a new Release via the VC Web UI.
+
+To do so, follow these steps:
+
+- [ ] Select latest tag
+- [ ] Select previous tag (if not already done automatically)
+- [ ] Press "Generate Release Notes" and split into `Added`, `Fixed`, `Removed` sections
+      as it seems fitting
+- [ ] Describe the core changes of this release in a short `What's new?` section at the top
+- [ ] Manually build a `.deb` package using `cargo deb` and attach that and the release
+      binary to the Release for people who want to manually download it
+- [ ] Hit "Create Release"
+
+## 5. Updating Distribution Packages
 
 -- Coming Soon --

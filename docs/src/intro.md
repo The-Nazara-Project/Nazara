@@ -7,12 +7,8 @@
 Nazara is a Rust tool used to automate the registration and update process of machines and VMs in the
 IPAM tool [NetBox](https://netboxlabs.com/docs/netbox/).
 
-```admonish info
-Nazara is currently in it's Beta stage. Bugs are bound to happen.
-```
-
-```admonish tip
-Found a bug or a typo? [Open an issue on GitHub](https://github.com/The-Nazara-Project/Nazara/issues/new/choose)
+```admonish bug title="Found a bug?" 
+Please [Open an issue on GitHub](https://github.com/The-Nazara-Project/Nazara/issues/new/choose).
 ```
 
 ## Compatibility
