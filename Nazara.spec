@@ -16,15 +16,13 @@
 
 Name:           Nazara
 Version:        0.1.0
-Release:        0.1
+Release:        0
 Summary:        Automated registration and update of machines and VMs in NetBox
 License:        GPL-3.0
-Group:          Development/Tools/Other
 URL:            https://github.com/The-Nazara-Project/Nazara
 Source0:        Nazara-%{version}.tar.zst
 Source1:        vendor.tar.zst
 BuildRequires:  git
-BuildRequires:  cargo
 BuildRequires:  cargo-packaging
 BuildRequires:  pkgconfig(openssl)
 
@@ -32,7 +30,6 @@ BuildRequires:  pkgconfig(openssl)
 %define bin_name nazara
 
 %description
-
 Nazara is a CLI application written in Rust to register and update machines and VMs in NetBox automatically.
 
 %prep
