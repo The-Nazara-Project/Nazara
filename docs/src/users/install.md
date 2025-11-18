@@ -6,7 +6,7 @@ build the latest release from source yourself.
 
 
 ~~~ admonish info title="Native Packages"
-We are currently hard at work to build distribution packages in the future with the first one being
+We are currently working on building distribution packages in the future with the first ones being
 targeted at openSUSE Tumbleweed, Slowroll, Leap and SLES16.
 
 If you would like to build a package for your distribution, please [refer to our packager's guide](../contributors/becoming_packager.md).
@@ -41,3 +41,25 @@ This process may take a while, mainly thanks to our API client library
 [thanix_client](https://github.com/The-Nazara-Project/thanix_client).
 
 Once completed you have a portable binary at `./target/release/nazara`.
+
+## Native Packages
+
+We are currently at work to provide native Linux packages starting with the openSUSE family of Linux distributions.
+
+Once we make progress on this front, you will find this information here.
+
+### Release Attachments
+
+We currently provide a pre-built binary as well as a Debian package attached to the latest release
+and also plan on attaching these to every release going forward as an easy way to download and install Nazara.
+
+Visit [our release page](https://github.com/The-Nazara-Project/Nazara/releases) to find these for yourself.
+
+#### Installing the .deb Package
+
+To install the `.deb` package you downloaded from the Release, use the `dpkg` command.
+
+```bash
+sudo dpkg -i nazara_0.1.0-1_amd64.deb
+```
+

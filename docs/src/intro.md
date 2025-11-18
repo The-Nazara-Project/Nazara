@@ -39,7 +39,7 @@ This is an overview of channels through which you can get Nazara.
 
 |Platform/Channel|Version|Offical?|
 |-|-|-|
-|[`crates.io`](https://crates.io/crates/nazara)|`v0.1.0_beta.3`|yes|
+|[`crates.io`](https://crates.io/crates/nazara)|`v0.1.0`|yes|
 |openSUSE Tumbleweed|--coming soon--|--coming soon--|
 
 For information about who maintains a package you are looking for, try
