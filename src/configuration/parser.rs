@@ -20,6 +20,7 @@ use crate::NazaraError;
 use crate::error::NazaraResult;
 use crate::info;
 use crate::success;
+use crate::warn;
 
 /// Configuration state set by the configuration file.
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -126,8 +127,8 @@ pub fn view_config_file() -> NazaraResult<()> {
 ///
 /// Either `Ok(())` or `NazaraError` depending on operation outcome.
 pub fn write_config_file(
-    uri: &str,
-    token: &str,
+    uri: &Option<String>,
+    token: &Option<String>,
     name: &Option<String>,
     description: &Option<String>,
     comments: &Option<String>,
@@ -191,8 +192,7 @@ pub fn check_config_file() -> NazaraResult<()> {
         ));
     }
     println!("Checking integrity of config file...");
-    ConfigData::validate_config_file()?;
-    success!("Configuration file is valid.");
+    ConfigData::validate_config_file(ValidationMode::Soft)?;
     Ok(())
 }
 
@@ -215,8 +215,8 @@ pub fn check_config_file() -> NazaraResult<()> {
 /// `Ok(())` or `NazaraError` depending on operation outcome.
 fn create_new_config(
     config_path: &std::path::Path,
-    uri: &str,
-    token: &str,
+    uri: &Option<String>,
+    token: &Option<String>,
     name: &Option<String>,
     description: &Option<String>,
     comments: &Option<String>,
@@ -228,14 +228,15 @@ fn create_new_config(
 ) -> NazaraResult<()> {
     let mut contents = include_str!("config_template.toml").to_string();
 
-    // Required values
-    contents = contents.replace("netbox_uri = \"\"", &format!("netbox_uri = \"{}\"", uri));
-    contents = contents.replace(
-        "netbox_api_token = \"\"",
-        &format!("netbox_api_token = \"{}\"", token),
-    );
-
-    // Optional common section
+    if let Some(v) = token {
+        contents = contents.replace(
+            "netbox_api_token = \"\"",
+            &format!("netbox_api_token = \"{}\"", v),
+        );
+    }
+    if let Some(v) = uri {
+        contents = contents.replace("netbox_uri = \"\"", &format!("netbox_uri = \"{}\"", v));
+    }
     if let Some(v) = name {
         contents = contents.replace("name = \"\"", &format!("name = \"{}\"", v));
     }
@@ -269,7 +270,8 @@ fn create_new_config(
     file.write_all(contents.as_bytes())
         .map_err(NazaraError::FileOpError)?;
 
-    success!("Created new configuration at '{}'", config_path.display());
+    println!("Checking integrity of the file...");
+    ConfigData::validate_config_file(ValidationMode::Soft)?;
     Ok(())
 }
 
@@ -292,8 +294,8 @@ fn create_new_config(
 /// `Ok(())` or `NazaraError` depending on operation outcome.
 fn update_existing_config(
     config_path: &std::path::Path,
-    uri: &str,
-    token: &str,
+    uri: &Option<String>,
+    token: &Option<String>,
     name: &Option<String>,
     description: &Option<String>,
     comments: &Option<String>,
@@ -307,11 +309,12 @@ fn update_existing_config(
 ) -> NazaraResult<()> {
     let mut contents = fs::read_to_string(config_path).map_err(NazaraError::FileOpError)?;
 
-    // Required fields
-    contents = replace_key(contents, "netbox", "netbox_uri", uri);
-    contents = replace_key(contents, "netbox", "netbox_api_token", token);
-
-    // Optional common fields
+    if let Some(v) = token {
+        contents = replace_key(contents, "netbox", "netbox_api_token", &v);
+    }
+    if let Some(v) = uri {
+        contents = replace_key(contents, "netbox", "netbox_uri", &v);
+    }
     if let Some(v) = name {
         contents = replace_key(contents, "common", "name", &v);
     }
@@ -353,6 +356,8 @@ fn update_existing_config(
     }
 
     fs::write(config_path, contents).map_err(NazaraError::FileOpError)?;
+    println!("Checking integrity of the file...");
+    ConfigData::validate_config_file(ValidationMode::Soft)?;
     success!(
         "Updated existing configuration at {} (preserved comments)",
         config_path.display()
@@ -458,7 +463,7 @@ pub fn set_up_configuration(uri: Option<&str>, token: Option<&str>) -> NazaraRes
 
     if file_exists(&get_config_path(true)) {
         println!("Configuration file already exists. Validating...");
-        ConfigData::validate_config_file()?;
+        ConfigData::validate_config_file(ValidationMode::Strict)?;
         println!("Configuration file valid. Loading defaults...");
         conf_data = ConfigData::read_config_file()?;
 
@@ -524,6 +529,15 @@ fn get_config_path(with_file: bool) -> PathBuf {
     Path::new(&home_dir).join(".config/nazara/")
 }
 
+/// Not every process requires involving config validation
+/// requires Nazara to abort. Instead we decide how strictly
+/// to validate and warn/fail depending on context.
+#[derive(Debug, Clone, Copy)]
+pub enum ValidationMode {
+    Soft,
+    Strict,
+}
+
 impl ConfigData {
     /// Initializes a new default configuration file if none exists.
     ///
@@ -558,8 +572,7 @@ impl ConfigData {
 
     /// Looks for a config file at the standard location and check if it is valid.
     /// If it is not or does not exists, an error is returned.
-    fn validate_config_file() -> NazaraResult<()> {
-        // TODO improve this
+    fn validate_config_file(mode: ValidationMode) -> NazaraResult<()> {
         let mut file = File::open(get_config_path(true)).map_err(NazaraError::FileOpError)?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)
@@ -569,15 +582,29 @@ impl ConfigData {
             toml::from_str(&contents).map_err(NazaraError::DeserializationError)?;
 
         if config_data.netbox.netbox_uri.is_empty() {
-            return Err(NazaraError::MissingConfigOptionError(String::from(
-                "netbox_url",
-            )));
+            match mode {
+                ValidationMode::Soft => {
+                    warn!("Missing required config option: 'netbox_uri'");
+                }
+                ValidationMode::Strict => {
+                    return Err(NazaraError::MissingConfigOptionError(String::from(
+                        "netbox_url",
+                    )));
+                }
+            }
         }
 
         if config_data.netbox.netbox_api_token.is_empty() {
-            return Err(NazaraError::MissingConfigOptionError(String::from(
-                "netbox_api_token",
-            )));
+            match mode {
+                ValidationMode::Soft => {
+                    warn!("Missing required config option: 'netbox_api_token'");
+                }
+                ValidationMode::Strict => {
+                    return Err(NazaraError::MissingConfigOptionError(String::from(
+                        "netbox_api_token",
+                    )));
+                }
+            }
         }
 
         Ok(())
