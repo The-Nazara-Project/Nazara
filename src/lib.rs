@@ -281,8 +281,8 @@ impl Nazara {
                 println!("Writing configuration file...");
                 if json.is_some() {
                     write_config_file(
-                        "", // ignored in JSON mode
-                        "", // ignored in JSON mode
+                        uri,   // ignored in JSON mode
+                        token, // ignored in JSON mode
                         name,
                         description,
                         comments,
@@ -296,14 +296,6 @@ impl Nazara {
                         json,
                     )?;
                 } else {
-                    // Enforce required params for manual mode
-                    let uri = uri.as_deref().ok_or_else(|| {
-                        NazaraError::Other("Missing required argument: --uri".into())
-                    })?;
-                    let token = token.as_deref().ok_or_else(|| {
-                        NazaraError::Other("Missing required argument: --token".into())
-                    })?;
-
                     write_config_file(
                         uri,
                         token,
@@ -450,11 +442,11 @@ enum Commands {
     /// Write new config file or overwrite existing one with new values. Pass JSON for bulk changes.
     WriteConfig {
         /// The URI of your NetBox instance. Required if not using '--json'.
-        #[arg(short, long, required_unless_present = "json", conflicts_with = "json")]
+        #[arg(short, long, conflicts_with = "json")]
         uri: Option<String>,
 
         /// Your NetBox authentication token. Required if not using '--json'.
-        #[arg(short, long, required_unless_present = "json", conflicts_with = "json")]
+        #[arg(short, long, conflicts_with = "json")]
         token: Option<String>,
 
         /// The machine's name. (Optional; default: hostname)

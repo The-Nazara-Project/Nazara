@@ -126,8 +126,8 @@ pub fn view_config_file() -> NazaraResult<()> {
 ///
 /// Either `Ok(())` or `NazaraError` depending on operation outcome.
 pub fn write_config_file(
-    uri: &str,
-    token: &str,
+    uri: &Option<String>,
+    token: &Option<String>,
     name: &Option<String>,
     description: &Option<String>,
     comments: &Option<String>,
@@ -215,8 +215,8 @@ pub fn check_config_file() -> NazaraResult<()> {
 /// `Ok(())` or `NazaraError` depending on operation outcome.
 fn create_new_config(
     config_path: &std::path::Path,
-    uri: &str,
-    token: &str,
+    uri: &Option<String>,
+    token: &Option<String>,
     name: &Option<String>,
     description: &Option<String>,
     comments: &Option<String>,
@@ -228,14 +228,15 @@ fn create_new_config(
 ) -> NazaraResult<()> {
     let mut contents = include_str!("config_template.toml").to_string();
 
-    // Required values
-    contents = contents.replace("netbox_uri = \"\"", &format!("netbox_uri = \"{}\"", uri));
-    contents = contents.replace(
-        "netbox_api_token = \"\"",
-        &format!("netbox_api_token = \"{}\"", token),
-    );
-
-    // Optional common section
+    if let Some(v) = token {
+        contents = contents.replace(
+            "netbox_api_token = \"\"",
+            &format!("netbox_api_token = \"{}\"", v),
+        );
+    }
+    if let Some(v) = uri {
+        contents = contents.replace("netbox_uri = \"\"", &format!("netbox_uri = \"{}\"", v));
+    }
     if let Some(v) = name {
         contents = contents.replace("name = \"\"", &format!("name = \"{}\"", v));
     }
@@ -269,6 +270,8 @@ fn create_new_config(
     file.write_all(contents.as_bytes())
         .map_err(NazaraError::FileOpError)?;
 
+    println!("Checking integrity of the file...");
+    ConfigData::validate_config_file()?;
     success!("Created new configuration at '{}'", config_path.display());
     Ok(())
 }
@@ -292,8 +295,8 @@ fn create_new_config(
 /// `Ok(())` or `NazaraError` depending on operation outcome.
 fn update_existing_config(
     config_path: &std::path::Path,
-    uri: &str,
-    token: &str,
+    uri: &Option<String>,
+    token: &Option<String>,
     name: &Option<String>,
     description: &Option<String>,
     comments: &Option<String>,
@@ -307,11 +310,12 @@ fn update_existing_config(
 ) -> NazaraResult<()> {
     let mut contents = fs::read_to_string(config_path).map_err(NazaraError::FileOpError)?;
 
-    // Required fields
-    contents = replace_key(contents, "netbox", "netbox_uri", uri);
-    contents = replace_key(contents, "netbox", "netbox_api_token", token);
-
-    // Optional common fields
+    if let Some(v) = token {
+        contents = replace_key(contents, "netbox", "netbox_api_token", &v);
+    }
+    if let Some(v) = uri {
+        contents = replace_key(contents, "netbox", "netbox_uri", &v);
+    }
     if let Some(v) = name {
         contents = replace_key(contents, "common", "name", &v);
     }
@@ -353,6 +357,8 @@ fn update_existing_config(
     }
 
     fs::write(config_path, contents).map_err(NazaraError::FileOpError)?;
+    println!("Checking integrity of the file...");
+    ConfigData::validate_config_file()?;
     success!(
         "Updated existing configuration at {} (preserved comments)",
         config_path.display()
