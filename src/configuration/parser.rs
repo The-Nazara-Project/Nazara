@@ -193,6 +193,7 @@ pub fn check_config_file() -> NazaraResult<()> {
     }
     println!("Checking integrity of config file...");
     ConfigData::validate_config_file(ValidationMode::Soft)?;
+    success!("Configuration file valid!");
     Ok(())
 }
 
