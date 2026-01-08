@@ -86,7 +86,7 @@ update by passing a `JSON` structure via CLI. **These options are exclusive.
 Passing both is disallowed.**
 
 For further information on how to configure Nazara, run `nazara --help` or visit
-[our documentation](https://the-nazara-project.github.io/Nazara/users/configuration.html).
+[our documentation](https://nazara-project.codeberg.page/Nazara).
 
 *Please note that this section is still a work in progress and all information is subject to change.*
 

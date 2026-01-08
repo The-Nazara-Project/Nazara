@@ -24,8 +24,7 @@ Nazara will run your script and expect to get a JSON string back, which will be 
 Note, that we currently **only support parameters which have been specified in NetBox as string type.**
 ~~~
 
-You can find an example script [here](https://github.com/The-Nazara-Project/Nazara/blob/main/scripts/example.sh
-).
+You can find an example script [here](https://codeberg.org/nazara-project/Nazara/src/branch/main/scripts/example.sh).
 
 ```admonish danger
 Please make sure that your script models the custom fields exactly like they are in your NetBox

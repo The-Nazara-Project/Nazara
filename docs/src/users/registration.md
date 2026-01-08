@@ -47,7 +47,7 @@ site = 1
 ```
 
 The configuration file for a VM looks quite similarly. For a list
-of allowed config parameters, please refer to our [template](https://github.com/The-Nazara-Project/Nazara/blob/main/src/configuration/config_template.toml).
+of allowed config parameters, please refer to our [template](https://codeberg.org/nazara-project/Nazara/src/branch/main/src/configuration/config_template.toml).
 
 You can verify the integrity of your config by running `nazara check-config`.
 ~~~
@@ -87,5 +87,5 @@ it's either missing, or you forgot to run Nazara as root.
 ~~~admonish bug title="Any missing?"
 You have issues with registering your device and don't know how to proceed?
 
-This could be a bug! Please [report it](http://github.com/The-Nazara-Project/Nazara/issues).
+This could be a bug! Please [report it](http://codeberg.org/nazara-project/Nazara/issues).
 ~~~

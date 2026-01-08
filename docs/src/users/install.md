@@ -38,7 +38,7 @@ cargo build --release
 ```
 
 This process may take a while, mainly thanks to our API client library
-[thanix_client](https://github.com/The-Nazara-Project/thanix_client).
+[thanix_client](https://codeberg.org/nazara-project/thanix_client).
 
 Once completed you have a portable binary at `./target/release/nazara`.
 
@@ -53,7 +53,7 @@ Once we make progress on this front, you will find this information here.
 We currently provide a pre-built binary as well as a Debian package attached to the latest release
 and also plan on attaching these to every release going forward as an easy way to download and install Nazara.
 
-Visit [our release page](https://github.com/The-Nazara-Project/Nazara/releases) to find these for yourself.
+Visit [our release page](https://codeberg.org/nazara-project/Nazara/releases) to find these for yourself.
 
 #### Installing the .deb Package
 

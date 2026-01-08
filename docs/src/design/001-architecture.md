@@ -18,7 +18,7 @@ This includes things like the device's network interfaces, IP addresses and othe
 the DMI tables.
 
 The **Translator** module handles data process and translates all information that the collector has collected into appropriate
-API payload objects. These objects are defined by the NetBox API and brought to Nazara via the [`thanix_client`](https://github.com/The-Nazara-Project/thanix_client)
+API payload objects. These objects are defined by the NetBox API and brought to Nazara via the [`thanix_client`](https://codeberg.org/nazara-project/thanix_client)
 crate. This crate is generated automatically by us and serves as the API client library used for making API requests to NetBox.
 
 The **Publisher** module is the most "superior" module hierarchially. It handles the whole registration process and decided when 
