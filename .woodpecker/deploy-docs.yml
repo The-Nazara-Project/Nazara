@@ -7,25 +7,35 @@ when:
 
 steps:
   build-docs:
-    image: alpine:3.19
+    image: codeberg.org/nazara-project/actions/mdbook-ci-nazara:0.4.51
     environment:
-      GIT_AUTHOR_NAME: codeberg-ci
-      GIT_AUTHOR_EMAIL: ci@codeberg.org
+      GIT_AUTHOR_NAME: "Docs CI/CD"
+      GIT_AUTHOR_EMAIL: "docs@localhost"
     commands:
+      # Skip docs-change check for non-manual runs
       - |
-        # Only run if docs/ changed
-        if ! git diff --name-only HEAD~1 | grep -qE '^docs/'; then
-          echo "No changes in docs/, skipping pipeline"
-          exit 0
+        git fetch origin main --depth=2 || git fetch origin main --unshallow
+        if [ "$WOODPECKER_EVENT" != "manual" ]; then
+          if ! git diff --name-only origin/main~1..HEAD | grep -qE '^docs/'; then
+            echo "No changes in docs/, skipping pipeline"
+            exit 0
+          fi
         fi
-      - apk add --no-cache mdbook mdbook-admonish mdbook-plantuml git bash
+
+      # Build the documentation
       - mdbook build docs
+
+      # Deploy to pages branch
       - set -e
       - mv docs/book /tmp/book
+      - git fetch origin pages:pages
       - git checkout pages
       - rm -rf *
       - cp -r /tmp/book/* .
       - touch .nojekyll
       - git add .
+      - git config --local user.email "docs@localhost"
+      - git config --local user.name "Docs CI/CD"
       - git commit -m "Deploy documentation from main" || echo "No changes to commit"
+      - git remote set-url origin https://${GIT_TOKEN}@codeberg.org/nazara-project/Nazara.git
       - git push origin pages
