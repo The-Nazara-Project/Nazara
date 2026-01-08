@@ -17,6 +17,12 @@ install-pre-commit:
 	@echo "Installing pre-commit..."
 	pip install pre-commit || { echo 'Error installing pre-commit'; exit 1; }
 
+audit:
+	@echo "Running cargo audit..."
+	@command -v cargo-audit >/dev/null 2>&1 || \
+		(echo "Installing cargo-audit..." && cargo install cargo-audit --locked)
+	cargo audit
+
 setup-hooks:
 	@echo "Setting up pre-commit hooks..."
 	pre-commit install
