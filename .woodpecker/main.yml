@@ -13,7 +13,7 @@ steps:
     commands:
       - rustup default $RUST
       - rustup component add rustfmt
-      - cargo fmt -j 4 -- --check
+      - cargo fmt -- --check
       - cargo clippy -j 4
   run_tests:
     when:
