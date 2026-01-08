@@ -1,0 +1,23 @@
+matrix:
+  RUST: [stable]
+
+steps:
+  formatting:
+    when:
+      event: [pull_request]
+    image: rust
+    environment:
+      CARGO_TERM_COLOR: always
+    commands:
+      - rustup default $RUST
+      - rustup component add rustfmt
+      - cargo fmt -- --check
+  rust-clippy:
+    when:
+      event: [pull_request]
+    image: rust
+    environment:
+      CARGO_TERM_COLOR: always
+    commands:
+      - rustup default $RUST
+      - cargo clippy -j 4 --all-targets

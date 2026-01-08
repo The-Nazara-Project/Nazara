@@ -1,0 +1,13 @@
+matrix:
+  RUST: [stable]
+
+steps:
+  run_tests:
+    when:
+      event: [pull_request]
+    image: rust
+    environment:
+      CARGO_TERM_COLOR: always
+    commands:
+      - rustup default $RUST
+      - cargo test -j 4

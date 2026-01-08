@@ -1,0 +1,15 @@
+matrix:
+  RUST: [stable]
+
+steps:
+  audit:
+    when:
+      event: [pull_request]
+    image: rust
+    environment:
+      CARGO_TERM_COLOR: always
+    commands:
+      - rustup default $RUST
+      - cargo install cargo-audit -j 4
+      - cargo build -j 4
+      - cargo audit --bin target/release/nazara --deny

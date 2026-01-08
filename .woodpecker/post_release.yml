@@ -1,0 +1,41 @@
+when:
+  event:
+    - release
+
+steps:
+  build:
+    image: rust:1.74
+    environment:
+      CARGO_TERM_COLOR: always
+    commands:
+      - cargo build --release -j 4
+      - mkdir -p dist
+      - cp target/release/nazara dist/
+      - tar czf nazara-x86_64-unknown-linux-gnu.tar.gz -C dist nazara
+
+  deb:
+    image: rust:1.74
+    commands:
+      - cargo install cargo-deb
+      - cargo deb --output nazara-x86_64-unknown-linux-gnu.deb
+
+  upload:
+    image: alpine:3.19
+    depends_on:
+      - build
+      - deb
+    environment:
+      GIT_TOKEN:
+        from_secret: git_token
+    commands:
+      - apk add --no-cache curl file
+      - |
+        for file in *.tar.gz *.deb; do
+          [ -f "$file" ] || continue
+          echo "Uploading $file"
+          curl -X POST \
+            -H "Authorization: token $GIT_TOKEN" \
+            -H "Content-Type: $(file -b --mime-type "$file")" \
+            --data-binary @"$file" \
+            "$WOODPECKER_RELEASE_UPLOAD_URL?name=$(basename "$file")"
+        done

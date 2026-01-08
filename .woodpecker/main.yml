@@ -1,0 +1,27 @@
+# Runs after pushes to main.
+matrix:
+  RUST: [stable]
+
+steps:
+  stylecheck:
+    when:
+      branch: [main]
+      event: [push]
+    image: rust
+    environment:
+      CARGO_TERM_COLOR: always
+    commands:
+      - rustup default $RUST
+      - rustup component add rustfmt
+      - cargo fmt -j 4 -- --check
+      - cargo clippy -j 4
+  run_tests:
+    when:
+      branch: [main]
+      event: [push]
+    image: rust
+    environment:
+      CARGO_TERM_COLOR: always
+    commands:
+      - rustup default $RUST
+      - cargo test -j 4

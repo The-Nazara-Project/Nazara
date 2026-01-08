@@ -1,0 +1,31 @@
+when:
+  branch:
+    - main
+  event:
+    - push
+    - manual # workflow_dispatch equivalent
+
+steps:
+  build-docs:
+    image: alpine:3.19
+    environment:
+      GIT_AUTHOR_NAME: codeberg-ci
+      GIT_AUTHOR_EMAIL: ci@codeberg.org
+    commands:
+      - |
+        # Only run if docs/ changed
+        if ! git diff --name-only HEAD~1 | grep -qE '^docs/'; then
+          echo "No changes in docs/, skipping pipeline"
+          exit 0
+        fi
+      - apk add --no-cache mdbook mdbook-admonish mdbook-plantuml git bash
+      - mdbook build docs
+      - set -e
+      - mv docs/book /tmp/book
+      - git checkout pages
+      - rm -rf *
+      - cp -r /tmp/book/* .
+      - touch .nojekyll
+      - git add .
+      - git commit -m "Deploy documentation from main" || echo "No changes to commit"
+      - git push origin pages
