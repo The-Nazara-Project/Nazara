@@ -1,0 +1,393 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Testing VMs - Nazara - Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../theme/pagetoc.css">
+        <link rel="stylesheet" href="../theme/mdbook-admonish.css">
+
+        <!-- MathJax -->
+        <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Nazara - Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/The-Nazara-Project/Nazara" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <div class="content-wrap">
+                            <h1 id="testing-vms"><a class="header" href="#testing-vms">Testing VMs</a></h1>
+<p>In the previous chapter, you read up on how to set up a local
+NetBox instance using <a href="https://github.com/netbox-community/netbox-docker">netbox-docker</a>.</p>
+<p>This guide will show you how to set up a VM that you can register/update on this container
+using Nazara.</p>
+<h2 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h2>
+<ul>
+<li>Host machine with the <code>netbox-docker</code> deployment running locally</li>
+<li>Virtualization software (QEMU/KVM)</li>
+<li>A Linux ISO of your choosing</li>
+</ul>
+<h2 id="create-a-new-linux-vm"><a class="header" href="#create-a-new-linux-vm">Create a new Linux VM</a></h2>
+<details id="admonition-use-a-gui-to-createmanager-vms" class="admonition admonish-tip" role="note" aria-labelledby="admonition-use-a-gui-to-createmanager-vms-title">
+<summary class="admonition-title">
+<div id="admonition-use-a-gui-to-createmanager-vms-title">
+<p>Use a GUI to create/manager VMs</p>
+</div>
+<a class="admonition-anchor-link" href="#admonition-use-a-gui-to-createmanager-vms"></a>
+</summary>
+<div>
+<p>For creating and managing VMs, we recommend you use a tool like <code>virt-manager</code>.</p>
+<p>You can find a step-by-step guide on how to create a new VM <a href="https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/6/html/virtualization_getting_started_guide/sec-virtualization_getting_started-quickstart_virt-manager-create_vm">here</a></p>
+</div>
+</details>
+<h3 id="using-the-terminal"><a class="header" href="#using-the-terminal">Using the Terminal</a></h3>
+<div id="admonition-info" class="admonition admonish-info" role="note" aria-labelledby="admonition-info-title">
+<div class="admonition-title">
+<div id="admonition-info-title">
+<p>Info</p>
+</div>
+<a class="admonition-anchor-link" href="#admonition-info"></a>
+</div>
+<div>
+<p>These examples are specifically for openSUSE Tumbleweed.</p>
+<p>For package names on other distros, please refer to the list below
+or check your distro's package lists.</p>
+</div>
+</div>
+<h4 id="1-install-required-packages"><a class="header" href="#1-install-required-packages">1. Install required packages</a></h4>
+<pre><code class="language-bash">sudo zypper install -y qemu-kvm libvirt virt-manager virt-install bridge-utils
+sudo systemctl enable --now libvirtd
+</code></pre>
+<h4 id="2-create-linux-vm"><a class="header" href="#2-create-linux-vm">2. Create Linux VM</a></h4>
+<p>Replace <code>$ISO_PATH</code> with the path to the ISO file and <code>$DISK_PATH</code> to the path
+where you want your virtual disk to be localted.</p>
+<ol>
+<li>Create a new virtual disk image</li>
+</ol>
+<pre><code class="language-bash">qemu-img create -f qcow2 $DISK_PATH 20G
+</code></pre>
+<ol start="2">
+<li>Create the Virtual Machine</li>
+</ol>
+<pre><code class="language-bash">sudo virt-install \
+    --name nazara-test-vm \
+    --ram 2048 \
+    --vcpus 2 \
+    --os-type linux \
+    --os-variant $VARIANT \
+    --network network=default \
+    --graphics spice \
+    --cdrom $ISO_PATH \
+    --disk path=$DISK_PATH,format=qcow2
+</code></pre>
+<details id="admonition-example-creating-ubuntu-vm" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-creating-ubuntu-vm-title">
+<summary class="admonition-title">
+<div id="admonition-example-creating-ubuntu-vm-title">
+<p>Example: Creating Ubuntu VM</p>
+</div>
+<a class="admonition-anchor-link" href="#admonition-example-creating-ubuntu-vm"></a>
+</summary>
+<div>
+<p>This is an example on how to create a new VM using Ubuntu Desktop 25.10.</p>
+<ol>
+<li>Create the virtual disk</li>
+</ol>
+<pre><code class="language-bash">qemu-img create -f qcow2 /var/lib/libvirt/images/ubuntu.qcow2 20G
+</code></pre>
+<ol start="2">
+<li>Create the VM</li>
+</ol>
+<pre><code class="language-bash">sudo virt-install \
+  --name nazara-test-vm-ubuntu \
+  --ram 2048 \
+  --vcpus 2 \
+  --os-type linux \
+  --os-variant ubuntu25.10 \
+  --network network=default \
+  --graphics spice \
+  --cdrom /home/user/Downloads/ubuntu-25-10-desktop-amd64.iso \
+  --disk path=/var/lib/libvirt/images/ubuntu.qcow2,format=qcow2
+</code></pre>
+</div>
+</details>
+<details id="admonition-example-creating-opensuse-tumbleweed-vm" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-creating-opensuse-tumbleweed-vm-title">
+<summary class="admonition-title">
+<div id="admonition-example-creating-opensuse-tumbleweed-vm-title">
+<p>Example: Creating openSUSE Tumbleweed VM</p>
+</div>
+<a class="admonition-anchor-link" href="#admonition-example-creating-opensuse-tumbleweed-vm"></a>
+</summary>
+<div>
+<p>This is an example on how to create a new VM with openSUSE Tumbleweed.</p>
+<pre><code class="language-bash">qemu-img create -f qcow2 /var/lib/libvirt/images/tumbleweed.qcow2 20G
+</code></pre>
+<ol start="2">
+<li>Create the VM</li>
+</ol>
+<pre><code class="language-bash">sudo virt-install \
+  --name nazara-test-vm-tumbleweed \
+  --ram 2048 \
+  --vcpus 2 \
+  --os-type linux \
+  --os-variant opensuse-tumbleweed \
+  --network network=default \
+  --graphics spice \
+  --cdrom /home/user/Downloads/ubuntu-25-10-desktop-amd64.iso \
+  --disk path=/var/lib/libvirt/images/ubuntu.qcow2,format=qcow2
+</code></pre>
+</div>
+</details>
+<p><strong>Network Notes</strong>:</p>
+<ul>
+<li>Default NAT (<code>virbr0</code>) -&gt; host reachable from VM at <code>192.168.122.1</code> (on openSUSE)</li>
+<li>Optional: Use bridge or host-only network for static IP</li>
+</ul>
+<h2 id="transfer-nazara-to-the-vm"><a class="header" href="#transfer-nazara-to-the-vm">Transfer Nazara to the VM</a></h2>
+<p>If you used the standard network option for your VM, it is most likely not able
+to connect to the internet directly. This means you cannot pull Nazara's GitHub repo.</p>
+<p>You can however, move your binary and config file from your host machine to your VM
+using SSH.</p>
+<p>First check if you can reach the NetBox instance from your VM.
+Then simply run this bash script to copy everything else over:</p>
+<pre><code class="language-bash">#!/bin/bash
+
+# Usage: ./copy_to_vm.sh &lt;VM_IP&gt; &lt;VM_USER&gt; &lt;PATH_TO_NAZARA_PROJECT&gt;
+# Example:
+# ./copy_to_vm.sh 192.168.122.123 alice /home/user/Nazara
+
+set -e
+
+VM_IP="$1"
+VM_USER="$2"
+PROJECT_PATH="$3"
+
+if [[ -z "$VM_IP" || -z "$VM_USER" || -z "$PROJECT_PATH" ]]; then
+    echo "Usage: $0 &lt;VM_IP&gt; &lt;VM_USER&gt; &lt;PATH_TO_NAZARA_PROJECT&gt;"
+    exit 1
+fi
+
+NAZARA_BINARY="$PROJECT_PATH/target/release/nazara"
+CONFIG_FILE="/root/.config/nazara/config.toml"
+
+if [[ ! -f "$NAZARA_BINARY" ]]; then
+    echo "Error: Nazara binary not found at $NAZARA_BINARY"
+    exit 1
+fi
+
+if [[ ! -f "$CONFIG_FILE" ]]; then
+    echo "Error: config.toml not found at $CONFIG_FILE"
+    exit 1
+fi
+
+echo "Copying Nazara binary to VM home directory..."
+scp "$NAZARA_BINARY" "$VM_USER@$VM_IP:/home/$VM_USER/"
+
+echo "Copying config file to VM root config directory..."
+ssh "$VM_USER@$VM_IP" "sudo mkdir -p /root/.config/nazara"
+scp "$CONFIG_FILE" "$VM_USER@$VM_IP:/tmp/config.toml"
+ssh "$VM_USER@$VM_IP" "sudo mv /tmp/config.toml /root/.config/nazara/config.toml"
+
+echo "Done!"
+
+</code></pre>
+
+                        </div>
+                        <div id="sidetoc">
+                            <nav id="pagetoc"></nav>
+                        </div>
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../contributors/test_environment.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../contributors/contributing_workflow.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../contributors/test_environment.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../contributors/contributing_workflow.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../theme/pagetoc.js"></script>
+
+
+    </div>
+    </body>
+</html>

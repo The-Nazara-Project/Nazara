@@ -1,0 +1,357 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Contribution Workflow - Nazara - Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../theme/pagetoc.css">
+        <link rel="stylesheet" href="../theme/mdbook-admonish.css">
+
+        <!-- MathJax -->
+        <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Nazara - Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/The-Nazara-Project/Nazara" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <div class="content-wrap">
+                            <h1 id="contributing-workflow"><a class="header" href="#contributing-workflow">Contributing Workflow</a></h1>
+<h2 id="setup"><a class="header" href="#setup">Setup</a></h2>
+<ol>
+<li><strong>Fork the project repository</strong> by clicking on the "Fork" button on the project's GitHub page.
+This will create a copy of the repository under your GitHub account.</li>
+<li><strong>Clone your forked repository</strong> to your local machine using the git clone command.
+This will create a local copy of the repository that you can work on.</li>
+<li><strong>Install the project dependencies</strong> by installing <code>libopenssl-dev</code> and <code>libdbus-sys</code> are installed on your system. Both are required by Nazara to compile.</li>
+</ol>
+<div id="admonition-note" class="admonition admonish-note" role="note" aria-labelledby="admonition-note-title">
+<div class="admonition-title">
+<div id="admonition-note-title">
+<p>Note</p>
+</div>
+<a class="admonition-anchor-link" href="#admonition-note"></a>
+</div>
+<div>
+<p>The names of both of these libraries can vary depending on your distribution. The examples are for openSUSE Tumbleweed.</p>
+</div>
+</div>
+<ol start="4">
+<li><strong>Install and set up pre-commit for code quality checks</strong>. This tool will automatically execute the <code>hooks</code> we implemented
+which will check your code for formatting or styling issue before each commit.</li>
+</ol>
+<div id="admonition-note-1" class="admonition admonish-note" role="note" aria-labelledby="admonition-note-1-title">
+<div class="admonition-title">
+<div id="admonition-note-1-title">
+<p>Note</p>
+</div>
+<a class="admonition-anchor-link" href="#admonition-note-1"></a>
+</div>
+<div>
+<p>Note: If <code>pre-commit</code> fails on execution, be sure to run <code>cargo format</code> and <code>cargo clippy</code> on your code and fix any issues
+raised by these tools.</p>
+</div>
+</div>
+<h3 id="changing-documentation"><a class="header" href="#changing-documentation">Changing Documentation</a></h3>
+<p>In case you want - or need - to do changes to this documentation, you need to install both <code>mdbook</code> and
+<code>mdbook-admonish</code> via <code>cargo</code>.</p>
+<p>Simply run these commands:</p>
+<pre><code class="language-bash">cargo install mdbook mdbook-admonish
+</code></pre>
+<p>To build the documentation run these commands from the repo's root:</p>
+<pre><code class="language-bash">mdbook build docs &amp;&amp; mdbook serve docs
+</code></pre>
+<p>This will create a local deployment of the documentation at <code>localhost:3000</code> with automatic rebuilds upon change.</p>
+<h2 id="making-changes"><a class="header" href="#making-changes">Making changes</a></h2>
+<p>Once you have set up the project your can start working on your contribution.</p>
+<h3 id="1-create-a-new-branch-for-your-changes"><a class="header" href="#1-create-a-new-branch-for-your-changes">1. Create a new branch for your changes</a></h3>
+<p>Note that working branches should have one of these prefixes.</p>
+<ul>
+<li><code>feature/</code>: For adding new features to Nazara</li>
+<li><code>docs/</code>: For changing documentation</li>
+<li><code>ci/</code>: For CI/CD maintenance</li>
+<li><code>fix/</code>: For bugfixes</li>
+<li><code>dep/</code>: For deprecations</li>
+<li><code>tests/</code>: For branches that add/change tests</li>
+</ul>
+<div id="admonition-example" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-title">
+<div class="admonition-title">
+<div id="admonition-example-title">
+<p>Example</p>
+</div>
+<a class="admonition-anchor-link" href="#admonition-example"></a>
+</div>
+<div>
+<p>Examples of good or bad branch names would look like this:</p>
+<p><code>feature/add-vm-creation</code>, rather than <code>add-vm</code></p>
+</div>
+</div>
+<h3 id="2-make-meaningful-committs"><a class="header" href="#2-make-meaningful-committs">2. Make meaningful committs</a></h3>
+<p>It is important to pay attention to the scope of your contribution. To this end please only make changes in one Pull Request which are related to your specific contribution.</p>
+<p>This makes it easier for us to review your PR and to keep the commit history clean. (If you encounter something else you want to change,
+which is not directly linked to your contribution, please open a PR on a separate branch for this change.)</p>
+<div id="admonition-hint" class="admonition admonish-tip" role="note" aria-labelledby="admonition-hint-title">
+<div class="admonition-title">
+<div id="admonition-hint-title">
+<p>Hint</p>
+</div>
+<a class="admonition-anchor-link" href="#admonition-hint"></a>
+</div>
+<div>
+<p>Please refer to our <a href="../design/002-code_style.html">Code Style Guide</a> to find out how our code should be formatted and documented.</p>
+</div>
+</div>
+<h3 id="3-include-tests-in-your-code"><a class="header" href="#3-include-tests-in-your-code">3. Include tests in your code</a></h3>
+<p>Automated tests are essential to ensure the correctness and reliability of the codebase.
+Therefore <strong>it is required that Pull Requests, which change the existing behaviour of the codebase (e.g by adding features),
+must be covered with tests</strong> by the contributor whenever possible in the same PR as the contribution itself.
+Code without tests might be rejected or take longer to process.</p>
+<h3 id="4-push-your-branch-to-your-fork"><a class="header" href="#4-push-your-branch-to-your-fork">4. <strong>Push your branch to your fork</strong>.</a></h3>
+<h3 id="5-open-a-pr-against-the-main-repository"><a class="header" href="#5-open-a-pr-against-the-main-repository">5. <strong>Open a PR against the main repository</strong>.</a></h3>
+<p>Fill out the PR form and provide a detailed description of what your PR does and the reason or motivation behind the change.</p>
+<div id="admonition-hint-1" class="admonition admonish-tip" role="note" aria-labelledby="admonition-hint-1-title">
+<div class="admonition-title">
+<div id="admonition-hint-1-title">
+<p>Hint</p>
+</div>
+<a class="admonition-anchor-link" href="#admonition-hint-1"></a>
+</div>
+<div>
+<p>To make it easier for us to process your contribution, <strong>please stick to the PR template</strong>.</p>
+</div>
+</div>
+<h3 id="6-wait-for-ci-to-pass"><a class="header" href="#6-wait-for-ci-to-pass">6. <strong>Wait for CI to pass</strong>.</a></h3>
+<p>Our CI workflows run on pushes and PRs and will check for code quality, format and vulnerabilities. They might also execute all tests they find. It is imperative that all checks
+are green before a contribution is green. Please check and fix any errors the workflows find.</p>
+<h3 id="7-wait-for-review"><a class="header" href="#7-wait-for-review">7. <strong>Wait for review</strong>.</a></h3>
+<p>That's it, now you can, if not already automatically done so, request a review by one of the repository maintainers. We will come back to you as quickly as we can.</p>
+<h2 id="pay-attention-to"><a class="header" href="#pay-attention-to">Pay Attention To</a></h2>
+<ol>
+<li>To ensure that all code is properly formatted, please run <code>cargo format</code> on you code before submitting it. <code>pre-commit</code> will tell you when your code is not properly formatted.</li>
+<li><strong>Documentation is key</strong>. We require, that all code contributions are properly documented not only with commit messages and meaningful PR descriptions, but also that the code itself is properly documented with docstrings. This ensures that new contributors and maintainers alike can navigate their way through the codebase. This has the added benefit that your PR can be accepted much quicker too.</li>
+</ol>
+<div id="admonition-important" class="admonition admonish-tip" role="note" aria-labelledby="admonition-important-title">
+<div class="admonition-title">
+<div id="admonition-important-title">
+<p>Important</p>
+</div>
+<a class="admonition-anchor-link" href="#admonition-important"></a>
+</div>
+<div>
+<p>For any other questions regarding style, please refer to the <a href="../design/002-code_style.html">Code Style Guide</a>.</p>
+</div>
+</div>
+<h2 id="introducing-a-dependency"><a class="header" href="#introducing-a-dependency">Introducing a Dependency</a></h2>
+<p>While we would prefer contributors not to introduce new dependencies, we acknowledge that this is not always possible.</p>
+<p>Therefore, please refer to our <a href="./dependencies.html">Dependency Policy</a> to see which dependencies we accept, and also please be ready
+to explain why introducing this dependency was necessary.</p>
+<h2 id="a-word-on-vulnerabilities"><a class="header" href="#a-word-on-vulnerabilities">A word on vulnerabilities</a></h2>
+<p>If you discover a security vulnerability in our code, please inform us privately immediately according to our <a href="security.html">Security Policy</a>.</p>
+<p>If you wish to fix a vulnerability, please also inform us and stand by for our green light. We would still like to investigate the vulnerability for ourselves to get an overview over the severity and scope of the problem. <em>Please refrain from publishing a fix until we came back to you or have published a security advisory</em>.</p>
+<h2 id="license-disclaimer"><a class="header" href="#license-disclaimer">License Disclaimer</a></h2>
+<p>By submitting a contribution to The Nazara Project, you agree that your contribution shall be licensed under the same
+license(s) as the project at the time of contribution.</p>
+<p>You also grant the project maintainers the right to relicense the project, including your contribution, under any
+future version of those license(s), or under any other license that is free and open source software (FOSS) and
+compatible with the current license(s).</p>
+
+                        </div>
+                        <div id="sidetoc">
+                            <nav id="pagetoc"></nav>
+                        </div>
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../contributors/test_vms.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../contributors/dependencies.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../contributors/test_vms.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../contributors/dependencies.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../theme/pagetoc.js"></script>
+
+
+    </div>
+    </body>
+</html>

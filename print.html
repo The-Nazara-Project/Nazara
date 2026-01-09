@@ -1,0 +1,1762 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Nazara - Documentation</title>
+        <meta name="robots" content="noindex">
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="theme/pagetoc.css">
+        <link rel="stylesheet" href="theme/mdbook-admonish.css">
+
+        <!-- MathJax -->
+        <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Nazara - Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/The-Nazara-Project/Nazara" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <div class="content-wrap">
+                            <p align="center">
+    <img src="assets/logo-no-background.png" alt="The Nazara Logo" style="width:60%; max-width:300px;" />
+</p>
+<p><strong>Welcome to Nazara's documentation hub!</strong></p>
+<p>Nazara is a Rust tool used to automate the registration and update process of machines and VMs in the
+IPAM tool <a href="https://netboxlabs.com/docs/netbox/">NetBox</a>.</p>
+<div id="admonition-found-a-bug" class="admonition admonish-bug" role="note" aria-labelledby="admonition-found-a-bug-title">
+<div class="admonition-title">
+<div id="admonition-found-a-bug-title">
+<p>Found a bug?</p>
+</div>
+<a class="admonition-anchor-link" href="intro.html#admonition-found-a-bug"></a>
+</div>
+<div>
+<p>Please <a href="https://codeberg.org/nazara-project/Nazara/issues">Open an issue on Codeberg</a>.</p>
+</div>
+</div>
+<h2 id="compatibility"><a class="header" href="#compatibility">Compatibility</a></h2>
+<p>We strive to make sure to stay compatible with the most recent NetBox version. Here you can see which version
+of Nazara is compatible with which version of NetBox (and if we still support it). When major ports to new
+versions of NetBox happen - which usually includes breaking changes - the old version of Nazara will be moved
+to its own branch and tagged accordingly.</p>
+<div class="table-wrapper"><table><thead><tr><th>Nazara Version</th><th>NetBox Version</th><th>Branch</th><th>maintained?</th></tr></thead><tbody>
+<tr><td><code>v0.1.0</code></td><td><code>v4.3.x</code>, <code>v4.4.x</code> and newer</td><td><code>main</code></td><td>yes</td></tr>
+<tr><td><code>v0.1.0_beta.3</code></td><td><code>v4.3.x</code>, <code>v4.4.x</code> and newer</td><td><code>version/beta-3</code></td><td>no</td></tr>
+<tr><td><code>v0.1.0_beta.2</code></td><td><code>v4.3.x</code>, <code>v4.4.x</code></td><td><code>version/beta-2</code></td><td>no</td></tr>
+<tr><td><code>v0.1.0_beta.1</code></td><td><code>v4.3.x</code></td><td><code>version/beta-1</code></td><td>no</td></tr>
+<tr><td><code>v0.1.0_alpha.2</code></td><td><code>v3.6.x</code></td><td><code>version/alpha-2</code></td><td>no</td></tr>
+</tbody></table>
+</div>
+<p>Maintenance work on these older versions is not planned currently.</p>
+<div id="admonition-warning" class="admonition admonish-warning" role="note" aria-labelledby="admonition-warning-title">
+<div class="admonition-title">
+<div id="admonition-warning-title">
+<p>Warning</p>
+</div>
+<a class="admonition-anchor-link" href="intro.html#admonition-warning"></a>
+</div>
+<div>
+<p>Nazara was developed for and on Linux systems. We have no plans to support Windows or Mac in the foreeable future.
+If you would like to add support for this, please open a discussion in our GitHub repository.</p>
+</div>
+</div>
+<h2 id="distribution-channels"><a class="header" href="#distribution-channels">Distribution Channels</a></h2>
+<p>This is an overview of channels through which you can get Nazara.</p>
+<div class="table-wrapper"><table><thead><tr><th>Platform/Channel</th><th>Version</th><th>Offical?</th></tr></thead><tbody>
+<tr><td><a href="https://crates.io/crates/nazara"><code>crates.io</code></a></td><td><code>v0.1.0</code></td><td>yes</td></tr>
+<tr><td>openSUSE Tumbleweed</td><td>--coming soon--</td><td>--coming soon--</td></tr>
+</tbody></table>
+</div>
+<p>For information about who maintains a package you are looking for, try
+looking into the <code>PACKAGERS.md</code> file in our project's root directory.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="design-documentation"><a class="header" href="#design-documentation">Design Documentation</a></h1>
+<p>Here you can find all documentation relating to Nazara's structure, architecture and style.</p>
+<ul>
+<li><a href="design/./001-architecture.html">Architecture Guide</a></li>
+<li><a href="design/./002-code_style.html">Code Style</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="nazara-architecture-guide"><a class="header" href="#nazara-architecture-guide">Nazara Architecture Guide</a></h1>
+<h2 id="introduction"><a class="header" href="#introduction">Introduction</a></h2>
+<p>This document explains the structure and architecture chosen for Nazara and gives an overview over its components.</p>
+<p>Nazara is a tool for automating the registration and update process of physical machines and virtual machines in
+<a href="https://netboxlabs.com/docs/netbox/">NetBox</a>, a open-source IPAM tool.</p>
+<p>Ease of use is important in this regard, users should be able to pick Nazara up quickly, and be able to comfortably
+integrate it into their daily workflow. With automation if they wish.</p>
+<p>Nazara, very roughly, has 3 main functions: Collection, Translation and Publishing. (Excluding the configuration
+module here)</p>
+<p>The <strong>Collection</strong> module is soley responsible for collecting information about the host system the user wants to register.
+This includes things like the device's network interfaces, IP addresses and other hardware information. All collected from
+the DMI tables.</p>
+<p>The <strong>Translator</strong> module handles data process and translates all information that the collector has collected into appropriate
+API payload objects. These objects are defined by the NetBox API and brought to Nazara via the <a href="https://codeberg.org/nazara-project/thanix_client"><code>thanix_client</code></a>
+crate. This crate is generated automatically by us and serves as the API client library used for making API requests to NetBox.</p>
+<p>The <strong>Publisher</strong> module is the most "superior" module hierarchially. It handles the whole registration process and decided when
+which translation needs to be made and which API call to be sent.</p>
+<h2 id="goals"><a class="header" href="#goals">Goals</a></h2>
+<p><em>Now, what problem does Nazara solve?</em></p>
+<p>Some system administrators have a overwhelming number of machines. Or maybe they get sent upgrades to prototype hardware multiple times
+a year. When dealing with this large amount of machine turnover, Nazara provides an easy to use tool to eliminate the tedious task
+of manually registering or updating device or VM information.</p>
+<p><em>What are the essential features and goals for Nazara?</em></p>
+<ul>
+<li>Ease of use</li>
+<li>Registration of machines and VMs and their associated components</li>
+<li>Automatization of custom field collection</li>
+</ul>
+<h2 id="non-goals"><a class="header" href="#non-goals">Non-Goals</a></h2>
+<p>Nazara is simply a tool to register/update machines and VMs in NetBox. Beyond that it is currently not planned
+to have any other kind of managing role alongside NetBox or other IPAM tools.</p>
+<h2 id="design"><a class="header" href="#design">Design</a></h2>
+<p>Nazara - codewise - is supposed to be <strong>highly modular</strong> and respect strict <strong>separation of concerns</strong>.
+This means that <strong>one logical unit does only one thing</strong> and <strong>contain all the logic necessary to achieve their goal</strong>.</p>
+<p>This starts with modules: The <code>Collector</code>, <code>Configuration</code>, <code>Translator</code> and <code>Publisher</code> modules all only have <strong>one
+responsibility</strong>.<br>
+We believe that - wherever sensible and possible - each module, each file and each function should have one responsibility.
+For a new additional feature we would rather introduce another module that handles that responsibility than break this principle.</p>
+<p>In addition to this <strong>all interfaces between modules should be as small as possible</strong>. Preferably one or two functions.
+This makes it easier to mentally follow the execution flow and avoids any kind of cross referencing or massive rewrites once
+a single module needs to be rewritten.</p>
+<p>This philosophy should also extend to Nazara's <code>Git</code>-History. You can find more on that in the
+<a href="design/../contributors/index.html">Contributor Guide</a>.</p>
+<h3 id="high-level-design"><a class="header" href="#high-level-design">High-Level-Design</a></h3>
+<p>As mentioned before, Nazara is designed with strict separation of concerns in mind.
+The following is a very high-level overview of Nazara's four logical parts:</p>
+<ul>
+<li>The Collectors</li>
+<li>The Configuration Package</li>
+<li>The Publisher</li>
+<li>The Main module</li>
+</ul>
+<p>It also shows the two modules of our <code>thanix_client</code> crate, which we created specifically
+for sending API requests to NetBox. More on that later.</p>
+<p><a href="design/../mdbook-plantuml-img/f4c19a3322cac896e4bdf427486dcd8d12376378.svg"><img src="design/../mdbook-plantuml-img/f4c19a3322cac896e4bdf427486dcd8d12376378.svg" alt="" /></a></p>
+<p>The following diagram gives an overview over the program flow once started by a user.
+Note that the exact function calls within <code>translator.rs</code> and the difference between POST/PATCH
+requests has been omitted for simplicity.</p>
+<p><a href="design/../mdbook-plantuml-img/9caf19489c7104dfe634fc36fa31bb39a161f7eb.svg"><img src="design/../mdbook-plantuml-img/9caf19489c7104dfe634fc36fa31bb39a161f7eb.svg" alt="" /></a></p>
+<p>In reality, the <code>publisher</code> checks if the device has already been registered. The easiest way to do this
+would be to pass the ID the device or VM has in NetBox, however we are capable of searching given several
+parameters like serial number or UUID. Though these methods are less reliable.</p>
+<p>In any way, the publisher then decides whether a POST or PATCH request shall be made.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="nazara-code-style-guide"><a class="header" href="#nazara-code-style-guide">Nazara Code Style Guide</a></h1>
+<h2 id="general-guide"><a class="header" href="#general-guide">General Guide</a></h2>
+<p>In regards to formatting, we follow the current Rust code style set by the Cargo formatter (<code>cargo fmt</code>).</p>
+<p>The easiest way to enforce this, is using <code>pre-commit</code> to automatically format and check any code before it is committed.</p>
+<div id="admonition-info" class="admonition admonish-info" role="note" aria-labelledby="admonition-info-title">
+<div class="admonition-title">
+<div id="admonition-info-title">
+<p>Info</p>
+</div>
+<a class="admonition-anchor-link" href="design/002-code_style.html#admonition-info"></a>
+</div>
+<div>
+<p>This style is enforced by our CI as well. PRs will not be accepted unless the formatting issues are fixed.</p>
+</div>
+</div>
+<h2 id="panics"><a class="header" href="#panics">Panics</a></h2>
+<p>We heavily discourage the use of the <code>panic!()</code> macro when aborting the process. Instead, we prefer to handle an error
+and abort gracefully with a helpful error message and error code.</p>
+<p>We only want to panic, when the issue we encounter is <strong>both catastrophic and unfixable by the user</strong>.</p>
+<div id="admonition-example" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-title">
+<div class="admonition-title">
+<div id="admonition-example-title">
+<p>Example</p>
+</div>
+<a class="admonition-anchor-link" href="design/002-code_style.html#admonition-example"></a>
+</div>
+<div>
+<p>These are szenarios in which we <strong>don't want to panic</strong>:</p>
+<ul>
+<li>When input or config parameters are missing</li>
+<li>When connection to NetBox fails</li>
+<li>When an API request returns a different error code that Ok</li>
+</ul>
+<p>While we want to panic in these cases:</p>
+<ul>
+<li>When filesystem operations fail</li>
+<li>When Nazara is not run as root</li>
+</ul>
+</div>
+</div>
+<p>Instead of panicking, we write custom error types to wrap errors of certain functions and include a well formatted error message alongside the error.
+For an exampel on how that looks, please check and of the <code>error.rs</code> files found in any of Nazara's packages.</p>
+<details id="admonition-examplesrcpublishererrorrs" class="admonition admonish-example" role="note" aria-labelledby="admonition-examplesrcpublishererrorrs-title">
+<summary class="admonition-title">
+<div id="admonition-examplesrcpublishererrorrs-title">
+<p>Example:<code>src/publisher/error.rs</code></p>
+</div>
+<a class="admonition-anchor-link" href="design/002-code_style.html#admonition-examplesrcpublishererrorrs"></a>
+</summary>
+<div>
+<p>In this example, you can see how we write our custom error types and are able to wrap errors that we receive from other functions
+in order to escalate them properly.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug)]
+pub enum NazaraError {
+    /// Something went wrong trying to parse DMI tables.
+    Dmi(dmidecode::InvalidEntryPointError),
+    /// Used to indicate that the collection of system data failed.
+    UnableToCollectData(String),
+    /// Used to indicate that one of the collected NWIs might be malformed or invalid.
+    InvalidNetworkInterface(String),
+    /// Used in case the NWI collector crate cannot find any interfaces.
+    NoNetworkInterfaces(String),
+    /// Rust couldn't convert a byte sequence to a UTF-8 string.
+    UnableToParseUTF8(std::string::FromUtf8Error),
+    InvalidPluginOutput(serde_json::Error),
+    PluginExecution(String),
+    /// Used for handling errors during file operations.
+    FileOpError(std::io::Error),
+    /// Indicates that no config file has been found, or it has been moved or deleted during program startup.
+    NoConfigFileError(String),
+    /// Indicates that a required config option is missing from the config file.
+    MissingConfigOptionError(String),
+    /// The Deserialization of a buffer to a type failed.
+    DeserializationError(toml::de::Error),
+    /// An error occured during the serialization of config parameters to a TOML value.
+    SerializationError(toml::ser::Error),
+    /// An error has occured while accessing data returned by NetBox.
+    NetBoxApiError(String),
+    /// Data returned by NetBox is incomplete.
+    NetBoxMissingField(String, String),
+    /// Wraps a `reqwest::Error`. Used for handling failures with requests and responses.
+    Reqwest(reqwest::Error),
+    /// NetBox returned a response with an unexpected code.
+    UnexpectedResponse(reqwest::blocking::Response),
+    /// Used to indicate the `thanix_client` version is incompatible with NetBox.
+    VersionMismatch,
+    /// Used to indicate that NetBox's initial response does not contain the application version.
+    MissingVersion,
+    /// Wraps a `serde_json::Error`. Used to handle failures with response serialization.
+    JsonParse(serde_json::Error),
+    NetlinkError(String),
+    /// Specified primary IP has not been registered with this device or VM.
+    InvalidPrimaryIp(String),
+    /// Expects a `String` message. Used for edge cases and general purpose error cases.
+    Other(String),
+}
+
+pub type NazaraResult&lt;T&gt; = Result&lt;T, NazaraError&gt;;
+
+impl std::fmt::Display for NazaraError {
+    fn fmt(&amp;self, f: &amp;mut std::fmt::Formatter&lt;'_&gt;) -&gt; std::fmt::Result {
+        match self {
+            NazaraError::Dmi(err) =&gt; {
+                write!(f, "DMI Error: {err}")
+            }
+            NazaraError::UnableToCollectData(err) =&gt; {
+                write!(f, "Collector Error: {err}")
+            }
+            NazaraError::InvalidNetworkInterface(err) =&gt; {
+                write!(f, "Network Collector Error: {err}")
+            }
+            NazaraError::NoNetworkInterfaces(err) =&gt; {
+                write!(f, "Network Collector Error: {err}")
+            }
+            NazaraError::UnableToParseUTF8(err) =&gt; {
+                write!(f, "Unable to parse stdout from UTF8 to string: {err}")
+            }
+            NazaraError::InvalidPluginOutput(err) =&gt; {
+                write!(f, "Plugin returned invalid JSON: {err}")
+            }
+            NazaraError::PluginExecution(err) =&gt; {
+                write!(f, "Plugin execution failed: {err}")
+            }
+            NazaraError::FileOpError(err) =&gt; {
+                write!(f, "File operation failed: {err}")
+            }
+            NazaraError::NoConfigFileError(err) =&gt; {
+                write!(f, "No config file found: {err}")
+            }
+            NazaraError::MissingConfigOptionError(err) =&gt; {
+                write!(f, "Missing required config parameter: {err}")
+            }
+            NazaraError::DeserializationError(err) =&gt; {
+                write!(f, "Invalid config file: {err}")
+            }
+            NazaraError::SerializationError(err) =&gt; {
+                write!(f, "Serialization error: {err}")
+            }
+            NazaraError::Reqwest(err) =&gt; {
+                write!(f, "Failed to perform an HTTP request: {err}")
+            }
+            NazaraError::NetBoxApiError(err) =&gt; {
+                write!(f, "NetBox API Error: {err}")
+            }
+            NazaraError::NetBoxMissingField(struc, field) =&gt; {
+                write!(
+                    f,
+                    "NetBox returned incomplete data: Structure \"{struc}\" is missing field expected field \"{field}\""
+                )
+            }
+            NazaraError::UnexpectedResponse(err) =&gt; {
+                let status = err.status();
+                write!(
+                    f,
+                    "Got an unexpected HTTP response {} from NetBox: {:?}",
+                    status, err
+                )
+            }
+            NazaraError::NetlinkError(err) =&gt; {
+                write!(f, "Netlink Error: {err}")
+            }
+            NazaraError::VersionMismatch =&gt; {
+                write!(
+                    f,
+                    "Client version incompatible with NetBox version! Use client v1.x for NetBox v3.6.x and above, and v2.x for NetBox 4.x.",
+                )
+            }
+            NazaraError::MissingVersion =&gt; {
+                write!(
+                    f,
+                    "NetBox version missing from response. Please check your installation.",
+                )
+            }
+            NazaraError::JsonParse(error) =&gt; {
+                write!(f, "Error while parsing JSON: {error}")
+            }
+            NazaraError::InvalidPrimaryIp(addr) =&gt; {
+                write!(
+                    f,
+                    "Configured primary IP '{addr}' does not belong to any interface registered to this device."
+                )
+            }
+            NazaraError::Other(msg) =&gt; f.write_str(&amp;msg),
+        }
+    }
+}
+
+impl From&lt;std::io::Error&gt; for NazaraError {
+    fn from(value: std::io::Error) -&gt; Self {
+        Self::FileOpError(value)
+    }
+}
+
+impl From&lt;serde_json::Error&gt; for NazaraError {
+    fn from(value: serde_json::Error) -&gt; Self {
+        Self::JsonParse(value)
+    }
+}
+
+impl From&lt;std::string::FromUtf8Error&gt; for NazaraError {
+    fn from(value: std::string::FromUtf8Error) -&gt; Self {
+        Self::UnableToParseUTF8(value)
+    }
+}
+
+impl From&lt;reqwest::Error&gt; for NazaraError {
+    fn from(value: reqwest::Error) -&gt; Self {
+        Self::Reqwest(value)
+    }
+}
+
+impl From&lt;dmidecode::InvalidEntryPointError&gt; for NazaraError {
+    fn from(value: dmidecode::InvalidEntryPointError) -&gt; Self {
+        Self::Dmi(value)
+    }
+}
+
+impl From&lt;&amp;str&gt; for NazaraError {
+    fn from(value: &amp;str) -&gt; Self {
+        Self::Other(value.to_owned())
+    }
+}
+
+impl From&lt;toml::de::Error&gt; for NazaraError {
+    fn from(value: toml::de::Error) -&gt; Self {
+        Self::DeserializationError(value)
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+</div>
+</details>
+<h2 id="focus-on-readability"><a class="header" href="#focus-on-readability">Focus on Readability</a></h2>
+<p>When writing code, we value readability above complexity.</p>
+<p>Rust offers a lot of possibilities when it comes to reducing code down into a one-line statement. And that's nice,
+and sometimes even necessary.</p>
+<p>However, we want to take a <strong>readability first</strong> approach with our codebase. Both to aid maintainability and
+increase accessibility for newcomers.</p>
+<p>Of course, sometimes using Rust's more "advanced" features will drastically improve performance. So a balance has
+to be struck between readability and performance. It is very hard to define a solid policy for this, so
+this is a decision every developer and contributor has to do for themselves and - when necessary - engage
+in discussion with maintainers, devs and other contributors about their approach and possible alternatives.</p>
+<h2 id="documenting-code"><a class="header" href="#documenting-code">Documenting Code</a></h2>
+<p>For a smilar reason, we encourage devs to properly document their contributions.
+This includes but is not limited to:</p>
+<ul>
+<li>Using inline comments to explain possibly hard to understand syntax</li>
+<li>Using Rust's powerful docstring feature to properly document functions, structs and modules</li>
+<li>Adding to this documentation when applicable</li>
+<li>Filling out Issue and PR templates appropriately to aid maintainers review their changes</li>
+</ul>
+<p>The following examples will show you an ideal docstring style.</p>
+<details id="admonition-example-documenting-functions" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-documenting-functions-title">
+<summary class="admonition-title">
+<div id="admonition-example-documenting-functions-title">
+<p>Example: Documenting Functions</p>
+</div>
+<a class="admonition-anchor-link" href="design/002-code_style.html#admonition-example-documenting-functions"></a>
+</summary>
+<div>
+<p><strong>Documenting Functions:</strong></p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// This function does X.
+///
+/// This function does X by doing Y using Z. (Detailed explanation optional)
+///
+/// # Parameters
+/// * `arg: str` - A string argument to process
+///
+/// # Returns
+/// * `Ok(str)` - Returns A, if ...
+/// * `Err` - Returns an `ErrType`
+pub fn foo(arg: str) -&gt; Result&lt;str, Err&gt; {
+ // ...
+}
+<span class="boring">}</span></code></pre></pre>
+<p>While not universally used by all projects, we use <code># Parameters</code> and <code># Returns</code>
+sections, especially for larger functions.</p>
+<p>If a function does not take arguments, the <code># Parameters</code> section can be omitted.
+However, if the function does not return (<code>!</code> type) - or returns <code>()</code>, this has to be indicated
+in the <code># Returns</code> section.</p>
+<p>Other sections we use are:</p>
+<ul>
+<li><code># Aborts</code> - If the function aborts the program. (E.g When input parameters are missing)</li>
+<li><code># Panics</code> - If the function can cause a <code>panic!()</code>.</li>
+</ul>
+<p>For both of these sections, list all - or at least the most common - reasons this behaviour can
+occur. This can help debugging immensely.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// This function does X.
+///
+/// # Paramters
+/// - `path: &amp;str` - The path to a file
+///
+/// # Returns
+/// - `String` - The contents of the file.
+///
+/// # Aborts
+/// This function will exit the process if the file cannot be found.
+pub fn read_file(path: &amp;str) -&gt; String {
+    match fs::read_to_string(path) {
+        Ok(contents) =&gt; contents,
+        Err(err) =&gt; {
+            eprintln!("[Error] File '{}' does not exist: {}", path, err);
+            process::exit(1);
+        }
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+</div>
+</details>
+<details id="admonition-example-documenting-structs" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-documenting-structs-title">
+<summary class="admonition-title">
+<div id="admonition-example-documenting-structs-title">
+<p>Example: Documenting Structs</p>
+</div>
+<a class="admonition-anchor-link" href="design/002-code_style.html#admonition-example-documenting-structs"></a>
+</summary>
+<div>
+<p><strong>Documenting Structs:</strong></p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// Information about a Person.
+pub struct Person {
+    /// The name of the Person.
+    pub name: String,
+    /// The age of the Person.
+    pub age: i64,
+}
+<span class="boring">}</span></code></pre></pre>
+<p>It is encouraged to briefly document every field of your struct, whether they are <code>pub</code>
+or not does not matter.</p>
+</div>
+</details>
+<details id="admonition-example-documenting-modules" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-documenting-modules-title">
+<summary class="admonition-title">
+<div id="admonition-example-documenting-modules-title">
+<p>Example: Documenting Modules</p>
+</div>
+<a class="admonition-anchor-link" href="design/002-code_style.html#admonition-example-documenting-modules"></a>
+</summary>
+<div>
+<p><strong>Documenting Modules:</strong></p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>//! This module handles X.
+<span class="boring">}</span></code></pre></pre>
+<p>You can go into depth here about what a module does. This is encouraged for larger modules.</p>
+</div>
+</details>
+<div id="admonition-hint" class="admonition admonish-tip" role="note" aria-labelledby="admonition-hint-title">
+<div class="admonition-title">
+<div id="admonition-hint-title">
+<p>Hint</p>
+</div>
+<a class="admonition-anchor-link" href="design/002-code_style.html#admonition-hint"></a>
+</div>
+<div>
+<p>Please be aware, that a one-liner docstring above a function <strong>will not suffice</strong>.
+Maintainers may ask you to stick to the given format for your contribution.</p>
+</div>
+</div>
+<p>We are aware that to some of you, this feels like cluttering the code files.
+However, we believe that properly documenting our code is the key to providing a more
+inclusive and more maintainable development experience for all.</p>
+<h2 id="terminal-outputuser-interface"><a class="header" href="#terminal-outputuser-interface">Terminal Output/User Interface</a></h2>
+<p>When it is necessary to inform the user about a process, we want to make it short, but as expressive as possible.
+For this, the following styles apply:</p>
+<ul>
+<li><code>Process X has been started...</code> - Basic white text indicates the current process.</li>
+<li><code>\x1b[32m[success]\x1b[0m Something has succeeded</code> - Green colored <code>[success]</code> prefix before the message.</li>
+<li><code>\x1b[31m[error]\x1b[0m Something has failed!</code> - Red colored <code>[error]</code> prefix before error message. <em>This should
+automatically be added by our custom error types when they are given a error message.</em></li>
+<li><code>\ẋ1b[36m[info]\x1b[0m Information level message.</code> - Light blue colored <code>[info]</code> prefix.</li>
+<li><code>\x1b[33m[warning]\x1b[0m Something went wrong, but we can continue...</code> - Yellow colored <code>[warning]</code> prefix.</li>
+</ul>
+<p>To unify this coloring we have implemented several macros to be used for these status messages. These apply
+formatting and colors automatically and disable colors when the host's terminal does not support it.</p>
+<p>The macros are called <code>success!</code>, <code>warn!</code>, <code>failure!</code>, <code>info!</code> you can find a usage example below.</p>
+<details id="admonition-example-status-message-macros" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-status-message-macros-title">
+<summary class="admonition-title">
+<div id="admonition-example-status-message-macros-title">
+<p>Example: Status Message Macros</p>
+</div>
+<a class="admonition-anchor-link" href="design/002-code_style.html#admonition-example-status-message-macros"></a>
+</summary>
+<div>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>match some_func(x) =&gt; {
+    Ok(_) =&gt; {
+        success!("This worked!");
+    },
+    Err(e) =&gt; {
+        failure!("An error occured: {}", e);
+        // Handle the error.
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+</div>
+</details>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="contributing-to-nazara"><a class="header" href="#contributing-to-nazara">Contributing to Nazara</a></h1>
+<p>Thank you for considering contributing to Nazara!</p>
+<p>The following documents should provide you with all the information you need to start contributing to Nazara.</p>
+<p>If you are completely new, make sure you have the following things installed:</p>
+<ul>
+<li><code>rustc</code>: The Rust compiler</li>
+<li><code>rustup</code>: The Rust toolchain manager</li>
+<li><code>cargo</code>: The Rust package manager</li>
+</ul>
+<p>If you are unsure about how to set up a Rust development environment, please refer to the
+<a href="https://www.rust-lang.org/learn">Rust documentation</a> for a guide.</p>
+<h2 id="becoming-a-packager"><a class="header" href="#becoming-a-packager">Becoming a Packager</a></h2>
+<p>If you would like to package Nazara for your distribution, please open an Issue and refer to our
+<a href="contributors/./becoming_packager.html">Becoming a Packager</a> guide for more info.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="setting-up-a-test-environment"><a class="header" href="#setting-up-a-test-environment">Setting up a Test Environment</a></h1>
+<p>In case you don't have a dedicated test instance of NetBox, you can easily set up a local instance via <code>docker-compose</code>.</p>
+<ol>
+<li>Simply clone the <a href="https://github.com/netbox-community/netbox-docker">netbox-docker</a> repository</li>
+<li>Modify the <code>docker-compose.yml</code> file to the required NetBox version</li>
+</ol>
+<div id="admonition-note" class="admonition admonish-note" role="note" aria-labelledby="admonition-note-title">
+<div class="admonition-title">
+<div id="admonition-note-title">
+<p>Note</p>
+</div>
+<a class="admonition-anchor-link" href="contributors/test_environment.html#admonition-note"></a>
+</div>
+<div>
+<p>Depending on the version of Nazara you are working with, you may need to adjust the image version number in your <code>docker-compose.yaml</code> to fit your needs.
+In case you are working on a specific issue, please make sure the Nazara version is compatible with the NetBox version you are using and also make sure that we
+still support that version.</p>
+</div>
+</div>
+<pre><code class="language-yml">services:
+    netbox: &amp;netbox
+        image: docker.io/netboxcommunity/netbox:v4.3.3
+        ...
+</code></pre>
+<p>and execute these commands in accordance to <a href="https://github.com/netbox-community/netbox-docker?tab=readme-ov-file#quickstart">netbox-docker's setup guide</a>:</p>
+<pre><code class="language-bash">git clone -b release https://github.com/netbox-community/netbox-docker.git
+cd netbox-docker
+tee docker-compose.override.yml &lt;&lt;EOF
+services:
+  netbox:
+    ports:
+      - 8000:8080
+EOF
+</code></pre>
+<ol start="3">
+<li>Then build the environment by running <code>docker compose up</code></li>
+<li>When the container is built, you need to create a superuser test account</li>
+</ol>
+<pre><code>docker compose exec netbox /opt/netbox/netbox/manage.py createsuperuser
+</code></pre>
+<p>Simply select a username and password of your wishes.</p>
+<ol start="5">
+<li>
+<p>When that is done, you need to create an API Token <code>username &gt; API Tokens &gt; Add a Token</code> and paste it, along with the container's URL
+into the Nazara config file at <code>~/.nazara/config.toml</code></p>
+</li>
+<li>
+<p>After that, you need to create a few dummy fields that are sadly required to create a device via API</p>
+<ul>
+<li>Device Type</li>
+<li>Device Role</li>
+<li>Manufacturer</li>
+<li>Site
+(And depending on what you want to work on, replicate the custom fields you need 1:1 from your production instance.)</li>
+</ul>
+<p>If you want to specifiy and play around with some optional fields, you must create the objects you reference (like e.g Tenants) first.</p>
+</li>
+<li>
+<p>After that's done, take the IDs of these objects and place it into the corresponding fields in the <code>~/.nazara/config.toml</code></p>
+</li>
+</ol>
+<div id="admonition-important" class="admonition admonish-tip" role="note" aria-labelledby="admonition-important-title">
+<div class="admonition-title">
+<div id="admonition-important-title">
+<p>Important</p>
+</div>
+<a class="admonition-anchor-link" href="contributors/test_environment.html#admonition-important"></a>
+</div>
+<div>
+<p>Currently, the generation of the config file is still a bit wonky, so if it isnt generated upon first executing nazara, copy and paste
+the template from the README or <code>src/configuration/config_template.toml</code>.</p>
+</div>
+</div>
+<p>Now it should work, if you have trouble setting it up, please reach out in the discussion section.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="testing-vms"><a class="header" href="#testing-vms">Testing VMs</a></h1>
+<p>In the previous chapter, you read up on how to set up a local
+NetBox instance using <a href="https://github.com/netbox-community/netbox-docker">netbox-docker</a>.</p>
+<p>This guide will show you how to set up a VM that you can register/update on this container
+using Nazara.</p>
+<h2 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h2>
+<ul>
+<li>Host machine with the <code>netbox-docker</code> deployment running locally</li>
+<li>Virtualization software (QEMU/KVM)</li>
+<li>A Linux ISO of your choosing</li>
+</ul>
+<h2 id="create-a-new-linux-vm"><a class="header" href="#create-a-new-linux-vm">Create a new Linux VM</a></h2>
+<details id="admonition-use-a-gui-to-createmanager-vms" class="admonition admonish-tip" role="note" aria-labelledby="admonition-use-a-gui-to-createmanager-vms-title">
+<summary class="admonition-title">
+<div id="admonition-use-a-gui-to-createmanager-vms-title">
+<p>Use a GUI to create/manager VMs</p>
+</div>
+<a class="admonition-anchor-link" href="contributors/test_vms.html#admonition-use-a-gui-to-createmanager-vms"></a>
+</summary>
+<div>
+<p>For creating and managing VMs, we recommend you use a tool like <code>virt-manager</code>.</p>
+<p>You can find a step-by-step guide on how to create a new VM <a href="https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/6/html/virtualization_getting_started_guide/sec-virtualization_getting_started-quickstart_virt-manager-create_vm">here</a></p>
+</div>
+</details>
+<h3 id="using-the-terminal"><a class="header" href="#using-the-terminal">Using the Terminal</a></h3>
+<div id="admonition-info" class="admonition admonish-info" role="note" aria-labelledby="admonition-info-title">
+<div class="admonition-title">
+<div id="admonition-info-title">
+<p>Info</p>
+</div>
+<a class="admonition-anchor-link" href="contributors/test_vms.html#admonition-info"></a>
+</div>
+<div>
+<p>These examples are specifically for openSUSE Tumbleweed.</p>
+<p>For package names on other distros, please refer to the list below
+or check your distro's package lists.</p>
+</div>
+</div>
+<h4 id="1-install-required-packages"><a class="header" href="#1-install-required-packages">1. Install required packages</a></h4>
+<pre><code class="language-bash">sudo zypper install -y qemu-kvm libvirt virt-manager virt-install bridge-utils
+sudo systemctl enable --now libvirtd
+</code></pre>
+<h4 id="2-create-linux-vm"><a class="header" href="#2-create-linux-vm">2. Create Linux VM</a></h4>
+<p>Replace <code>$ISO_PATH</code> with the path to the ISO file and <code>$DISK_PATH</code> to the path
+where you want your virtual disk to be localted.</p>
+<ol>
+<li>Create a new virtual disk image</li>
+</ol>
+<pre><code class="language-bash">qemu-img create -f qcow2 $DISK_PATH 20G
+</code></pre>
+<ol start="2">
+<li>Create the Virtual Machine</li>
+</ol>
+<pre><code class="language-bash">sudo virt-install \
+    --name nazara-test-vm \
+    --ram 2048 \
+    --vcpus 2 \
+    --os-type linux \
+    --os-variant $VARIANT \
+    --network network=default \
+    --graphics spice \
+    --cdrom $ISO_PATH \
+    --disk path=$DISK_PATH,format=qcow2
+</code></pre>
+<details id="admonition-example-creating-ubuntu-vm" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-creating-ubuntu-vm-title">
+<summary class="admonition-title">
+<div id="admonition-example-creating-ubuntu-vm-title">
+<p>Example: Creating Ubuntu VM</p>
+</div>
+<a class="admonition-anchor-link" href="contributors/test_vms.html#admonition-example-creating-ubuntu-vm"></a>
+</summary>
+<div>
+<p>This is an example on how to create a new VM using Ubuntu Desktop 25.10.</p>
+<ol>
+<li>Create the virtual disk</li>
+</ol>
+<pre><code class="language-bash">qemu-img create -f qcow2 /var/lib/libvirt/images/ubuntu.qcow2 20G
+</code></pre>
+<ol start="2">
+<li>Create the VM</li>
+</ol>
+<pre><code class="language-bash">sudo virt-install \
+  --name nazara-test-vm-ubuntu \
+  --ram 2048 \
+  --vcpus 2 \
+  --os-type linux \
+  --os-variant ubuntu25.10 \
+  --network network=default \
+  --graphics spice \
+  --cdrom /home/user/Downloads/ubuntu-25-10-desktop-amd64.iso \
+  --disk path=/var/lib/libvirt/images/ubuntu.qcow2,format=qcow2
+</code></pre>
+</div>
+</details>
+<details id="admonition-example-creating-opensuse-tumbleweed-vm" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-creating-opensuse-tumbleweed-vm-title">
+<summary class="admonition-title">
+<div id="admonition-example-creating-opensuse-tumbleweed-vm-title">
+<p>Example: Creating openSUSE Tumbleweed VM</p>
+</div>
+<a class="admonition-anchor-link" href="contributors/test_vms.html#admonition-example-creating-opensuse-tumbleweed-vm"></a>
+</summary>
+<div>
+<p>This is an example on how to create a new VM with openSUSE Tumbleweed.</p>
+<pre><code class="language-bash">qemu-img create -f qcow2 /var/lib/libvirt/images/tumbleweed.qcow2 20G
+</code></pre>
+<ol start="2">
+<li>Create the VM</li>
+</ol>
+<pre><code class="language-bash">sudo virt-install \
+  --name nazara-test-vm-tumbleweed \
+  --ram 2048 \
+  --vcpus 2 \
+  --os-type linux \
+  --os-variant opensuse-tumbleweed \
+  --network network=default \
+  --graphics spice \
+  --cdrom /home/user/Downloads/ubuntu-25-10-desktop-amd64.iso \
+  --disk path=/var/lib/libvirt/images/ubuntu.qcow2,format=qcow2
+</code></pre>
+</div>
+</details>
+<p><strong>Network Notes</strong>:</p>
+<ul>
+<li>Default NAT (<code>virbr0</code>) -&gt; host reachable from VM at <code>192.168.122.1</code> (on openSUSE)</li>
+<li>Optional: Use bridge or host-only network for static IP</li>
+</ul>
+<h2 id="transfer-nazara-to-the-vm"><a class="header" href="#transfer-nazara-to-the-vm">Transfer Nazara to the VM</a></h2>
+<p>If you used the standard network option for your VM, it is most likely not able
+to connect to the internet directly. This means you cannot pull Nazara's GitHub repo.</p>
+<p>You can however, move your binary and config file from your host machine to your VM
+using SSH.</p>
+<p>First check if you can reach the NetBox instance from your VM.
+Then simply run this bash script to copy everything else over:</p>
+<pre><code class="language-bash">#!/bin/bash
+
+# Usage: ./copy_to_vm.sh &lt;VM_IP&gt; &lt;VM_USER&gt; &lt;PATH_TO_NAZARA_PROJECT&gt;
+# Example:
+# ./copy_to_vm.sh 192.168.122.123 alice /home/user/Nazara
+
+set -e
+
+VM_IP="$1"
+VM_USER="$2"
+PROJECT_PATH="$3"
+
+if [[ -z "$VM_IP" || -z "$VM_USER" || -z "$PROJECT_PATH" ]]; then
+    echo "Usage: $0 &lt;VM_IP&gt; &lt;VM_USER&gt; &lt;PATH_TO_NAZARA_PROJECT&gt;"
+    exit 1
+fi
+
+NAZARA_BINARY="$PROJECT_PATH/target/release/nazara"
+CONFIG_FILE="/root/.config/nazara/config.toml"
+
+if [[ ! -f "$NAZARA_BINARY" ]]; then
+    echo "Error: Nazara binary not found at $NAZARA_BINARY"
+    exit 1
+fi
+
+if [[ ! -f "$CONFIG_FILE" ]]; then
+    echo "Error: config.toml not found at $CONFIG_FILE"
+    exit 1
+fi
+
+echo "Copying Nazara binary to VM home directory..."
+scp "$NAZARA_BINARY" "$VM_USER@$VM_IP:/home/$VM_USER/"
+
+echo "Copying config file to VM root config directory..."
+ssh "$VM_USER@$VM_IP" "sudo mkdir -p /root/.config/nazara"
+scp "$CONFIG_FILE" "$VM_USER@$VM_IP:/tmp/config.toml"
+ssh "$VM_USER@$VM_IP" "sudo mv /tmp/config.toml /root/.config/nazara/config.toml"
+
+echo "Done!"
+
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="contributing-workflow"><a class="header" href="#contributing-workflow">Contributing Workflow</a></h1>
+<h2 id="setup"><a class="header" href="#setup">Setup</a></h2>
+<ol>
+<li><strong>Fork the project repository</strong> by clicking on the "Fork" button on the project's GitHub page.
+This will create a copy of the repository under your GitHub account.</li>
+<li><strong>Clone your forked repository</strong> to your local machine using the git clone command.
+This will create a local copy of the repository that you can work on.</li>
+<li><strong>Install the project dependencies</strong> by installing <code>libopenssl-dev</code> and <code>libdbus-sys</code> are installed on your system. Both are required by Nazara to compile.</li>
+</ol>
+<div id="admonition-note" class="admonition admonish-note" role="note" aria-labelledby="admonition-note-title">
+<div class="admonition-title">
+<div id="admonition-note-title">
+<p>Note</p>
+</div>
+<a class="admonition-anchor-link" href="contributors/contributing_workflow.html#admonition-note"></a>
+</div>
+<div>
+<p>The names of both of these libraries can vary depending on your distribution. The examples are for openSUSE Tumbleweed.</p>
+</div>
+</div>
+<ol start="4">
+<li><strong>Install and set up pre-commit for code quality checks</strong>. This tool will automatically execute the <code>hooks</code> we implemented
+which will check your code for formatting or styling issue before each commit.</li>
+</ol>
+<div id="admonition-note-1" class="admonition admonish-note" role="note" aria-labelledby="admonition-note-1-title">
+<div class="admonition-title">
+<div id="admonition-note-1-title">
+<p>Note</p>
+</div>
+<a class="admonition-anchor-link" href="contributors/contributing_workflow.html#admonition-note-1"></a>
+</div>
+<div>
+<p>Note: If <code>pre-commit</code> fails on execution, be sure to run <code>cargo format</code> and <code>cargo clippy</code> on your code and fix any issues
+raised by these tools.</p>
+</div>
+</div>
+<h3 id="changing-documentation"><a class="header" href="#changing-documentation">Changing Documentation</a></h3>
+<p>In case you want - or need - to do changes to this documentation, you need to install both <code>mdbook</code> and
+<code>mdbook-admonish</code> via <code>cargo</code>.</p>
+<p>Simply run these commands:</p>
+<pre><code class="language-bash">cargo install mdbook mdbook-admonish
+</code></pre>
+<p>To build the documentation run these commands from the repo's root:</p>
+<pre><code class="language-bash">mdbook build docs &amp;&amp; mdbook serve docs
+</code></pre>
+<p>This will create a local deployment of the documentation at <code>localhost:3000</code> with automatic rebuilds upon change.</p>
+<h2 id="making-changes"><a class="header" href="#making-changes">Making changes</a></h2>
+<p>Once you have set up the project your can start working on your contribution.</p>
+<h3 id="1-create-a-new-branch-for-your-changes"><a class="header" href="#1-create-a-new-branch-for-your-changes">1. Create a new branch for your changes</a></h3>
+<p>Note that working branches should have one of these prefixes.</p>
+<ul>
+<li><code>feature/</code>: For adding new features to Nazara</li>
+<li><code>docs/</code>: For changing documentation</li>
+<li><code>ci/</code>: For CI/CD maintenance</li>
+<li><code>fix/</code>: For bugfixes</li>
+<li><code>dep/</code>: For deprecations</li>
+<li><code>tests/</code>: For branches that add/change tests</li>
+</ul>
+<div id="admonition-example" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-title">
+<div class="admonition-title">
+<div id="admonition-example-title">
+<p>Example</p>
+</div>
+<a class="admonition-anchor-link" href="contributors/contributing_workflow.html#admonition-example"></a>
+</div>
+<div>
+<p>Examples of good or bad branch names would look like this:</p>
+<p><code>feature/add-vm-creation</code>, rather than <code>add-vm</code></p>
+</div>
+</div>
+<h3 id="2-make-meaningful-committs"><a class="header" href="#2-make-meaningful-committs">2. Make meaningful committs</a></h3>
+<p>It is important to pay attention to the scope of your contribution. To this end please only make changes in one Pull Request which are related to your specific contribution.</p>
+<p>This makes it easier for us to review your PR and to keep the commit history clean. (If you encounter something else you want to change,
+which is not directly linked to your contribution, please open a PR on a separate branch for this change.)</p>
+<div id="admonition-hint" class="admonition admonish-tip" role="note" aria-labelledby="admonition-hint-title">
+<div class="admonition-title">
+<div id="admonition-hint-title">
+<p>Hint</p>
+</div>
+<a class="admonition-anchor-link" href="contributors/contributing_workflow.html#admonition-hint"></a>
+</div>
+<div>
+<p>Please refer to our <a href="contributors/../design/002-code_style.html">Code Style Guide</a> to find out how our code should be formatted and documented.</p>
+</div>
+</div>
+<h3 id="3-include-tests-in-your-code"><a class="header" href="#3-include-tests-in-your-code">3. Include tests in your code</a></h3>
+<p>Automated tests are essential to ensure the correctness and reliability of the codebase.
+Therefore <strong>it is required that Pull Requests, which change the existing behaviour of the codebase (e.g by adding features),
+must be covered with tests</strong> by the contributor whenever possible in the same PR as the contribution itself.
+Code without tests might be rejected or take longer to process.</p>
+<h3 id="4-push-your-branch-to-your-fork"><a class="header" href="#4-push-your-branch-to-your-fork">4. <strong>Push your branch to your fork</strong>.</a></h3>
+<h3 id="5-open-a-pr-against-the-main-repository"><a class="header" href="#5-open-a-pr-against-the-main-repository">5. <strong>Open a PR against the main repository</strong>.</a></h3>
+<p>Fill out the PR form and provide a detailed description of what your PR does and the reason or motivation behind the change.</p>
+<div id="admonition-hint-1" class="admonition admonish-tip" role="note" aria-labelledby="admonition-hint-1-title">
+<div class="admonition-title">
+<div id="admonition-hint-1-title">
+<p>Hint</p>
+</div>
+<a class="admonition-anchor-link" href="contributors/contributing_workflow.html#admonition-hint-1"></a>
+</div>
+<div>
+<p>To make it easier for us to process your contribution, <strong>please stick to the PR template</strong>.</p>
+</div>
+</div>
+<h3 id="6-wait-for-ci-to-pass"><a class="header" href="#6-wait-for-ci-to-pass">6. <strong>Wait for CI to pass</strong>.</a></h3>
+<p>Our CI workflows run on pushes and PRs and will check for code quality, format and vulnerabilities. They might also execute all tests they find. It is imperative that all checks
+are green before a contribution is green. Please check and fix any errors the workflows find.</p>
+<h3 id="7-wait-for-review"><a class="header" href="#7-wait-for-review">7. <strong>Wait for review</strong>.</a></h3>
+<p>That's it, now you can, if not already automatically done so, request a review by one of the repository maintainers. We will come back to you as quickly as we can.</p>
+<h2 id="pay-attention-to"><a class="header" href="#pay-attention-to">Pay Attention To</a></h2>
+<ol>
+<li>To ensure that all code is properly formatted, please run <code>cargo format</code> on you code before submitting it. <code>pre-commit</code> will tell you when your code is not properly formatted.</li>
+<li><strong>Documentation is key</strong>. We require, that all code contributions are properly documented not only with commit messages and meaningful PR descriptions, but also that the code itself is properly documented with docstrings. This ensures that new contributors and maintainers alike can navigate their way through the codebase. This has the added benefit that your PR can be accepted much quicker too.</li>
+</ol>
+<div id="admonition-important" class="admonition admonish-tip" role="note" aria-labelledby="admonition-important-title">
+<div class="admonition-title">
+<div id="admonition-important-title">
+<p>Important</p>
+</div>
+<a class="admonition-anchor-link" href="contributors/contributing_workflow.html#admonition-important"></a>
+</div>
+<div>
+<p>For any other questions regarding style, please refer to the <a href="contributors/../design/002-code_style.html">Code Style Guide</a>.</p>
+</div>
+</div>
+<h2 id="introducing-a-dependency"><a class="header" href="#introducing-a-dependency">Introducing a Dependency</a></h2>
+<p>While we would prefer contributors not to introduce new dependencies, we acknowledge that this is not always possible.</p>
+<p>Therefore, please refer to our <a href="contributors/./dependencies.html">Dependency Policy</a> to see which dependencies we accept, and also please be ready
+to explain why introducing this dependency was necessary.</p>
+<h2 id="a-word-on-vulnerabilities"><a class="header" href="#a-word-on-vulnerabilities">A word on vulnerabilities</a></h2>
+<p>If you discover a security vulnerability in our code, please inform us privately immediately according to our <a href="contributors/security.html">Security Policy</a>.</p>
+<p>If you wish to fix a vulnerability, please also inform us and stand by for our green light. We would still like to investigate the vulnerability for ourselves to get an overview over the severity and scope of the problem. <em>Please refrain from publishing a fix until we came back to you or have published a security advisory</em>.</p>
+<h2 id="license-disclaimer"><a class="header" href="#license-disclaimer">License Disclaimer</a></h2>
+<p>By submitting a contribution to The Nazara Project, you agree that your contribution shall be licensed under the same
+license(s) as the project at the time of contribution.</p>
+<p>You also grant the project maintainers the right to relicense the project, including your contribution, under any
+future version of those license(s), or under any other license that is free and open source software (FOSS) and
+compatible with the current license(s).</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="dependencies"><a class="header" href="#dependencies">Dependencies</a></h1>
+<p>To keep Nazara secure, lightweight, and maintainable, we follow a strict policy on introducing external dependencies.</p>
+<p>We only accept external dependencies that meet all of these criteria:</p>
+<ul>
+<li>Are actively maintained</li>
+<li>Are essential to solving the given issue</li>
+<li>Have permissive or at least compatible licenses (MIT, BSD, LGPL, etc.)</li>
+<li>Are reviewed by maintainers before inclusion</li>
+</ul>
+<div id="admonition-info" class="admonition admonish-info" role="note" aria-labelledby="admonition-info-title">
+<div class="admonition-title">
+<div id="admonition-info-title">
+<p>Info</p>
+</div>
+<a class="admonition-anchor-link" href="contributors/dependencies.html#admonition-info"></a>
+</div>
+<div>
+<p>When submitting a PR with a new dependency, please explain why it is needed and why no other alternative was suitable.</p>
+</div>
+</div>
+<h2 id="preferance-guidelines"><a class="header" href="#preferance-guidelines">Preferance Guidelines</a></h2>
+<p>We prefer:</p>
+<ul>
+<li><strong>Standard Library</strong> functionality wherever possible</li>
+<li><strong>Zero-dependency alternatives</strong> over large general-purpose crates</li>
+<li><strong>Lean and well-maintained</strong> crates over obscure or overly complex ones</li>
+</ul>
+<p>The goal is not to avoid dependencies at all ocsts - only to avoid unnecessary, unstable, insecure or high-maintenance ones.</p>
+<div id="admonition-info-1" class="admonition admonish-info" role="note" aria-labelledby="admonition-info-1-title">
+<div class="admonition-title">
+<div id="admonition-info-1-title">
+<p>Info</p>
+</div>
+<a class="admonition-anchor-link" href="contributors/dependencies.html#admonition-info-1"></a>
+</div>
+<div>
+<p>In addition to manual review, we use <code>cargo audit</code> to automatically check, whether our dependencies have known
+vulnerabilities.</p>
+</div>
+</div>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="security-policy"><a class="header" href="#security-policy">Security Policy</a></h1>
+<h2 id="reporting-a-vulnerability"><a class="header" href="#reporting-a-vulnerability">Reporting a Vulnerability</a></h2>
+<p>If you discover a security vulnerability in this project, please report it by emailing the
+<a href="mailto:tiara.dev@proton.me">project owner</a>. Please provide detailed information about the vulnerability,
+including steps to reproduce, possible ways of exploitation and any relevant details about your environment.</p>
+<p>We appreciate responsible disclosure.</p>
+<h2 id="handling-of-vulnerabilities"><a class="header" href="#handling-of-vulnerabilities">Handling of Vulnerabilities</a></h2>
+<p>Once a vulnerability is reported, we will review and prioritize it based on its severity. We aim to have a statement
+ready as soon as possible and provide updates about its status.</p>
+<h2 id="dependency-security"><a class="header" href="#dependency-security">Dependency Security</a></h2>
+<p>We use automated workflows to assess the security of our used dependencies. We recommend to use <code>cargo audit</code> to check
+dependencies which you may be planning to introduce to the project beforehand to avoid your PR to be rejected.</p>
+<h2 id="disclaimer"><a class="header" href="#disclaimer">Disclaimer</a></h2>
+<p>This security policy is subject to change. It is the responsibility of all project contributors and users to stay
+updated on any modifications. By participating in this project, you agree to abide by this security policy.</p>
+<p>Nazara is designed to run only within your local network. The user is responsible for their network setup
+themselves.</p>
+<p>We are not liable for any damages that are caused by insufficient network security. Security Policy</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="becoming-a-packager-1"><a class="header" href="#becoming-a-packager-1">Becoming a Packager</a></h1>
+<p>Projects like Nazara live from people who volunteer to maintain packages for their distributions.</p>
+<p>System settings or security policies may prohibit package managers like <code>cargo</code>, <code>pip</code> or <code>npm</code>
+from installing executables on a system. Or maybe company policies require that all software
+must only come from OS repos, where they can be monitored and audited.</p>
+<p>That's why we need you to help to bring Nazara to new platforms.</p>
+<p>If you have a distribution that we do not provide a package for, please follow these steps.</p>
+<hr />
+<ol>
+<li>
+<p>Open a new discussion stating what you want to package for.</p>
+</li>
+<li>
+<p>Clone the repo and add yourself to the PACKAGERS.md in the project root</p>
+</li>
+</ol>
+<div id="admonition-example" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-title">
+<div class="admonition-title">
+<div id="admonition-example-title">
+<p>Example</p>
+</div>
+<a class="admonition-anchor-link" href="contributors/becoming_packager.html#admonition-example"></a>
+</div>
+<div>
+<p>Your example entry can look like this:</p>
+<div class="table-wrapper"><table><thead><tr><th>Distro</th><th>Name/Nickname</th><th>Contact Info (optional)</th><th>Notes</th></tr></thead><tbody>
+<tr><td>Arch Linux</td><td><code>@urgithub</code></td><td>urmail@domain.com</td><td>AUR maintainer</td></tr>
+<tr><td>NixOS</td><td>Sam</td><td>none (via GitHub issues)</td><td>Maintains Nix flake</td></tr>
+<tr><td>Fedora</td><td>Bob</td><td>@bob:somematrix.org</td><td>Fedora packaging</td></tr>
+</tbody></table>
+</div>
+<p>If you prefer not to share contact details, that's totally fine.
+We will handle requests regarding your package as GitHub issues.</p>
+</div>
+</div>
+<div id="admonition-danger" class="admonition admonish-danger" role="note" aria-labelledby="admonition-danger-title">
+<div class="admonition-title">
+<div id="admonition-danger-title">
+<p>Danger</p>
+</div>
+<a class="admonition-anchor-link" href="contributors/becoming_packager.html#admonition-danger"></a>
+</div>
+<div>
+<p>Outside contributors: Please be aware that we will list your package as <code>unofficial</code>
+until you become part of the organization.</p>
+<p>If you stop maintaining your package, we reserve the right to remove it from our list of supported distributions.</p>
+</div>
+</div>
+<ol start="3">
+<li>
+<p>Open a PR with your changes, and link your request in the PR.</p>
+</li>
+<li>
+<p>A maintainer will eventually approve or deny your request.</p>
+</li>
+</ol>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="maintainer-information"><a class="header" href="#maintainer-information">Maintainer Information</a></h1>
+<p>This section is information for maintainers of the Nazara Project. It documents workflows
+and guides that are okay to be public.</p>
+<ul>
+<li><a href="maintainers/./release_workflow.html">Release Workflow</a></li>
+<li><a href="maintainers/./api_update_workflow.html">API Update Workflow</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="release-workflow"><a class="header" href="#release-workflow">Release Workflow</a></h1>
+<p>When it's time to make a new release of Nazara, this procedure should be followed.</p>
+<details id="admonition-thanix-maintainer-info" class="admonition admonish-info" role="note" aria-labelledby="admonition-thanix-maintainer-info-title">
+<summary class="admonition-title">
+<div id="admonition-thanix-maintainer-info-title">
+<p>Thanix Maintainer Info</p>
+</div>
+<a class="admonition-anchor-link" href="maintainers/release_workflow.html#admonition-thanix-maintainer-info"></a>
+</summary>
+<div>
+<p>Most of this information is also valid for maintainers of Thanix.</p>
+</div>
+</details>
+<h2 id="1-update-all-version-numbers"><a class="header" href="#1-update-all-version-numbers">1. Update all Version numbers</a></h2>
+<p>Make sure to update all version numbers in the following places:</p>
+<ul>
+<li><code>Cargo.toml</code></li>
+<li><code>Nazara.spec</code></li>
+<li><code>README.md</code> (Add to Compatibility List)</li>
+<li><code>docs/src/intro.md</code> (Add to Compatibility List)</li>
+</ul>
+<h3 id="11-version-numbers"><a class="header" href="#11-version-numbers">1.1 Version Numbers</a></h3>
+<p>We generally orient ourselves along the lines of semantic versioning.
+The following guidelines apply for versioning:</p>
+<ul>
+<li><strong>Patch Versions</strong>: Smaller changes/updates/bugfixes without updates to the API client</li>
+<li><strong>Minor Versions</strong>: Updates to the API client without major reworks/breaking changes</li>
+<li><strong>Major Versions</strong>: Breaking Changes with the API client <strong>OR</strong> completion of a large feature
+that significantly impacts Nazara's behaviour or expands scope.</li>
+</ul>
+<div id="admonition-info" class="admonition admonish-info" role="note" aria-labelledby="admonition-info-title">
+<div class="admonition-title">
+<div id="admonition-info-title">
+<p>Info</p>
+</div>
+<a class="admonition-anchor-link" href="maintainers/release_workflow.html#admonition-info"></a>
+</div>
+<div>
+<p>In the end, decisions about versioning are made by the core maintainers.
+When in doubt, <a href="mailto:tiara.dev@proton.me">shoot an email to the project owner</a>.</p>
+</div>
+</div>
+<h2 id="2-tag-new-version"><a class="header" href="#2-tag-new-version">2. Tag New Version</a></h2>
+<p>Tag a new version on the latest commit on the <code>main</code> branch.</p>
+<pre><code class="language-bash">$ git tag -a v0.1.0_beta.1 -m "v0.1.0_beta.1: Feature X"
+$ git push $REMOTE v0.1.0_beta.1
+</code></pre>
+<p><code>$REMOTE</code> here is the name of the upstream Nazara remote. By default, when cloning upstream, it's <code>origin</code>.</p>
+<h2 id="3-build-and-publish-to-cratesio"><a class="header" href="#3-build-and-publish-to-cratesio">3. Build and Publish to <code>crates.io</code></a></h2>
+<div id="admonition-info-1" class="admonition admonish-info" role="note" aria-labelledby="admonition-info-1-title">
+<div class="admonition-title">
+<div id="admonition-info-1-title">
+<p>Info</p>
+</div>
+<a class="admonition-anchor-link" href="maintainers/release_workflow.html#admonition-info-1"></a>
+</div>
+<div>
+<p>We always release to <a href="https://crates.io/crates/nazara">crates.io</a> first.</p>
+</div>
+</div>
+<p>Publish the newest version of Nazara to <a href="https://crates.io/crates/Nazara">crates.io</a>.</p>
+<pre><code class="language-bash">$ cargo publish
+</code></pre>
+<div id="admonition-warning" class="admonition admonish-warning" role="note" aria-labelledby="admonition-warning-title">
+<div class="admonition-title">
+<div id="admonition-warning-title">
+<p>Warning</p>
+</div>
+<a class="admonition-anchor-link" href="maintainers/release_workflow.html#admonition-warning"></a>
+</div>
+<div>
+<p>In order to be able to publish new versions, you must be given permissions to do so first.
+If the publishing fails, please reach out to the Project Owner.</p>
+</div>
+</div>
+<h2 id="4-create-a-new-release"><a class="header" href="#4-create-a-new-release">4. Create a New Release</a></h2>
+<p>The next step includes creating a new Release via the VC Web UI.</p>
+<p>To do so, follow these steps:</p>
+<ul>
+<li><input disabled="" type="checkbox"/>
+Select latest tag</li>
+<li><input disabled="" type="checkbox"/>
+Select previous tag (if not already done automatically)</li>
+<li><input disabled="" type="checkbox"/>
+Press "Generate Release Notes" and split into <code>Added</code>, <code>Fixed</code>, <code>Removed</code> sections
+as it seems fitting</li>
+<li><input disabled="" type="checkbox"/>
+Describe the core changes of this release in a short <code>What's new?</code> section at the top</li>
+<li><input disabled="" type="checkbox"/>
+Manually build a <code>.deb</code> package using <code>cargo deb</code> and attach that and the release
+binary to the Release for people who want to manually download it</li>
+<li><input disabled="" type="checkbox"/>
+Hit "Create Release"</li>
+</ul>
+<h2 id="5-updating-distribution-packages"><a class="header" href="#5-updating-distribution-packages">5. Updating Distribution Packages</a></h2>
+<p>-- Coming Soon --</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="api-update-workflow"><a class="header" href="#api-update-workflow">API Update Workflow</a></h1>
+<p>From time to time, it can happen that Nazara becomes incompatible with the newest NetBox release.</p>
+<p>Follow these steps in order to bring Nazara up to speed again.</p>
+<p>To do this, you will need to install <code>Thanix</code> and clone the <a href="https://codeberg.org/nazara-project/thanix_client"><code>thanix_client</code> repository</a>.</p>
+<h2 id="1-create-version-branch"><a class="header" href="#1-create-version-branch">1. Create Version Branch</a></h2>
+<p>The first thing we do, is <strong>lock the current version into a new branch</strong>.
+This ensures we have a fallback, and allows users to patch the version that may still be
+compatible to their running NetBox instance.</p>
+<p>To do this, use this format:</p>
+<pre><code class="language-bash">$ git checkout -b version/alpha-2
+</code></pre>
+<p>Or for full release versions:</p>
+<pre><code class="language-bash">$ git checkout -b version/vX.Y.Z
+</code></pre>
+<h2 id="2-update-thanix_client"><a class="header" href="#2-update-thanix_client">2. Update <code>thanix_client</code></a></h2>
+<p><code>thanix_client</code> is the crate we use to handle API requests to and from NetBox.
+It is generated by <a href="https://codeberg.org/nazara-project/Thanix">Thanix</a> using the current upstream NetBox API schema.</p>
+<h3 id="21-get-the-latest-api-schema"><a class="header" href="#21-get-the-latest-api-schema">2.1 Get the latest API schema</a></h3>
+<p><a href="https://demo.netbox.dev/api/schema">Get the latest API schema YAML</a> (Download may take a couple seconds)</p>
+<h3 id="22-generate-new-thanix_client-crate"><a class="header" href="#22-generate-new-thanix_client-crate">2.2 Generate new <code>thanix_client</code> crate</a></h3>
+<p>Throw the downloaded YAML file into <code>Thanix</code> to generate a new crate. You will get a new directory
+wherever you executed it containing a completely new <code>thanix_client</code> repo.</p>
+<p><strong>Take the <code>src</code> directory from that output and copy it</strong>, in its entirety, into the <code>thanix_client</code> repository
+you cloned from GitHub. If prompted, agree to overtwrite all existing files.</p>
+<p><strong>Update the version numbers in <code>thanix_client</code> accordingly</strong>.</p>
+<p>Test build the crate by running:</p>
+<pre><code>$ cargo build --release
+</code></pre>
+<p>This may take a while depending on your system.
+If all is good, publish it to <a href="https://crates.io/crates/thanix_client">crates.io</a>:</p>
+<pre><code class="language-bash">$ cargo publish
+</code></pre>
+<h2 id="3-perform-port-of-nazara"><a class="header" href="#3-perform-port-of-nazara">3. Perform Port of Nazara</a></h2>
+<p>First thing you need to do is to update the <code>thanix_client</code> version number in Nazara's Cargo.toml file.</p>
+<p>It is almost guaranteed that Nazara won't build after updating that API client.
+This means that you have to go and fix all the issues that arise. Most likely these will be linked to the payloads
+and their corresponding fields (like it was moving from 3.x to 4.x).</p>
+<p>You will have to fix these in order to fully port Nazara to the newest NetBox version.</p>
+<h2 id="4-follow-release-workflow"><a class="header" href="#4-follow-release-workflow">4. Follow Release Workflow</a></h2>
+<p>Ports of the API client like these are <strong>always a separate minor release</strong>.</p>
+<p>After the codebase is updated, and has been tested and verified and the associated PRs merged, a new release
+will have to be created.</p>
+<p>For this, <a href="maintainers/./release_workflow.html">follow the release workflow</a>.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="user-documentation"><a class="header" href="#user-documentation">User Documentation</a></h1>
+<p>This documentation is supposed to help you get started with Nazara.</p>
+<div id="admonition-danger" class="admonition admonish-danger" role="note" aria-labelledby="admonition-danger-title">
+<div class="admonition-title">
+<div id="admonition-danger-title">
+<p>Danger</p>
+</div>
+<a class="admonition-anchor-link" href="users/index.html#admonition-danger"></a>
+</div>
+<div>
+<p>Nazara requires <code>root</code> privileges to function!</p>
+</div>
+</div>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="installing-nazara"><a class="header" href="#installing-nazara">Installing Nazara</a></h1>
+<p>You can install Nazara in a bunch of different ways.
+Our recommended solutions is to either get it from <a href="https://crates.io/crates/nazara"><code>crates.io</code></a>, or
+build the latest release from source yourself.</p>
+<div id="admonition-native-packages" class="admonition admonish-info" role="note" aria-labelledby="admonition-native-packages-title">
+<div class="admonition-title">
+<div id="admonition-native-packages-title">
+<p>Native Packages</p>
+</div>
+<a class="admonition-anchor-link" href="users/install.html#admonition-native-packages"></a>
+</div>
+<div>
+<p>We are currently working on building distribution packages in the future with the first ones being
+targeted at openSUSE Tumbleweed, Slowroll, Leap and SLES16.</p>
+<p>If you would like to build a package for your distribution, please <a href="users/../contributors/becoming_packager.html">refer to our packager's guide</a>.</p>
+</div>
+</div>
+<h2 id="installing-via-cratesio"><a class="header" href="#installing-via-cratesio">Installing via <code>crates.io</code></a></h2>
+<p>To install Nazara via Rust's package index, make sure you have <code>cargo</code> and a current Rust toolchain installed.</p>
+<p>Then in your Terminal, run</p>
+<pre><code class="language-bash">cargo install --locked nazara
+</code></pre>
+<p>After installation you should be able to run Nazara just like you would any other program. If it doesn't work, it is likely
+that cargo's bin directory is not in your path. Refer to cargo's documentation for help with that problem.</p>
+<h2 id="building-from-source"><a class="header" href="#building-from-source">Building from Source</a></h2>
+<p>For this, please make sure you have cargo, <code>libopenssl</code> and a current Rust toolchain installed. (The last of which should be
+compatible with Rust edition <code>2024</code>).</p>
+<p>Simply clone the repository and run <code>cargo build</code> to build it yourself.</p>
+<pre><code class="language-bash">git clone https://github.com/The-Nazara-Project/Nazara &amp;&amp; cd Nazara
+cargo build --release
+</code></pre>
+<p>This process may take a while, mainly thanks to our API client library
+<a href="https://codeberg.org/nazara-project/thanix_client">thanix_client</a>.</p>
+<p>Once completed you have a portable binary at <code>./target/release/nazara</code>.</p>
+<h2 id="native-packages"><a class="header" href="#native-packages">Native Packages</a></h2>
+<p>We are currently at work to provide native Linux packages starting with the openSUSE family of Linux distributions.</p>
+<p>Once we make progress on this front, you will find this information here.</p>
+<h3 id="release-attachments"><a class="header" href="#release-attachments">Release Attachments</a></h3>
+<p>We currently provide a pre-built binary as well as a Debian package attached to the latest release
+and also plan on attaching these to every release going forward as an easy way to download and install Nazara.</p>
+<p>Visit <a href="https://codeberg.org/nazara-project/Nazara/releases">our release page</a> to find these for yourself.</p>
+<h4 id="installing-the-deb-package"><a class="header" href="#installing-the-deb-package">Installing the .deb Package</a></h4>
+<p>To install the <code>.deb</code> package you downloaded from the Release, use the <code>dpkg</code> command.</p>
+<pre><code class="language-bash">sudo dpkg -i nazara_0.1.0-1_amd64.deb
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="configuration"><a class="header" href="#configuration">Configuration</a></h1>
+<p>Nazara supports two ways of providing configuration parameters: CLI arguments and a configuration file.</p>
+<p>Nazara accepts these parameters from you:</p>
+<ul>
+<li><code>-d, --dry-run</code>: Print all collected information without committing it to NetBox.</li>
+<li><code>-u, --uri &lt;URI&gt;</code>: URI to your NetBox instance.</li>
+<li><code>-t, --token &lt;TOKEN&gt;</code>: Your API authentication token.</li>
+<li><code>-p, --plugin &lt;PLUGIN&gt;</code>: The path to a plugin script you want to use to fill in custom fields.</li>
+<li><code>-h, --help</code>: Print help.</li>
+<li><code>-V, --version</code>: Print version.</li>
+</ul>
+<p>Afterwards, Nazara expects one of the following operation types to be specified:</p>
+<ul>
+<li><code>register</code>: Register a new device or vm in NetBox.</li>
+<li><code>update --id &lt;device_id&gt;</code>: To update an existing device or vm.</li>
+<li><code>auto</code>: Let Nazara decide based on the machine's name and serial number whether
+registration or update is needed.</li>
+</ul>
+<h2 id="configuring-via-cli"><a class="header" href="#configuring-via-cli">Configuring via CLI</a></h2>
+<p>Here is an example for passing these parameters on using the CLI:</p>
+<pre><code class="language-bash">sudo nazara --uri &lt;API_URL&gt; --token &lt;API_TOKEN&gt; &lt;OPERATION&gt; . . .
+</code></pre>
+<p>When launching Nazara for the first time, a configuration file will be written at <code>$HOME/.config/nazara/config.toml</code>.
+You can use CLI parameters to override your settings in the config file.</p>
+<h2 id="configuring-via-toml-file-recommended"><a class="header" href="#configuring-via-toml-file-recommended">Configuring via TOML file (recommended)</a></h2>
+<p>Nazara's configuration must be located in the root user's home directory at <code>$HOME/.config/nazara/config.toml</code>.</p>
+<p>When launching Nazara for the first time, it will write a stock config file to that path. Certain parameters are
+required to be configured there manually.</p>
+<p>Aside from the NetBox system parameters, configuration via the <code>config.toml</code> also allows you to add certain
+custom fields to your system information that cannot be automatically collected.
+Please check the example file below for exact information about which options are possible.</p>
+<div id="admonition-note" class="admonition admonish-note" role="note" aria-labelledby="admonition-note-title">
+<div class="admonition-title">
+<div id="admonition-note-title">
+<p>Note</p>
+</div>
+<a class="admonition-anchor-link" href="users/configuration.html#admonition-note"></a>
+</div>
+<div>
+<p>Currently, configuration by config file is the proper way to use Nazara given the amount of data required to register
+a machine.
+We are investigating possibilities to make this less of a hassle. In the meantime, we suggest you copy-paste the
+config between machines of the same type and function.</p>
+</div>
+</div>
+<pre><code class="language-toml"># Template nazara-config.toml file for v0.1.0-beta.3
+
+# Configuration parameters for the NetBox connection
+[netbox]
+netbox_api_token = ""
+netbox_uri = ""
+
+# Common settings that always have to be provided.
+[common]
+# Custom name of the device or VM. (optional, fallback: hostname)
+# You can concatenate this name with the hostname by ending it with '@'.
+name = ""
+description = ""
+# A comment left by Nazara if anything gets modified by it.
+comments = "Automatically registered by Nazara."
+# The current status of the device/VM.
+status = "active"
+# The IP you want to set as primary (optional)
+primary_ip4 = ""
+primary_ip6 = ""
+
+# ---------------------------------------------------------------
+# Use [device] for devices, or [vm] if this is a virtual machine.
+# ---------------------------------------------------------------
+
+# [device]
+# device_type = 0
+# role = 0
+# site = 0
+
+# [vm]
+# cluster = 0
+</code></pre>
+<p>For VMs, the <code>name</code> parameter <strong>is required</strong> to be able to distinguish them cleanly.</p>
+<div id="admonition-tip" class="admonition admonish-tip" role="note" aria-labelledby="admonition-tip-title">
+<div class="admonition-title">
+<div id="admonition-tip-title">
+<p>Tip</p>
+</div>
+<a class="admonition-anchor-link" href="users/configuration.html#admonition-tip"></a>
+</div>
+<div>
+<p>The <code>name</code> parameter is optional for devices. If left empty, Nazara will assume the system's hostname as the name
+value for the entry. You can combine both your custom name and the machine's hostname by fixing a <code>@</code>
+symbol to the end of the name value. This works on both VMs and devices.</p>
+<p>This way a config entry like this:</p>
+<pre><code class="language-toml">[common]
+name = "aurora@"
+</code></pre>
+<p>turns into:</p>
+<pre><code class="language-toml">aurora@linux.fritz.box
+</code></pre>
+<p>in the final entry.</p>
+</div>
+</div>
+<h3 id="the-config-commands"><a class="header" href="#the-config-commands">The <code>config</code> commands</a></h3>
+<p>Nazara provides you with several commands to manage your configuration files:</p>
+<ul>
+<li><code>write-config</code>: Write a new config file or overwrite an existing one.</li>
+<li><code>check-config</code>: Validate if your config is still valid.</li>
+<li><code>view-config</code>: Print config to console.</li>
+</ul>
+<p>The <code>write-config</code> allows you to change individual parameters, or perform a bulk
+update by passing a <code>JSON</code> structure via CLI. <strong>These options are exclusive.
+Passing both is disallowed.</strong></p>
+<p>For further information on how to configure Nazara, run <code>nazara --help</code> or visit
+<a href="https://nazara-project.codeberg.page/Nazara">our documentation</a>.</p>
+<p><em>Please note that this section is still a work in progress and all information is subject to change.</em></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="registering-a-device-or-vm"><a class="header" href="#registering-a-device-or-vm">Registering a Device or VM</a></h1>
+<p>Registering a device with Nazara is as straight forward as
+<a href="users/./configuration.html">setting up the config file</a> and running
+a simple command.</p>
+<div id="admonition-info" class="admonition admonish-info" role="note" aria-labelledby="admonition-info-title">
+<div class="admonition-title">
+<div id="admonition-info-title">
+<p>Info</p>
+</div>
+<a class="admonition-anchor-link" href="users/registration.html#admonition-info"></a>
+</div>
+<div>
+<p>Please make sure you have <code>sudo</code> privileges on the machine or VM you want to register, otherwise
+DMI information collection <strong>will fail</strong>.</p>
+</div>
+</div>
+<h2 id="example-registration-workflow-physical-device"><a class="header" href="#example-registration-workflow-physical-device">Example Registration Workflow (Physical Device)</a></h2>
+<p>On a physical device, a example registration workflow may look like this:</p>
+<h3 id="1-set-up-configuration"><a class="header" href="#1-set-up-configuration">1. Set up Configuration</a></h3>
+<p>The user wrote a configuration file at <code>/root/.config/nazara/config.toml</code></p>
+<details id="admonition-example-device-config" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-device-config-title">
+<summary class="admonition-title">
+<div id="admonition-example-device-config-title">
+<p>Example: Device Config</p>
+</div>
+<a class="admonition-anchor-link" href="users/registration.html#admonition-example-device-config"></a>
+</summary>
+<div>
+<pre><code class="language-toml"># Configuration parameters for the NetBox connection
+[netbox]
+netbox_api_token = "XXXXXXXX"
+netbox_uri = "https://netbox.organisation.com"
+
+# Common settings that always have to be provided
+[common]
+# The name of the device/VM
+name = "user@"
+description = ""
+# A comment left by Nazara if anything gets modified by it.
+comments = "Automatically registered by Nazara."
+# The current status of the device/VM
+status = "active"
+primary_ip4 = "192.168.0.1"
+primary_ip6 = ""
+
+# ---------------------------------------------------------------
+# Use [device] for devices, or [vm] if this is a virtual machine.
+# ---------------------------------------------------------------
+
+[device]
+device_type = 1
+role = 1
+site = 1
+</code></pre>
+<p>The configuration file for a VM looks quite similarly. For a list
+of allowed config parameters, please refer to our <a href="https://codeberg.org/nazara-project/Nazara/src/branch/main/src/configuration/config_template.toml">template</a>.</p>
+<p>You can verify the integrity of your config by running <code>nazara check-config</code>.</p>
+</div>
+</details>
+<h3 id="2-run-nazara-register"><a class="header" href="#2-run-nazara-register">2. Run <code>nazara register</code></a></h3>
+<p>To register your device, simply run</p>
+<pre><code class="language-bash">nazara register
+</code></pre>
+<h3 id="common-issues"><a class="header" href="#common-issues">Common Issues</a></h3>
+<h4 id="toml-deserialization-error"><a class="header" href="#toml-deserialization-error">TOML Deserialization Error</a></h4>
+<p>This is most likely an issue with your config file.
+Make sure it has correct TOML syntax and all the fields
+specified in the template are present in your example.</p>
+<h4 id="unexpected-response"><a class="header" href="#unexpected-response">Unexpected Response</a></h4>
+<p>We know this output is ugly but please bear with us we are on it.
+Check the output for a status code:</p>
+<ul>
+<li><strong>400 - Bad Request</strong>:
+This usually means that Nazara's payload was rejected by NetBox. Most commonly
+this means that you want to assign this device to a role, device type or site
+that does not exist (invalid ID). It can also mean that the device already exists
+so check if a device with the configured name has already been registered.</li>
+</ul>
+<h4 id="file-op-error"><a class="header" href="#file-op-error">File OP error</a></h4>
+<p>This usually indicates that Nazara cannot open the config file at <code>/root/.config/nazara/config.toml</code>
+it's either missing, or you forgot to run Nazara as root.</p>
+<div id="admonition-any-missing" class="admonition admonish-bug" role="note" aria-labelledby="admonition-any-missing-title">
+<div class="admonition-title">
+<div id="admonition-any-missing-title">
+<p>Any missing?</p>
+</div>
+<a class="admonition-anchor-link" href="users/registration.html#admonition-any-missing"></a>
+</div>
+<div>
+<p>You have issues with registering your device and don't know how to proceed?</p>
+<p>This could be a bug! Please <a href="http://codeberg.org/nazara-project/Nazara/issues">report it</a>.</p>
+</div>
+</div>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="updating-a-device-or-vm"><a class="header" href="#updating-a-device-or-vm">Updating a Device or VM</a></h1>
+<p>If you have already registered you Device or VM
+in NetBox, you can update the entry using the
+<code>nazara update</code> command.</p>
+<p>For this, you need to check if your configuration is still valid and
+up-to-date. Use the <code>write-config</code> command to change the info
+you want to update.</p>
+<div id="admonition-info" class="admonition admonish-info" role="note" aria-labelledby="admonition-info-title">
+<div class="admonition-title">
+<div id="admonition-info-title">
+<p>Info</p>
+</div>
+<a class="admonition-anchor-link" href="users/update.html#admonition-info"></a>
+</div>
+<div>
+<p>This process <strong>also requires <code>sudo</code> privileges</strong>, please
+make sure you have them before attempting an update.</p>
+<p>This command will try to update <strong>any information</strong>
+that has been changed in a PATCH request.
+Information that has not changed will not be touched.</p>
+</div>
+</div>
+<h2 id="example-updating-workflow-physical-device"><a class="header" href="#example-updating-workflow-physical-device">Example Updating Workflow (Physical Device)</a></h2>
+<h3 id="1-update-configuration-file"><a class="header" href="#1-update-configuration-file">1. Update Configuration File</a></h3>
+<p>Make sure your config file at <code>/root/.config/nazara/config.toml</code>
+is up to date.</p>
+<p>If you want to change any parameter you can do so by using the
+<code>write-config</code> command.</p>
+<p>For example, we want to switch the device's site from <code>id=1</code> to <code>id=2</code>.</p>
+<pre><code class="language-bash">sudo nazara write-config --site 2
+</code></pre>
+<p>This will update the entry in the configuration file.</p>
+<h3 id="2-update-the-entry"><a class="header" href="#2-update-the-entry">2. Update the Entry</a></h3>
+<p>Now, to update the entry, go and get the entry's ID from NetBox.
+You can see it in the URL of your browser. In our case:
+<code>http://localhost:8000/dcim/devices/57/</code> (device id: 57)</p>
+<p>Then simply run</p>
+<pre><code>sudo nazara update --id 57
+</code></pre>
+<p>This will then update the entry for you.</p>
+<h3 id="common-issues-1"><a class="header" href="#common-issues-1">Common Issues</a></h3>
+<h4 id="ip-xxxx-has-not-been-registered-in-netbox"><a class="header" href="#ip-xxxx-has-not-been-registered-in-netbox">IP "X.X.X.X" has not been registered in NetBox</a></h4>
+<p>This is a common issue with environments that use DHCP
+with frequently changing IP addresses. In this case the new IP address
+has not been registered with NetBox beforehand, so there is no IP entry to update.</p>
+<p>In this case, you must register that new IP manually in NetBox
+as the update process is forbidden from doing so.</p>
+<p>Alternatively, you can delete and re-register the device.¹</p>
+<p>We are actively working on a managed mode that forbids Nazara's
+IP management alltogether in cases where you have a different source
+of truth for them.</p>
+<small>
+¹ Not recommended if you touch your device entries manually.
+</small>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="the-plugin-system"><a class="header" href="#the-plugin-system">The Plugin System</a></h1>
+<div id="admonition-warning" class="admonition admonish-warning" role="note" aria-labelledby="admonition-warning-title">
+<div class="admonition-title">
+<div id="admonition-warning-title">
+<p>Warning</p>
+</div>
+<a class="admonition-anchor-link" href="users/plugins.html#admonition-warning"></a>
+</div>
+<div>
+<p>This feature is highly experimental, but should work fine for simple custom fields.</p>
+</div>
+</div>
+<p>Nazara allows you to fill out the "Custom Fields" section of your device or VM entries by using
+a custom bash script.</p>
+<p>This bash script should return your desired information as JSON compliant string.</p>
+<div id="admonition-using-custom-scripts-with-nazara" class="admonition admonish-example" role="note" aria-labelledby="admonition-using-custom-scripts-with-nazara-title">
+<div class="admonition-title">
+<div id="admonition-using-custom-scripts-with-nazara-title">
+<p>Using custom scripts with Nazara</p>
+</div>
+<a class="admonition-anchor-link" href="users/plugins.html#admonition-using-custom-scripts-with-nazara"></a>
+</div>
+<div>
+<p>To do so, you can provide Nazara with the path to your custom script using the <code>--plugin</code> argument.</p>
+<pre><code class="language-bash">nazara --plugin ~/.config/nazara/scripts/custom_script.sh register
+</code></pre>
+<p>Nazara will run your script and expect to get a JSON string back, which will be parsed into a
+<code>HashMap&lt;String, Value&gt;</code></p>
+<p>Note, that we currently <strong>only support parameters which have been specified in NetBox as string type.</strong></p>
+</div>
+</div>
+<p>You can find an example script <a href="https://codeberg.org/nazara-project/Nazara/src/branch/main/scripts/example.sh">here</a>.</p>
+<div id="admonition-danger" class="admonition admonish-danger" role="note" aria-labelledby="admonition-danger-title">
+<div class="admonition-title">
+<div id="admonition-danger-title">
+<p>Danger</p>
+</div>
+<a class="admonition-anchor-link" href="users/plugins.html#admonition-danger"></a>
+</div>
+<div>
+<p>Please make sure that your script models the custom fields exactly like they are in your NetBox
+instance, as we have no way of verifying it.</p>
+</div>
+</div>
+
+                        </div>
+                        <div id="sidetoc">
+                            <nav id="pagetoc"></nav>
+                        </div>
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="theme/pagetoc.js"></script>
+
+        <script>
+        window.addEventListener('load', function() {
+            MathJax.Hub.Register.StartupHook('End', function() {
+                window.setTimeout(window.print, 100);
+            });
+        });
+        </script>
+
+    </div>
+    </body>
+</html>
