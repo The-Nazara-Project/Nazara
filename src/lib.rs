@@ -6,7 +6,7 @@
 //! for existing ones.
 //!
 //! > Note: Nazara is currently in an alpha state. Bugs are bound to happen. If you encounter any,
-//!> please [report them](https://github.com/The-Nazara-Project/Nazara/issues)
+//!> please [report them](https://codeberg.org/nazara-project/Nazara/issues)
 //! >
 //! > Furthermore, *Nazara currently does not fully support custom fields for any NetBox object*.
 //!> Though this is the next item on our agenda.
@@ -23,7 +23,7 @@
 //! Once you have everything installed, you can clone this repository and build the program by running the following commands:
 //!
 //! ```bash
-//! git clone https://github.com/The-Nazara-Project/Nazara.git
+//! git clone https://codeberg.org/nazara-project/Nazara.git
 //! cd Nazara
 //! cargo build --release
 //! ```
@@ -252,10 +252,10 @@ impl Nazara {
     ██║╚██╗██║██╔══██║ ███╔╝  ██╔══██║██╔══██╗██╔══██║
     ██║ ╚████║██║  ██║███████╗██║  ██║██║  ██║██║  ██║
     ╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝
-    (c) Tiara Hock aka ByteOtter. (github.com/ByteOtter)
+    (c) Tiara Hock aka BytePaws. (codeberg.org/BytePaws)
 
     Licensed under the terms of the GPL-v3.0 License.
-    Check github.com/The-Nazara-Project/Nazara/LICENSE for more info.
+    Check https://codeberg.org/nazara-project/Nazara/src/branch/main/LICENSE for more info.
 "#;
         println!("{ASCII_ART}");
     }

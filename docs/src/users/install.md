@@ -33,7 +33,7 @@ compatible with Rust edition `2024`).
 Simply clone the repository and run `cargo build` to build it yourself.
 
 ```bash
-git clone https://github.com/The-Nazara-Project/Nazara && cd Nazara
+git clone https://codeberg.org/nazara-project/Nazara && cd Nazara
 cargo build --release
 ```
 

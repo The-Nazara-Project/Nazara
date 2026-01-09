@@ -57,7 +57,7 @@ Once you have everything installed, you can clone this repository and build the
 program by running the following commands:
 
 ```bash
-git clone https://github.com/The-Nazara-Project/Nazara.git
+git clone https://codeberg.org/nazara-project/Nazara.git
 cd Nazara
 cargo build --release
 ```
@@ -66,11 +66,11 @@ This will create an executable file in the `target/release` directory.
 
 > [!Important] Running Nazara stock will cause it to use our NetBox API
 > reference client library
-> [`thanix_client`](https://github.com/The-Nazara-Project/thanix_client). This
+> [`thanix_client`](https://codeberg.org/nazara-project/thanix_client). This
 > client was generated from the API spec of a stock NetBox instance (1.x from
 > NetBox v3.6.9 and 2.x from NetBox 4.1.0). If you encounter API request issues
 > with your NetBox instance, you may need to generate your own using
-> [`Thanix`](https://github.com/The-Nazara-Project/Thanix).
+> [`Thanix`](https://codeberg.org/nazara-project/Thanix).
 
 ## Installation via `crates.io`
 
@@ -142,7 +142,7 @@ update by passing a `JSON` structure via CLI. **These options are exclusive.
 Passing both is disallowed.**
 
 For further information on how to configure Nazara, run `nazara --help` or visit
-[our documentation](https://the-nazara-project.github.io/Nazara/users/configuration.html).
+[our documentation](https://nzara-project.codeberg.page/Nazara/users/configuration.html).
 
 ## Configuring via `$HOME/.config/nazara/config.toml` (recommended)
 

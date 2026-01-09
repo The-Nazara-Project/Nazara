@@ -19,7 +19,7 @@ Version:        0.1.0
 Release:        0
 Summary:        Automated registration and update of machines and VMs in NetBox
 License:        GPL-3.0
-URL:            https://github.com/The-Nazara-Project/Nazara
+URL:            https://codeberg.org/nazara-project/Nazara
 Source0:        Nazara-%{version}.tar.zst
 Source1:        vendor.tar.zst
 BuildRequires:  git
