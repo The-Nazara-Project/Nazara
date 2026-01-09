@@ -29,7 +29,7 @@ to its own branch and tagged accordingly.
 Maintenance work on these older versions is not planned currently.
 
 ```admonish warning
-Nazara was developed for and on Linux systems. We have no plans to support Windows or Mac in the foreeable future.
+Nazara was developed for and on Linux systems. We have no plans to support Windows or Mac in the forseeable future.
 If you would like to add support for this, please open a discussion in our GitHub repository.
 ```
 
