@@ -1,14 +1,12 @@
-when:
-  branch:
-    - main
-    - pages
-  event:
-    - push
-    - manual # workflow_dispatch equivalent
-
 steps:
-  build-docs:
+  - name: build-docs
     image: codeberg.org/nazara-project/actions/mdbook-ci-nazara:0.4.51
+    when:
+      branch:
+        - main
+      event:
+        - push
+        - manual
     commands:
       - git fetch origin main --depth=2 || git fetch origin main --unshallow
       - |
@@ -20,8 +18,14 @@ steps:
         fi
       - mdbook build docs
 
-  deploy-pages:
+  - name: deploy-pages
     image: codeberg.org/xfix/plugin-codeberg-pages-deploy:1
+    when:
+      branch:
+        - main
+      event:
+        - push
+        - manual
     settings:
       folder: docs/book
       ssh_key:
