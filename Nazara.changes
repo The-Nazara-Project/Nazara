@@ -1,4 +1,13 @@
 -------------------------------------------------------------------
+Tue Jan 13 08:58:02 UTC 2026 - Tiara Hock <tiara.dev@proton.me>
+
+- 0.1.1
+    * Fix check-config output to accurately report successful config read
+    * Update dependencies to latest compatible version
+    * Migrate CI and documentation to Codeberg
+    * Update all documentation links to new codeberg address
+
+-------------------------------------------------------------------
 Sat Nov 13 16:58:02 UTC 2025 - Tiara Hock <tiara.dev@proton.me>
 
 - 0.1.0
