@@ -131,7 +131,7 @@
                         <a href="print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
-                        <a href="https://github.com/The-Nazara-Project/Nazara" title="Git repository" aria-label="Git repository">
+                        <a href="https://codeberg.org/nazara-project/Nazara" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
 
@@ -184,7 +184,8 @@ of Nazara is compatible with which version of NetBox (and if we still support it
 versions of NetBox happen - which usually includes breaking changes - the old version of Nazara will be moved
 to its own branch and tagged accordingly.</p>
 <div class="table-wrapper"><table><thead><tr><th>Nazara Version</th><th>NetBox Version</th><th>Branch</th><th>maintained?</th></tr></thead><tbody>
-<tr><td><code>v0.1.0</code></td><td><code>v4.3.x</code>, <code>v4.4.x</code> and newer</td><td><code>main</code></td><td>yes</td></tr>
+<tr><td><code>v0.1.1</code></td><td><code>v4.3.x</code>, <code>v4.4.x</code>, <code>4.5.x</code></td><td><code>main</code></td><td>yes</td></tr>
+<tr><td><code>v0.1.0</code></td><td><code>v4.3.x</code>, <code>v4.4.x</code> and newer</td><td><code>version/0.1.0</code></td><td>no</td></tr>
 <tr><td><code>v0.1.0_beta.3</code></td><td><code>v4.3.x</code>, <code>v4.4.x</code> and newer</td><td><code>version/beta-3</code></td><td>no</td></tr>
 <tr><td><code>v0.1.0_beta.2</code></td><td><code>v4.3.x</code>, <code>v4.4.x</code></td><td><code>version/beta-2</code></td><td>no</td></tr>
 <tr><td><code>v0.1.0_beta.1</code></td><td><code>v4.3.x</code></td><td><code>version/beta-1</code></td><td>no</td></tr>
@@ -200,7 +201,7 @@ to its own branch and tagged accordingly.</p>
 <a class="admonition-anchor-link" href="intro.html#admonition-warning"></a>
 </div>
 <div>
-<p>Nazara was developed for and on Linux systems. We have no plans to support Windows or Mac in the foreeable future.
+<p>Nazara was developed for and on Linux systems. We have no plans to support Windows or Mac in the forseeable future.
 If you would like to add support for this, please open a discussion in our GitHub repository.</p>
 </div>
 </div>
@@ -1387,7 +1388,7 @@ that cargo's bin directory is not in your path. Refer to cargo's documentation f
 <p>For this, please make sure you have cargo, <code>libopenssl</code> and a current Rust toolchain installed. (The last of which should be
 compatible with Rust edition <code>2024</code>).</p>
 <p>Simply clone the repository and run <code>cargo build</code> to build it yourself.</p>
-<pre><code class="language-bash">git clone https://github.com/The-Nazara-Project/Nazara &amp;&amp; cd Nazara
+<pre><code class="language-bash">git clone https://codeberg.org/nazara-project/Nazara &amp;&amp; cd Nazara
 cargo build --release
 </code></pre>
 <p>This process may take a while, mainly thanks to our API client library
