@@ -8,8 +8,8 @@ After that, add yourself in the table below.
 
 Thank you!
 
-|Distribution|Name/Nickname|Contact Info(optional)|Notes|
-|-|-|-|-|
-|(crates.io)|@ByteOtter|tiara.dev@proton.me|Universal Package|
-|openSUSE Tumbleweed||||
-|SLES 15||||
+| Distribution        | Name/Nickname | Contact Info(optional) | Notes             |
+| ------------------- | ------------- | ---------------------- | ----------------- |
+| (crates.io)         | @BytePaws     | tiara.dev@proton.me    | Universal Package |
+| openSUSE Tumbleweed |               |                        |                   |
+| SLES 15             |               |                        |                   |
