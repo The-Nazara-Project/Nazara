@@ -99,9 +99,7 @@ pub fn construct_dmi_information() -> NazaraResult<DmiInformation> {
                     vendor: x.manufacturer.to_owned(),
                     model: x.product.to_owned(),
                     // If we have a UUID, construct one from the buffer, otherwise an empty string.
-                    uuid: x
-                        .uuid
-                        .map_or_else(String::new, |f| uuid::Uuid::from_bytes(f).to_string()),
+                    uuid: x.uuid.map_or_else(String::new, |u| u.to_string()),
                     serial: x.serial.to_owned(),
                     // TODO
                     is_virtual: false,
