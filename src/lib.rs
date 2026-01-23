@@ -133,6 +133,7 @@
 pub mod collectors;
 pub mod configuration;
 pub mod error;
+pub mod investigator;
 pub mod output;
 pub mod publisher;
 
