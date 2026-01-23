@@ -57,8 +57,49 @@ You can verify the integrity of your config by running `nazara check-config`.
 To register your device, simply run
 
 ```bash
-nazara register
+sudo nazara register
 ```
+
+This will register your device, its interfaces and ip-addresses **statically** in NetBox.
+
+If you are in an environment where IP addresses are managed by DHCP, Nazara offers several DHCP modes to handle this.
+
+To do so, pass the `--ip-mode` to either the `register` or `update` command to switch between modes.
+
+### DHCP Compatibility
+
+#### `static` Mode
+
+Default behaviour of Nazara. Simply registers everything without paying attention to any environments.
+
+**This may crash if the device's IP addresses change, no reconcilliation will take place.**
+
+```bash
+sudo nazara register --ip-mode static
+```
+
+#### `dhcp-ignored` Mode
+
+In cases where a DHCP servers syncs IP addresses with NetBox, **any registration or update of IP addresses will be skipped**.
+
+```bash
+sudo nazara register --ip-mode dhcp-ignored
+```
+
+#### `dhcp-observed` Mode
+
+The most complex mode, this will register the device or VM with **all IP addresses, as they are currently discovered**.
+Nazara will try to reconcile the IP addresses it discovers, with what is present in NetBox.
+
+If the address does not exist, it will be created, if it is assigned to a different interface, it will be reassigned.
+
+**The IP addresses will be tagged with `dhcp` tags.**
+
+```bash
+sudo nazara register --ip-mode dhcp-observed
+```
+
+This mode is to be used in cases where Netbox itself manages available IP addresses and a DHCP server syncs from that.
 
 ### Common Issues
 

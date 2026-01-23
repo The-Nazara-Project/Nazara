@@ -136,7 +136,7 @@ pub mod error;
 pub mod output;
 pub mod publisher;
 
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ValueEnum};
 use collectors::{
     dmi::{self, DmiInformation},
     network::{self, NetworkInformation},
@@ -192,6 +192,16 @@ pub struct Machine {
     pub network_information: Vec<NetworkInformation>,
     /// Custom fields read from config file or via plugins.
     pub custom_information: Option<HashMap<String, Value>>,
+}
+
+#[derive(Debug, Clone, Copy, ValueEnum)]
+pub enum IpAssignmentMode {
+    /// Fully manage IPs in NetBox (default)
+    Static,
+    /// Do not create or update IP addresses; only interfaces. (DHCP managed externally)
+    DhcpIgnore,
+    /// Register all IP Addresses the machine currently has, even though they're managed by DHCP.
+    DhcpObserved,
 }
 
 impl Nazara {
@@ -378,13 +388,18 @@ impl Nazara {
             .ok_or_else(|| NazaraError::Other("Configuration not initialized".into()))?;
 
         match &self.args.command {
-            Commands::Register => register_machine(client, machine, config.clone())?,
-            Commands::Update { id } => {
-                update_machine(client, machine, config.clone(), id.to_owned())?
+            Commands::Register { ip_mode } => {
+                let mode = ip_mode.unwrap_or(IpAssignmentMode::Static);
+                register_machine(client, machine, config.clone(), mode)?
             }
-            Commands::Auto {} => {
+            Commands::Update { id, ip_mode } => {
+                let mode = ip_mode.unwrap_or(IpAssignmentMode::Static);
+                update_machine(client, machine, config.clone(), id.to_owned(), mode)?
+            }
+            Commands::Auto { ip_mode } => {
                 warn_auto_deprecated();
-                auto_register_or_update_machine(client, machine, config.clone())?;
+                let mode = ip_mode.unwrap_or(IpAssignmentMode::Static);
+                auto_register_or_update_machine(client, machine, config.clone(), mode)?;
             }
             _ => {}
         }
@@ -430,15 +445,26 @@ pub fn start_collection(plugin: Option<String>) -> NazaraResult<Machine> {
 enum Commands {
     /// Register a new machine.
     // Any future arguments for this command into its block.
-    Register,
+    Register {
+        /// IP assignment mode. (default: static)
+        #[arg(long, value_enum, default_value = "static")]
+        ip_mode: Option<IpAssignmentMode>,
+    },
     /// Update a given machine by ID.
     Update {
         /// The ID of the machine in NetBox.
         #[arg(long)]
         id: i64,
+        /// IP assignment mode. (default: static)
+        #[arg(long, value_enum, default_value = "static")]
+        ip_mode: Option<IpAssignmentMode>,
     },
     /// Attempt to detect whether an update or new registration is necessary. (DEPRECATED, old default behaviour)
-    Auto,
+    Auto {
+        /// IP assignment mode. (default: static)
+        #[arg(long, value_enum, default_value = "static")]
+        ip_mode: Option<IpAssignmentMode>,
+    },
     /// Write new config file or overwrite existing one with new values. Pass JSON for bulk changes.
     WriteConfig {
         /// The URI of your NetBox instance. Required if not using '--json'.

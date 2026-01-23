@@ -49,6 +49,41 @@ sudo nazara update --id 57
 
 This will then update the entry for you.
 
+### DHCP Compatibility
+
+#### `static` Mode
+
+Default behaviour of Nazara. Simply registers everything without paying attention to any environments.
+
+**This may crash if the device's IP addresses change, no reconcilliation will take place.**
+
+```bash
+sudo nazara register --ip-mode static
+```
+
+#### `dhcp-ignored` Mode
+
+In cases where a DHCP servers syncs IP addresses with NetBox, **any registration or update of IP addresses will be skipped**.
+
+```bash
+sudo nazara register --ip-mode dhcp-ignored
+```
+
+#### `dhcp-observed` Mode
+
+The most complex mode, this will register the device or VM with **all IP addresses, as they are currently discovered**.
+Nazara will try to reconcile the IP addresses it discovers, with what is present in NetBox.
+
+If the address does not exist, it will be created, if it is assigned to a different interface, it will be reassigned.
+
+**The IP addresses will be tagged with `dhcp` tags.**
+
+```bash
+sudo nazara register --ip-mode dhcp-observed
+```
+
+This mode is to be used in cases where Netbox itself manages available IP addresses and a DHCP server syncs from that.
+
 ### Common Issues
 
 #### IP "X.X.X.X" has not been registered in NetBox

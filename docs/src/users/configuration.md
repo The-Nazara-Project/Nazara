@@ -20,10 +20,10 @@ Afterwards, Nazara expects one of the following operation types to be specified:
 
 ## Configuring via CLI
 
-Here is an example for passing these parameters on using the CLI:
+For the most detailed guide on how to configure nazara via CLI, please make use of the `help` function.
 
 ```bash
-sudo nazara --uri <API_URL> --token <API_TOKEN> <OPERATION> . . .
+sudo nazara --help
 ```
 
 When launching Nazara for the first time, a configuration file will be written at `$HOME/.config/nazara/config.toml`.

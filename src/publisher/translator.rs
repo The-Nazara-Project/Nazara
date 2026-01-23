@@ -20,7 +20,7 @@ use crate::{
 use serde_json::{Value, json};
 use std::{collections::HashMap, net::IpAddr};
 use thanix_client::types::{
-    PatchedWritableDeviceWithConfigContextRequest,
+    NestedTagRequest, PatchedWritableDeviceWithConfigContextRequest,
     PatchedWritableVirtualMachineWithConfigContextRequest, WritableDeviceWithConfigContextRequest,
     WritableIPAddressRequest, WritableInterfaceRequest, WritableVMInterfaceRequest,
     WritableVirtualMachineWithConfigContextRequest,
@@ -243,6 +243,33 @@ pub fn information_to_ip(
     }
 }
 
+/// Returns the payload necessary to create a *DHCP-observed* IP address.
+pub fn information_to_dhcp_ip(
+    interface_address: IpAddr,
+    interface_id: i64,
+    is_vm: bool,
+) -> WritableIPAddressRequest {
+    let mut payload = information_to_ip(interface_address, interface_id, is_vm);
+
+    payload.description = "Observed via DHCP (managed externally)".to_string();
+    payload.comments =
+        "This IP was observed on the host and may change. Managed by DHCP.".to_string();
+
+    payload.tags = vec![
+        NestedTagRequest {
+            name: "dhcp".to_string(),
+            slug: "dhcp".to_string(),
+            color: "9e9e9e".to_string(), // neutral grey
+        },
+        NestedTagRequest {
+            name: "nazara".to_string(),
+            slug: "nazara".to_string(),
+            color: "03a9f4".to_string(),
+        },
+    ];
+
+    payload
+}
 /// Will compose the name of the device/VM entry.
 ///
 /// If the configured name ends with '@' this name will be concatenated

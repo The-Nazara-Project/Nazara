@@ -21,6 +21,7 @@ use crate::publisher::translator::{
     compute_effective_name, information_to_device, information_to_existing_device,
     information_to_existing_vm, information_to_vm,
 };
+use crate::{IpAssignmentMode, NazaraError, failure, info, success};
 use crate::{
     Machine,
     collectors::network::NetworkInformation,
@@ -30,7 +31,6 @@ use crate::{
         update_device,
     },
 };
-use crate::{NazaraError, info, success};
 pub use api_client::test_connection;
 use api_client::update_interface;
 use serde_json::Value;
@@ -53,6 +53,7 @@ use thanix_client::{types::WritableIPAddressRequest, util::ThanixClient};
 /// * `client: &ThanixClient` - A client instance.
 /// * `machine: Machine` - The Machine to create.
 /// * `config_data: ConfigData` - Nazara's configuration data.
+/// * `ip_mode: IpAssignmentMode` - Decide how to handle IPs with DHCP.
 ///
 /// # Returns
 /// An empty `Ok()` or a [`NazaraError::NetBoxApiError`] depending on operation outcome.
@@ -60,66 +61,66 @@ pub fn register_machine(
     client: &ThanixClient,
     machine: Machine,
     config_data: ConfigData,
+    ip_mode: IpAssignmentMode,
 ) -> NazaraResult<()> {
     println!("Starting registration process. This may take a while...");
 
     match &config_data.machine {
         MachineConfig::Device(config) => {
-            println!("Registering device...");
-
             let payload = information_to_device(&machine, &config_data.common, config);
             let device_id = create_device(client, payload)?;
 
-            // Create new interface object if no interface ID is given, or the given ID doesn not exist.
             for interface in &machine.network_information {
-                let interface_id: i64 =
-                    create_nwi(client, device_id, interface, &config_data.common)?;
+                let nwi_id = create_nwi(client, device_id, interface, &config_data.common)?;
 
-                create_ips(client, interface, interface_id, false)?;
+                match ip_mode {
+                    IpAssignmentMode::Static => {
+                        create_ips(client, interface, nwi_id, false)?;
+                    }
+                    IpAssignmentMode::DhcpObserved => {
+                        if let Some(ip) = interface.v4ip {
+                            ensure_dhcp_ip(client, &ip.to_string(), nwi_id, false, device_id)?;
+                        }
+                        if let Some(ip) = interface.v6ip {
+                            ensure_dhcp_ip(client, &ip.to_string(), nwi_id, false, device_id)?;
+                        }
+                    }
+                    IpAssignmentMode::DhcpIgnore => {}
+                }
             }
 
-            // Patch new device with primary IPs if they are set and not empty.
-            if config_data
-                .common
-                .primary_ip4
-                .as_ref()
-                .map_or(false, |s| !s.is_empty())
-                || config_data
-                    .common
-                    .primary_ip6
-                    .as_ref()
-                    .map_or(false, |s| !s.is_empty())
-            {
+            if matches!(ip_mode, IpAssignmentMode::Static) {
                 patch_device_primary_ips(client, &config_data, &machine, device_id)?;
             }
 
             success!("Registration processs completed!");
             return Ok(());
         }
-        MachineConfig::VM(config) => {
-            println!("Registering virtual machine");
 
+        MachineConfig::VM(config) => {
             let payload = information_to_vm(&machine, &config_data.common, config);
             let vm_id = create_vm(client, payload)?;
 
             for interface in &machine.network_information {
-                let interface_id = create_vm_nwi(client, vm_id, interface, &config_data.common)?;
+                let nwi_id = create_vm_nwi(client, vm_id, interface, &config_data.common)?;
 
-                create_ips(client, interface, interface_id, true)?;
+                match ip_mode {
+                    IpAssignmentMode::Static => {
+                        create_ips(client, interface, nwi_id, true)?;
+                    }
+                    IpAssignmentMode::DhcpObserved => {
+                        if let Some(ip) = interface.v4ip {
+                            ensure_dhcp_ip(client, &ip.to_string(), nwi_id, true, vm_id)?;
+                        }
+                        if let Some(ip) = interface.v6ip {
+                            ensure_dhcp_ip(client, &ip.to_string(), nwi_id, true, vm_id)?;
+                        }
+                    }
+                    IpAssignmentMode::DhcpIgnore => {}
+                }
             }
 
-            // Patch new device with primary IPs if they are set and not empty.
-            if config_data
-                .common
-                .primary_ip4
-                .as_ref()
-                .map_or(false, |s| !s.is_empty())
-                || config_data
-                    .common
-                    .primary_ip6
-                    .as_ref()
-                    .map_or(false, |s| !s.is_empty())
-            {
+            if matches!(ip_mode, IpAssignmentMode::Static) {
                 patch_vm_primary_ips(client, &config_data, &machine, vm_id)?;
             }
 
@@ -144,212 +145,74 @@ pub fn update_machine(
     machine: Machine,
     config_data: ConfigData,
     machine_id: i64,
+    ip_mode: IpAssignmentMode,
 ) -> NazaraResult<()> {
-    println!("Starting update process. This may take a while...");
-
     match &config_data.machine {
         MachineConfig::Device(config) => {
             let payload = information_to_existing_device(&machine, &config_data.common, config);
-            let updated_id = update_device(client, payload, machine_id)?;
+            let device_id = update_device(client, payload, machine_id)?;
 
-            let mut nwi_id;
             for interface in &machine.network_information {
-                match search_interface(client, updated_id, &interface.name)? {
-                    Some(interface_id) => {
-                        nwi_id = update_nwi(
-                            client,
-                            updated_id,
-                            interface,
-                            &config_data.common,
-                            &interface_id,
-                        )?;
+                let nwi_id = match search_interface(client, device_id, &interface.name)? {
+                    Some(id) => update_nwi(client, device_id, interface, &config_data.common, &id)?,
+                    None => create_nwi(client, device_id, interface, &config_data.common)?,
+                };
+
+                match ip_mode {
+                    IpAssignmentMode::Static => {
+                        reconcile_static_device_ips(client, interface, nwi_id)?;
                     }
-                    None => {
-                        nwi_id = create_nwi(client, updated_id, interface, &config_data.common)?;
-                    }
-                }
-
-                // If the collected interface reports an IP address, the address must exist in NetBox.
-                // If it is not assigned an ID, claim it to this interface.
-                // If it is assigned an ID, it *must* be our interface ID. If it is not, the data is bogus.
-                // Updating interfaces that don't belong to us is undefined behavior because it may interfere with
-                // external services that provide these IP addresses.
-
-                let (ipv4, ipv6) = search_device_ips(client, interface, None)?;
-                if let Some(ip) = interface.v4ip {
-                    let ipv4 = ipv4.ok_or(NazaraError::NetBoxApiError(format!(
-                        "IPv4 address \"{}\" was not registered in NetBox",
-                        ip
-                    )))?;
-
-                    if let IpamIpAddressesRetrieveResponse::Http200(a) =
-                        ipam_ip_addresses_retrieve(client, ipv4)?
-                    {
-                        if let Some(b) = a.assigned_object_id {
-                            assert_eq!(b, nwi_id as u64);
-                        } else {
-                            patch_ip(
-                                client,
-                                PatchedWritableIPAddressRequest {
-                                    status: Some("active".to_string()),
-                                    assigned_object_type: Some(Some("dcim.interface".to_string())),
-                                    assigned_object_id: Some(Some(nwi_id as u64)),
-                                    ..Default::default()
-                                },
-                                ipv4,
-                            )?;
+                    IpAssignmentMode::DhcpObserved => {
+                        if let Some(ip) = interface.v4ip {
+                            ensure_dhcp_ip(client, &ip.to_string(), nwi_id, false, device_id)?;
+                        }
+                        if let Some(ip) = interface.v6ip {
+                            ensure_dhcp_ip(client, &ip.to_string(), nwi_id, false, device_id)?;
                         }
                     }
-                }
-
-                if let Some(ip) = interface.v6ip {
-                    let ipv6 = ipv6.ok_or(NazaraError::NetBoxApiError(format!(
-                        "IPv6 address \"{}\" was not registered in NetBox",
-                        ip
-                    )))?;
-
-                    if let IpamIpAddressesRetrieveResponse::Http200(a) =
-                        ipam_ip_addresses_retrieve(client, ipv6)?
-                    {
-                        if let Some(b) = a.assigned_object_id {
-                            assert_eq!(b, nwi_id as u64);
-                        } else {
-                            patch_ip(
-                                client,
-                                PatchedWritableIPAddressRequest {
-                                    status: Some("active".to_string()),
-                                    assigned_object_type: Some(Some("dcim.interface".to_string())),
-                                    assigned_object_id: Some(Some(nwi_id as u64)),
-                                    ..Default::default()
-                                },
-                                ipv6,
-                            )?;
-                        }
-                    }
+                    IpAssignmentMode::DhcpIgnore => {}
                 }
             }
 
-            // Patch primary IPs when one is specified in config.
-            if config_data
-                .common
-                .primary_ip4
-                .as_deref()
-                .map_or(false, |s| !s.is_empty())
-                || config_data
-                    .common
-                    .primary_ip6
-                    .as_deref()
-                    .map_or(false, |s| !s.is_empty())
-            {
-                patch_device_primary_ips(client, &config_data, &machine, updated_id)?;
+            if matches!(ip_mode, IpAssignmentMode::Static) {
+                patch_device_primary_ips(client, &config_data, &machine, device_id)?;
             }
-
-            success!("Device update process completed!");
-            return Ok(());
         }
+
         MachineConfig::VM(config) => {
             let payload = information_to_existing_vm(&machine, &config_data.common, config);
-            let updated_id = update_vm(client, payload, machine_id)?;
-            let mut nwi_id;
+            let vm_id = update_vm(client, payload, machine_id)?;
+
             for interface in &machine.network_information {
-                match search_vm_interface(client, updated_id, &interface.name)? {
-                    Some(interface_id) => {
-                        nwi_id = update_vm_nwi(
-                            client,
-                            updated_id,
-                            interface,
-                            &config_data.common,
-                            &interface_id,
-                        )?;
+                let nwi_id = match search_vm_interface(client, vm_id, &interface.name)? {
+                    Some(id) => update_vm_nwi(client, vm_id, interface, &config_data.common, &id)?,
+                    None => create_vm_nwi(client, vm_id, interface, &config_data.common)?,
+                };
+
+                match ip_mode {
+                    IpAssignmentMode::Static => {
+                        reconcile_static_vm_ips(client, interface, nwi_id)?;
                     }
-                    None => {
-                        nwi_id = create_vm_nwi(client, updated_id, interface, &config_data.common)?;
-                    }
-                }
-
-                // If the collected interface reports an IP address, the address must exist in NetBox.
-                // If it is not assigned an ID, claim it to this interface.
-                // If it is assigned an ID, it *must* be our interface ID. If it is not, the data is bogus.
-                // Updating interfaces that don't belong to us is undefined behavior because it may interfere with
-                // external services that provide these IP addresses.
-
-                let (ipv4, ipv6) = search_vm_ips(client, interface, None)?;
-                if let Some(ip) = interface.v4ip {
-                    let ipv4 = ipv4.expect(&format!(
-                        "IPv4 address \"{}\" was not registered in NetBox",
-                        ip
-                    ));
-
-                    if let IpamIpAddressesRetrieveResponse::Http200(a) =
-                        ipam_ip_addresses_retrieve(client, ipv4)?
-                    {
-                        if let Some(b) = a.assigned_object_id {
-                            assert_eq!(b, nwi_id as u64);
-                        } else {
-                            patch_ip(
-                                client,
-                                PatchedWritableIPAddressRequest {
-                                    status: Some("active".to_string()),
-                                    assigned_object_type: Some(Some(
-                                        "virtualization.vminterface".to_string(),
-                                    )),
-                                    assigned_object_id: Some(Some(nwi_id as u64)),
-                                    ..Default::default()
-                                },
-                                ipv4,
-                            )?;
+                    IpAssignmentMode::DhcpObserved => {
+                        if let Some(ip) = interface.v4ip {
+                            ensure_dhcp_ip(client, &ip.to_string(), nwi_id, true, vm_id)?;
+                        }
+                        if let Some(ip) = interface.v6ip {
+                            ensure_dhcp_ip(client, &ip.to_string(), nwi_id, true, vm_id)?;
                         }
                     }
-                }
-
-                if let Some(ip) = interface.v6ip {
-                    let ipv6 = ipv6.expect(&format!(
-                        "IPv6 address \"{}\" was not registered in NetBox",
-                        ip
-                    ));
-
-                    if let IpamIpAddressesRetrieveResponse::Http200(a) =
-                        ipam_ip_addresses_retrieve(client, ipv6)?
-                    {
-                        if let Some(b) = a.assigned_object_id {
-                            assert_eq!(b, nwi_id as u64);
-                        } else {
-                            patch_ip(
-                                client,
-                                PatchedWritableIPAddressRequest {
-                                    status: Some("active".to_string()),
-                                    assigned_object_type: Some(Some(
-                                        "virtualization.vminterface".to_string(),
-                                    )),
-                                    assigned_object_id: Some(Some(nwi_id as u64)),
-                                    ..Default::default()
-                                },
-                                ipv6,
-                            )?;
-                        }
-                    }
+                    IpAssignmentMode::DhcpIgnore => {}
                 }
             }
 
-            // Patch primary IPs when one is specified in config.
-            if config_data
-                .common
-                .primary_ip4
-                .as_deref()
-                .map_or(false, |s| !s.is_empty())
-                || config_data
-                    .common
-                    .primary_ip6
-                    .as_deref()
-                    .map_or(false, |s| !s.is_empty())
-            {
-                patch_vm_primary_ips(client, &config_data, &machine, updated_id)?;
+            if matches!(ip_mode, IpAssignmentMode::Static) {
+                patch_vm_primary_ips(client, &config_data, &machine, vm_id)?;
             }
-
-            success!("VM update process completed!");
-            return Ok(());
         }
     }
+
+    success!("Update completed");
+    Ok(())
 }
 
 /// Register or update machine depending on search results.
@@ -368,6 +231,7 @@ pub fn auto_register_or_update_machine(
     client: &ThanixClient,
     machine: Machine,
     config_data: ConfigData,
+    ip_mode: IpAssignmentMode,
 ) -> NazaraResult<()> {
     println!("Starting auto register/update process. This may take a while...");
 
@@ -389,10 +253,10 @@ pub fn auto_register_or_update_machine(
                     "Device found in NetBoxentry with entry ID '{}', updating...",
                     device_id
                 );
-                update_machine(client, machine, config_data, device_id)?;
+                update_machine(client, machine, config_data, device_id, ip_mode)?;
             } else {
                 info!("Device not found in NetBox, registering new entry");
-                register_machine(client, machine, config_data)?;
+                register_machine(client, machine, config_data, ip_mode)?;
             }
         }
         MachineConfig::VM(_) => {
@@ -402,10 +266,10 @@ pub fn auto_register_or_update_machine(
                 &machine.dmi_information.system_information.serial,
             )? {
                 info!("VM found in NetBox with entry ID '{}', updating...", vm_id);
-                update_machine(client, machine, config_data, vm_id)?;
+                update_machine(client, machine, config_data, vm_id, ip_mode)?;
             } else {
                 info!("VM not found in NetBox, registering new entry");
-                register_machine(client, machine, config_data)?;
+                register_machine(client, machine, config_data, ip_mode)?;
             }
         }
     }
@@ -797,5 +661,304 @@ fn patch_vm_primary_ips(
 
     update_vm(client, patch, vm_id)?;
     info!("Patched primary IPs for VM '{vm_id}'");
+    Ok(())
+}
+
+/// Ensure a DHCP-managed IP address exists and is correctly assigned to an interface.
+///
+/// Guarantees that the given IP address string `ip_str` is present in NetBox
+/// and linked to the correct interface. It supports both devices and vm interfaces.
+/// If the IP already exists but is assigned to a different interface, it will be reassigned.
+/// If the IP does not exist yet, it will be created.
+///
+/// # Parameters
+///
+/// * `client: &ThanixClient` - Reference client used for API operations.
+/// * `ip_str: &str` - The IPv4 or IPv6 address as a string.
+/// * `interface_id: i64` - NetBox ID of the interface that the IP should belong to.
+/// * `is_vm: bool` - Whether we look for a vm or device interface.
+/// * `parent_id: i64` - NetBox ID of the parent object:
+///     - For devices: the `dcim.device` ID.
+///     - For VMs: the `virtualization.virtual_machine` ID
+///
+/// # Returns
+///
+/// * `Ok(())` - If the IP is successfully verified or created and correctly assigned.
+/// * `Err(NazaraError)` if:
+///     - The IP string is invalid
+///     - NetBox API call fails
+fn ensure_dhcp_ip(
+    client: &ThanixClient,
+    ip_str: &str,
+    interface_id: i64,
+    is_vm: bool,
+    parent_id: i64,
+) -> NazaraResult<()> {
+    println!("[DHCP-Mode] Ensuring DHCP IP assignments...");
+    let existing_id = if is_vm {
+        search_vm_ip(client, &ip_str.to_owned(), Some(parent_id))?
+    } else {
+        search_ip(client, &ip_str.to_owned(), Some(parent_id))?
+    };
+
+    match existing_id {
+        Some(id) => {
+            if let IpamIpAddressesRetrieveResponse::Http200(ip) =
+                ipam_ip_addresses_retrieve(client, id)?
+            {
+                if ip.assigned_object_id != Some(interface_id as u64) {
+                    info!(
+                        "[DHCP-Mode] Reassigning IP '{ip_str}' from interface '{:?}' to '{interface_id}'",
+                        ip.assigned_object_id
+                    );
+                    patch_ip(
+                        client,
+                        PatchedWritableIPAddressRequest {
+                            assigned_object_type: Some(Some(if is_vm {
+                                "virtualization.vminterface".to_string()
+                            } else {
+                                "dcim.interface".to_string()
+                            })),
+                            assigned_object_id: Some(Some(interface_id as u64)),
+                            status: Some("active".to_string()),
+                            ..Default::default()
+                        },
+                        id,
+                    )?;
+                    success!("[DHCP-Mode] IP address reassignment successful!");
+                } else {
+                    info!(
+                        "[DHCP-Mode] IP '{ip_str}' is already correctly assigned to interface '{interface_id}'."
+                    );
+                }
+            }
+        }
+        None => {
+            info!("[DHCP-Mode] IP address '{ip_str}' is not yet registered. Registering...");
+            let addr = ip_str
+                .parse()
+                .map_err(|_| NazaraError::NetBoxApiError(format!("Invalid IP: {ip_str}")))?;
+
+            let payload = translator::information_to_dhcp_ip(addr, interface_id, is_vm);
+            create_ip(client, payload)?;
+            success!(
+                "[DHCP-Mode] IP '{}' created and assigned to interface '{}'",
+                ip_str,
+                interface_id
+            );
+        }
+    }
+
+    Ok(())
+}
+
+/// Reconcile statically configured IP addresses for a device interface.
+///
+/// This function enforces the following invariants for static IP mode:
+///
+/// - IP reported by the machine **must exist in NetBox**
+/// - If an IP exists, but is **unassigned**, it will be assigned to this interface
+/// - If an IP exists and is **already assigned**, it must belong to this interface
+/// - New IP addresses are **never created implicitly**
+///
+/// This is used during device updates, when DHCP mode is used.
+///
+/// # Parameters
+///
+/// * `client: &ThanixClient` - Reference client used for API connection.
+/// * `interface: &NetworkInformation` - The local network interface with its statically configured IPv4 and IPv6 addresses.
+/// * `interface_id: i64` - The ID of the corresponding network interface in NetBox.
+///
+/// # Returns
+///
+/// * `Ok(())` - If all Ips are valid and correctly assigned.
+/// * `Err(NazaraError)` - if:
+///     - A referenced IP does not exist in NetBox.
+///     - A referenced IP is assigned to a **different** interface
+///     - Any NetBox API operation fails
+fn reconcile_static_device_ips(
+    client: &ThanixClient,
+    interface: &NetworkInformation,
+    interface_id: i64,
+) -> NazaraResult<()> {
+    // IPv4
+    if let Some(ip) = interface.v4ip {
+        info!("[DHCP-Mode] Reconciling static IPv4: '{ip}'");
+
+        let ipv4_id = search_ip(client, &ip.to_string(), None)?.ok_or_else(|| {
+            failure!("[DHCP-Mode] IPv4 {ip} not found in NetBox!");
+            NazaraError::NetBoxApiError(format!(
+                "IPv4 address \"{}\" was not registered in NetBox",
+                ip
+            ))
+        })?;
+
+        if let IpamIpAddressesRetrieveResponse::Http200(a) =
+            ipam_ip_addresses_retrieve(client, ipv4_id)?
+        {
+            if let Some(assigned) = a.assigned_object_id {
+                assert_eq!(assigned, interface_id as u64);
+                info!("[DHCP-Mode] IPv4 '{ip}' correctly assigned to interface {interface_id}");
+            } else {
+                info!(
+                    "[DHCP-Mode] Patching IPv4 '{ip}' to assign to interface '{interface_id}'..."
+                );
+                patch_ip(
+                    client,
+                    PatchedWritableIPAddressRequest {
+                        status: Some("active".to_string()),
+                        assigned_object_type: Some(Some("dcim.interface".to_string())),
+                        assigned_object_id: Some(Some(interface_id as u64)),
+                        ..Default::default()
+                    },
+                    ipv4_id,
+                )?;
+                success!("[DHCP-Mode] IPv4 '{ip}' assigned successfully!");
+            }
+        }
+    }
+
+    // IPv6
+    if let Some(ip) = interface.v6ip {
+        info!("[DHCP-Mode] Reconciling static IPv6: '{ip}'");
+
+        let ipv6_id = search_ip(client, &ip.to_string(), None)?.ok_or_else(|| {
+            failure!("[DHCP-Mode] IPv6 '{ip}' not found in NetBox!");
+            NazaraError::NetBoxApiError(format!(
+                "IPv6 address \"{}\" was not registered in NetBox",
+                ip
+            ))
+        })?;
+
+        if let IpamIpAddressesRetrieveResponse::Http200(a) =
+            ipam_ip_addresses_retrieve(client, ipv6_id)?
+        {
+            if let Some(assigned) = a.assigned_object_id {
+                assert_eq!(assigned, interface_id as u64);
+                info!("[DHCP-Mode] IPv6 '{ip}' correctly assigned to interface '{interface_id}'");
+            } else {
+                info!("[DHCP-Mode] Patching IPv6 '{ip}' to assign to interface '{interface_id}'");
+                patch_ip(
+                    client,
+                    PatchedWritableIPAddressRequest {
+                        status: Some("active".to_string()),
+                        assigned_object_type: Some(Some("dcim.interface".to_string())),
+                        assigned_object_id: Some(Some(interface_id as u64)),
+                        ..Default::default()
+                    },
+                    ipv6_id,
+                )?;
+                success!("[DHCP-Mode] IPv6 '{ip}' assigned successfully!");
+            }
+        }
+    }
+
+    Ok(())
+}
+
+/// Reconcile statically configured IP addresses for a VM interface.
+///
+/// This function enforces the following invariants for static IP mode:
+///
+/// - IP reported by the machine **must exist in NetBox**
+/// - If an IP exists, but is **unassigned**, it will be assigned to this interface
+/// - If an IP exists and is **already assigned**, it must belong to this interface
+/// - New IP addresses are **never created implicitly**
+///
+/// This is used during VM updates, when DHCP mode is used.
+///
+/// # Parameters
+///
+/// * `client: &ThanixClient` - Reference client used for API connection.
+/// * `interface: &NetworkInformation` - The local network interface with its statically configured IPv4 and IPv6 addresses.
+/// * `interface_id: i64` - The ID of the corresponding network interface in NetBox.
+///
+/// # Returns
+///
+/// * `Ok(())` - If all Ips are valid and correctly assigned.
+/// * `Err(NazaraError)` - if:
+///     - A referenced IP does not exist in NetBox.
+///     - A referenced IP is assigned to a **different** interface
+///     - Any NetBox API operation fails
+fn reconcile_static_vm_ips(
+    client: &ThanixClient,
+    interface: &NetworkInformation,
+    interface_id: i64,
+) -> NazaraResult<()> {
+    // IPv4
+    if let Some(ip) = interface.v4ip {
+        info!("[DHCP-Mode] Reconciling VM static IPv4: {ip}");
+
+        let ipv4_id = search_vm_ip(client, &ip.to_string(), None)?.ok_or_else(|| {
+            failure!("[DHCP-Mode] VM IPv4 '{ip}' not found in NetBox");
+            NazaraError::NetBoxApiError(format!(
+                "IPv4 address \"{}\" was not registered in NetBox",
+                ip
+            ))
+        })?;
+
+        if let IpamIpAddressesRetrieveResponse::Http200(a) =
+            ipam_ip_addresses_retrieve(client, ipv4_id)?
+        {
+            if let Some(assigned) = a.assigned_object_id {
+                assert_eq!(assigned, interface_id as u64);
+                info!(
+                    "[DHCP-Mode] VM IPv4 '{ip}' correctly assigned to interface '{interface_id}'"
+                );
+            } else {
+                patch_ip(
+                    client,
+                    PatchedWritableIPAddressRequest {
+                        status: Some("active".to_string()),
+                        assigned_object_type: Some(Some("virtualization.vminterface".to_string())),
+                        assigned_object_id: Some(Some(interface_id as u64)),
+                        ..Default::default()
+                    },
+                    ipv4_id,
+                )?;
+                success!("[DHCP-Mode] VM IPv4 '{ip}' assigned successfully!");
+            }
+        }
+    }
+
+    // IPv6
+    if let Some(ip) = interface.v6ip {
+        info!("[DHCP-Mode] Reconciling VM static IPv6: '{ip}'");
+
+        let ipv6_id = search_vm_ip(client, &ip.to_string(), None)?.ok_or_else(|| {
+            failure!("[DHCP-Mode] VM IPv6 '{ip}' not found in NetBox!");
+            NazaraError::NetBoxApiError(format!(
+                "IPv6 address \"{}\" was not registered in NetBox",
+                ip
+            ))
+        })?;
+
+        if let IpamIpAddressesRetrieveResponse::Http200(a) =
+            ipam_ip_addresses_retrieve(client, ipv6_id)?
+        {
+            if let Some(assigned) = a.assigned_object_id {
+                assert_eq!(assigned, interface_id as u64);
+                info!(
+                    "[DHCP-Mode] VM IPv6 '{ip}' correctly assigned to interface '{interface_id}'"
+                );
+            } else {
+                info!(
+                    "[DHCP-Mode] Patching VM IPv6 '{ip}' to assign to interface '{interface_id}'"
+                );
+                patch_ip(
+                    client,
+                    PatchedWritableIPAddressRequest {
+                        status: Some("active".to_string()),
+                        assigned_object_type: Some(Some("virtualization.vminterface".to_string())),
+                        assigned_object_id: Some(Some(interface_id as u64)),
+                        ..Default::default()
+                    },
+                    ipv6_id,
+                )?;
+                success!("[DHCP-Mode] VM IPv6 '{ip}' assigned successfully!");
+            }
+        }
+    }
+
     Ok(())
 }
