@@ -334,6 +334,9 @@ impl Nazara {
                 view_config_file()?;
                 return Ok(Some(()));
             }
+            Commands::PrepareEnvironment => {
+                todo!()
+            }
             _ => Ok(None),
         }
     }
@@ -527,6 +530,8 @@ enum Commands {
     CheckConfig,
     /// Print currently active config options.
     ViewConfig,
+    /// Create any NetBox entity that does not already exist
+    PrepareEnvironment,
 }
 
 /// The arguments that Nazara expects to get via the cli.
