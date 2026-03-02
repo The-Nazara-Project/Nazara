@@ -15,12 +15,7 @@ information listed below is subject to change.**
 - [Installation](#installation)
   - [Building from source](#building-from-source)
   - [Installation via `crates.io`](#installation-via-cratesio)
-- [Usage](#usage)
-- [Configuration](#configuration)
-  - [Configuring via CLI](#configuring-via-cli)
-    - [The `config` commands](#the-config-commands)
-  - [Configuring via `$HOME/.config/nazara/config.toml` (recommended)](#configuring-via-homeconfignazaraconfigtoml-recommended)
-  - [Configuring custom fields using user plugins](#configuring-custom-fields-using-user-plugins)
+- [Documentation](#documentation)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -65,7 +60,8 @@ cargo build --release
 
 This will create an executable file in the `target/release` directory.
 
-> [!Important] Running Nazara stock will cause it to use our NetBox API
+> [!IMPORTANT]
+> Running Nazara stock will cause it to use our NetBox API
 > reference client library
 > [`thanix_client`](https://codeberg.org/nazara-project/thanix_client). This
 > client was generated from the API spec of a stock NetBox instance (1.x from
@@ -78,125 +74,20 @@ This will create an executable file in the `target/release` directory.
 Nazara is published on `crates.io`. If your operating system permits cargo to
 install packages globally, simply run `cargo install nazara` to install it.
 
-# Usage
+# Documentation
 
-To use Nazara, you will need to configure the URL of your NetBox API and provide
-an API token to the program by configuring all of these parameters inside the
-[configuration file](#configuring-via-nazaraconfigtomlfile).
+The best place to find information about how to set up and use Nazara is our [User Documentation](https://nazara-project.codeberg.page/Nazara/users/).
 
-After that, simply run
-
-```bash
-nazara register
-```
-
-to register a new machine, or run
-
-```bash
-nazara update $MACHINE_ID
-```
-
-to update an existing one.
-
-in your terminal. Nazara will automatically collect all required system
-information and decide whether to create a new device, or update an existing
-entry.
-
-# Configuration
-
-Nazara supports two ways of providing configuration parameters: CLI arguments
-and a configuration file.
-
-Nazara accepts these parameters from you:
-
-- `-d, --dry-run`: Print all collected information without committing it to
-  NetBox.
-- `-u, --uri <URI>`: URI to your NetBox instance.
-- `-t, --token <TOKEN>`: Your API authentication token.
-- `-p, --plugin <PLUGIN>`: The path to a plugin script you want to use to fill
-  in custom fields.
-- `-h, --help`: Print help.
-- `-V, --version`: Print version.
-
-## Configuring via CLI
-
-Here is an example for passing these parameters on using the CLI:
-
-```bash
-sudo nazara --uri <API_URL> --token <API_TOKEN> --name test_device
-```
-
-When launching Nazara for the first time, a configuration file will be written
-at `$HOME/.config/nazara/config.toml`. If you pass CLI parameters, these will be
-automatically transfered into the config file as well.
-
-### The `config` commands
-
-Nazara provides you with several commands to manage your configuration files:
-
-- `write-config`: Write a new config file or overwrite an existing one.
-- `check-config`: Validate if your config is still valid.
-- `view-config`: Print config to console.
-
-The `write-config` allows you to change individual parameters, or perform a bulk
-update by passing a `JSON` structure via CLI. **These options are exclusive.
-Passing both is disallowed.**
-
-For further information on how to configure Nazara, run `nazara --help` or visit
-[our documentation](https://nzara-project.codeberg.page/Nazara/users/configuration.html).
-
-## Configuring via `$HOME/.config/nazara/config.toml` (recommended)
-
-Nazara's configuration must be located in the root user's home directory at
-`$HOME/.config/nazara/config.toml`.
-
-When launching Nazara for the first time, it will write a stock config file to
-that path. Certain parameters are required to be configured there manually. You
-recognize them by their line not being commented out.
-
-Aside from the NetBox system parameters, configuration via the `config.toml`also
-allows you to add certain custom fields to your system information that cannot
-be automatically selected. A great example would be the`System
-Location`entry.
-To specify that, simply add the parameter under the`[system]` block in your
-configuration file.
-
-> [!Note] Currently, configuration by config file is the proper way to use
-> Nazara given the amount of data required to register a machine. We are
-> investigating possibilities to make this less of a hassle. In the meantime, we
-> suggest you copy-paste the config between machines of the same type and
-> function.
-
-For an example config, check out `src/configuration/config_template.toml`
-
-_Please note that the following section is still a work in progress and all
-information is subject to change._
-
-## Configuring custom fields using user plugins
-
-Users are able to fill `custom_fields` parameters in their NetBox objects using
-custom bash scripts. These scripts should be placed inside the
-`$HOME/.config/nazara/scripts/` directory.
-
-These scripts can collect the desired information and output _a valid JSON
-representation_ to `stdout`. Nazara then reads this output, validates it, and
-attempts to parse it to a `HashMap` of values.
-
-If everything works out, this will populate all of your custom fields no matter
-what fields you specified, as long as your script is correct.
-
-> [!Warning] Users must make sure that the output of their scripts matches the
-> name of their desired custom fields they specified in NetBox.
->
-> Currently, **we only support text fields** as all the other field types would
-> require smart parsing on our end. We are currently investigating on how to
-> achieve this.
+The online version is always up-to-date with the latest released Nazara version.
 
 # Contributing
 
 If you would like to contribute to Nazara, feel free to check the
-[contributing guide](./CONTRIBUTING.md) for information on our workflow and
-check the issues section for any open issue.
+[contributing guide](https://nazara-project.codeberg.page/Nazara/contributors/) for information on our workflow and
+check the issues section for any open issues.
+
+> [!TIP]
+> Issues tagged `good first issue` are specifically written for and targeted towards first time outside contributors.
 
 # License
 
