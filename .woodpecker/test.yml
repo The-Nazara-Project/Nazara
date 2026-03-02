@@ -4,7 +4,10 @@ matrix:
 steps:
   run_tests:
     when:
-      event: [pull_request]
+      - event: push
+        branch: main
+      - event: pull_request
+        branch: main
     image: rust
     environment:
       CARGO_TERM_COLOR: always

@@ -1,21 +1,21 @@
 when:
   event:
-    - manual # workflow_dispatch equivalent
-    - release # run on new release
+    - manual
+    - release
 
 steps:
   - name: build-docs
     image: codeberg.org/nazara-project/actions/mdbook-ci-nazara:0.4.51
     commands:
-      # Make sure we're on the main branch (latest release code)
       - git fetch origin main --depth=2 || git fetch origin main --unshallow
       - git checkout main
 
-      # Build the documentation
       - mdbook build docs
 
   - name: deploy-pages
     image: codeberg.org/xfix/plugin-codeberg-pages-deploy:1
+    depends_on:
+      - build-docs
     settings:
       folder: docs/book
       ssh_key:

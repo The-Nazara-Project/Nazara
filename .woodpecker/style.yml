@@ -4,21 +4,28 @@ matrix:
 steps:
   formatting:
     when:
-      event: [pull_request]
+      - event: push
+        branch: main
+      - event: pull_request
+        branch: main
     image: rust
     environment:
       CARGO_TERM_COLOR: always
     commands:
       - rustup default $RUST
       - rustup component add rustfmt
-      - rustup component add clippy
       - cargo fmt -- --check
+
   rust-clippy:
     when:
-      event: [pull_request]
+      - event: push
+        branch: main
+      - event: pull_request
+        branch: main
     image: rust
     environment:
       CARGO_TERM_COLOR: always
     commands:
       - rustup default $RUST
+      - rustup component add clippy
       - cargo clippy -j 4 --all-targets
