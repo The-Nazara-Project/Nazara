@@ -44,7 +44,7 @@ docker compose exec netbox /opt/netbox/netbox/manage.py createsuperuser
 Simply select a username and password of your wishes.
 
 5. When that is done, you need to create an API Token `username > API Tokens > Add a Token` and paste it, along with the container's URL
-   into the Nazara config file at `~/.nazara/config.toml`
+   into the Nazara config file at `~/.config/nazara/config.toml`
 6. After that, you need to create a few dummy fields that are sadly required to create a device via API
     - Device Type
     - Device Role
@@ -54,7 +54,7 @@ Simply select a username and password of your wishes.
     
     If you want to specifiy and play around with some optional fields, you must create the objects you reference (like e.g Tenants) first.
 
-7. After that's done, take the IDs of these objects and place it into the corresponding fields in the `~/.nazara/config.toml`
+7. After that's done, take the IDs of these objects and place it into the corresponding fields in the `~/.config/nazara/config.toml`
 
 > [!Important]
 > Currently, the generation of the config file is still a bit wonky, so if it isnt generated upon first executing nazara, copy and paste
