@@ -85,8 +85,36 @@ The `write-config` allows you to change individual parameters, or perform a bulk
 update by passing a `JSON` structure via CLI. **These options are exclusive.
 Passing both is disallowed.**
 
-For further information on how to configure Nazara, run `nazara --help` or visit
-[our documentation](https://nazara-project.codeberg.page/Nazara).
+~~~admonish example collapsible=false title="Example: Using `write-config` to change config parameters"
+These examples show you how you can edit your config file from the command line.
+
+```bash
+# Pass arguments individually
+sudo nazara write-config --uri https://netbox.sampleorg.com
+```
+
+Or in batches using JSON:
+
+```bash
+sudo nazara write-config --json '{
+  "netbox": {
+    "netbox_uri": "https://netbox.example.com",
+    "netbox_api_token": "abcd1234"
+  },
+  "common": {
+    "name": "test-device",
+    "description": "A physical test machine",
+    "comments": "Created for testing purposes",
+    "status": "active"
+  },
+  "device": {
+    "device_type": 1,
+    "role": 2,
+    "site": 3
+  }
+}'
+```
+~~~
 
 *Please note that this section is still a work in progress and all information is subject to change.*
 
