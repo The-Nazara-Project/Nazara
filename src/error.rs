@@ -39,6 +39,12 @@ pub enum NazaraError {
     NetlinkError(String),
     /// Specified primary IP has not been registered with this device or VM.
     InvalidPrimaryIp(String),
+    /// Check for Site returned 404
+    Site404(i64),
+    /// Check for Device Type returned 404
+    DeviceType404(i64),
+    /// Check for Device Role returned 404
+    DeviceRole404(i64),
     /// Expects a `String` message. Used for edge cases and general purpose error cases.
     Other(String),
 }
@@ -127,6 +133,15 @@ impl std::fmt::Display for NazaraError {
                     f,
                     "Configured primary IP '{addr}' does not belong to any interface registered to this device."
                 )
+            }
+            NazaraError::Site404(id) => {
+                write!(f, "Site with ID '{id}' does not exist")
+            }
+            NazaraError::DeviceType404(id) => {
+                write!(f, "Device Type with ID '{id}' does not exist")
+            }
+            NazaraError::DeviceRole404(id) => {
+                write!(f, "Device Role with ID '{id}' does not exist")
             }
             NazaraError::Other(msg) => f.write_str(&msg),
         }
