@@ -12,26 +12,31 @@ use crate::{NazaraError, error::NazaraResult, info, success};
 use serde_json::Value;
 use thanix_client::{
     paths::{
-        DcimDevicesCreateResponse, DcimDevicesListQuery, DcimDevicesListResponse, DcimDevicesPartialUpdateResponse, 
-        DcimInterfacesCreateResponse, DcimInterfacesListQuery, DcimInterfacesListResponse, DcimInterfacesUpdateResponse, 
-        DcimMacAddressesListQuery, DcimMacAddressesListResponse, DcimMacAddressesUpdateResponse, DcimSitesRetrieveResponse, 
-        IpamIpAddressesCreateResponse, IpamIpAddressesListQuery, IpamIpAddressesListResponse, IpamIpAddressesPartialUpdateResponse, 
-        VirtualizationInterfacesCreateResponse, VirtualizationInterfacesListQuery, VirtualizationInterfacesListResponse, 
-        VirtualizationInterfacesUpdateResponse, VirtualizationVirtualMachinesCreateResponse, VirtualizationVirtualMachinesListQuery, 
-        VirtualizationVirtualMachinesListResponse, VirtualizationVirtualMachinesPartialUpdateResponse, DcimDeviceTypesRetrieveResponse,
-        DcimDeviceRolesRetrieveResponse,
-        dcim_devices_create, dcim_devices_list, dcim_devices_partial_update, dcim_interfaces_create, dcim_interfaces_list, 
-        dcim_interfaces_update, dcim_mac_addresses_create, dcim_mac_addresses_list, dcim_mac_addresses_update, dcim_sites_retrieve, 
-        ipam_ip_addresses_create, ipam_ip_addresses_list, ipam_ip_addresses_partial_update, virtualization_interfaces_create, 
-        virtualization_interfaces_list, virtualization_interfaces_update, virtualization_virtual_machines_create, 
-        virtualization_virtual_machines_list, virtualization_virtual_machines_partial_update, dcim_device_types_retrieve,
-        dcim_device_roles_retrieve
+        DcimDeviceRolesRetrieveResponse, DcimDeviceTypesRetrieveResponse,
+        DcimDevicesCreateResponse, DcimDevicesListQuery, DcimDevicesListResponse,
+        DcimDevicesPartialUpdateResponse, DcimInterfacesCreateResponse, DcimInterfacesListQuery,
+        DcimInterfacesListResponse, DcimInterfacesUpdateResponse, DcimMacAddressesListQuery,
+        DcimMacAddressesListResponse, DcimMacAddressesUpdateResponse, DcimSitesRetrieveResponse,
+        IpamIpAddressesCreateResponse, IpamIpAddressesListQuery, IpamIpAddressesListResponse,
+        IpamIpAddressesPartialUpdateResponse, VirtualizationInterfacesCreateResponse,
+        VirtualizationInterfacesListQuery, VirtualizationInterfacesListResponse,
+        VirtualizationInterfacesUpdateResponse, VirtualizationVirtualMachinesCreateResponse,
+        VirtualizationVirtualMachinesListQuery, VirtualizationVirtualMachinesListResponse,
+        VirtualizationVirtualMachinesPartialUpdateResponse, dcim_device_roles_retrieve,
+        dcim_device_types_retrieve, dcim_devices_create, dcim_devices_list,
+        dcim_devices_partial_update, dcim_interfaces_create, dcim_interfaces_list,
+        dcim_interfaces_update, dcim_mac_addresses_create, dcim_mac_addresses_list,
+        dcim_mac_addresses_update, dcim_sites_retrieve, ipam_ip_addresses_create,
+        ipam_ip_addresses_list, ipam_ip_addresses_partial_update, virtualization_interfaces_create,
+        virtualization_interfaces_list, virtualization_interfaces_update,
+        virtualization_virtual_machines_create, virtualization_virtual_machines_list,
+        virtualization_virtual_machines_partial_update,
     },
     types::{
         Interface, MACAddressRequest, PatchedWritableDeviceWithConfigContextRequest,
         PatchedWritableIPAddressRequest, PatchedWritableVirtualMachineWithConfigContextRequest,
         WritableDeviceWithConfigContextRequest, WritableIPAddressRequest, WritableInterfaceRequest,
-        WritableVMInterfaceRequest, WritableVirtualMachineWithConfigContextRequest, 
+        WritableVMInterfaceRequest, WritableVirtualMachineWithConfigContextRequest,
     },
     util::ThanixClient,
 };
@@ -172,61 +177,47 @@ pub fn create_device(
     payload: WritableDeviceWithConfigContextRequest,
 ) -> NazaraResult<i64> {
     // Checking existence of site
-    let site_id: i64 =  payload.site.as_i64().ok_or(NazaraError::Other("Unknown Error checking Site ID, Netbox http response code not a number".to_string()))?;
+    let site_id: i64 = payload.site.as_i64().ok_or(NazaraError::Other(
+        "Unknown Error checking Site ID, Netbox http response code not a number".to_string(),
+    ))?;
     match dcim_sites_retrieve(client, site_id)? {
-        DcimSitesRetrieveResponse::Other(res) => {
-            match res.status().as_u16() {
-                404 => {
-                    return Err(NazaraError::Site404(site_id))
-                },    
-                _ => {
-                    return Err(NazaraError::UnexpectedResponse(res))
-                },
-            }
-        }
+        DcimSitesRetrieveResponse::Other(res) => match res.status().as_u16() {
+            404 => return Err(NazaraError::Site404(site_id)),
+            _ => return Err(NazaraError::UnexpectedResponse(res)),
+        },
         DcimSitesRetrieveResponse::Http200(_) => {
             true;
-        },
+        }
     }
     // Checking existence of device type
-    let type_id: i64 =  payload.device_type.as_i64().ok_or(NazaraError::Other("Unknown Error checking Type ID, Netbox http response code not a number".to_string()))?;
+    let type_id: i64 = payload.device_type.as_i64().ok_or(NazaraError::Other(
+        "Unknown Error checking Type ID, Netbox http response code not a number".to_string(),
+    ))?;
     match dcim_device_types_retrieve(client, type_id)? {
-        DcimDeviceTypesRetrieveResponse::Other(res) => {
-            match res.status().as_u16() {
-                404 => {
-                    return Err(NazaraError::DeviceType404(type_id))
-                },    
-                _ => {
-                    return Err(NazaraError::UnexpectedResponse(res))
-                },
-
-            }
-        }
+        DcimDeviceTypesRetrieveResponse::Other(res) => match res.status().as_u16() {
+            404 => return Err(NazaraError::DeviceType404(type_id)),
+            _ => return Err(NazaraError::UnexpectedResponse(res)),
+        },
         DcimDeviceTypesRetrieveResponse::Http200(_) => {
             true;
-        },
+        }
     }
     // Checking existence of device role
-    let role_id: i64 =  payload.role.as_i64().ok_or(NazaraError::Other("Unknown Error checking Role ID, Netbox http response code not a number".to_string()))?;
+    let role_id: i64 = payload.role.as_i64().ok_or(NazaraError::Other(
+        "Unknown Error checking Role ID, Netbox http response code not a number".to_string(),
+    ))?;
     match dcim_device_roles_retrieve(client, role_id)? {
-        DcimDeviceRolesRetrieveResponse::Other(res) => {
-            match res.status().as_u16() {
-                404 => {
-                    return Err(NazaraError::DeviceRole404(role_id))
-                },    
-                _ => {
-                    return Err(NazaraError::UnexpectedResponse(res))
-                },
-
-            }
-        }
+        DcimDeviceRolesRetrieveResponse::Other(res) => match res.status().as_u16() {
+            404 => return Err(NazaraError::DeviceRole404(role_id)),
+            _ => return Err(NazaraError::UnexpectedResponse(res)),
+        },
         DcimDeviceRolesRetrieveResponse::Http200(_) => {
             true;
-        },
+        }
     }
 
     println!("Creating device in NetBox...");
-    match dcim_devices_create( client, payload)? {
+    match dcim_devices_create(client, payload)? {
         DcimDevicesCreateResponse::Http201(created_device) => {
             success!(
                 "Device creation successful! New Device-ID: '{}'.",
@@ -238,7 +229,7 @@ pub fn create_device(
             println!("{:#?}", res.text());
             // Err(NazaraError::UnexpectedResponse(res))
             Err(NazaraError::Other("Site, Type, and Role were checked succecssfully, but device creation returned an unknown error".to_owned()))
-        },
+        }
     }
 }
 
@@ -268,9 +259,10 @@ pub fn update_device(
             // TODO: actually parse error
             println!("{:#?}", res.text());
             // Err(NazaraError::UnexpectedResponse(res))
-            Err(NazaraError::Other("Device update error, does Device ID exist?".to_owned()))
-        
-        },
+            Err(NazaraError::Other(
+                "Device update error, does Device ID exist?".to_owned(),
+            ))
+        }
     }
 }
 
