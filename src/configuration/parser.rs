@@ -576,6 +576,29 @@ impl ConfigData {
         file.read_to_string(&mut contents)
             .map_err(|e| NazaraError::FileOpError(e))?;
 
+        //checks if the type, role, site, and cluster fields exist and warns/errors depending on the answer
+        let config_unwrapped: Value = toml::from_str(&contents).unwrap();
+        let config_objects: [&str; 2] = ["device", "vm"]; //config entries to check for
+        let mut config_check_results: [bool; 2] = [false; 2];
+        for i in 0..2 {
+            if config_unwrapped.get(config_objects[i]).is_some() {
+                config_check_results[i] = true;
+            }
+        }
+
+        //throws a warning/errror if both a device and a vm config exist or both dont exist.
+        if config_check_results[0] == true && config_check_results[1] == true {
+            warn!(
+                "Both a VM and Device Config exist. Only Device Config will be used, VM Config may be ignored"
+            )
+        }
+        if config_check_results[0] == false && config_check_results[1] == false {
+            failure!("Neither Device Config nor VM Config exists");
+            return Err(NazaraError::Other(
+                "Neither Device Config nor VM Config exists".to_owned(),
+            ));
+        }
+
         let config_data: ConfigData =
             toml::from_str(&contents).map_err(NazaraError::DeserializationError)?;
 
