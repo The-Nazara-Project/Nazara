@@ -579,24 +579,49 @@ impl ConfigData {
         //checks if the type, role, site, and cluster fields exist and warns/errors depending on the answer
         let config_unwrapped: Value = toml::from_str(&contents).unwrap();
         let config_objects: [&str; 2] = ["device", "vm"]; //config entries to check for
+        let config_objects_device: [&str; 3] = ["device_type", "role", "site"]; //entries under "device" to check for
         let mut config_check_results: [bool; 2] = [false; 2];
+        let mut config_error = false;
         for i in 0..2 {
             if config_unwrapped.get(config_objects[i]).is_some() {
                 config_check_results[i] = true;
             }
         }
-
+        let string = format!("{:?   }", config_unwrapped.get(config_objects[0]));
+        println!("{}", string);
         //throws a warning/errror if both a device and a vm config exist or both dont exist.
         if config_check_results[0] == true && config_check_results[1] == true {
-            warn!(
-                "Both a VM and Device Config exist. Only Device Config will be used, VM Config may be ignored"
-            )
-        }
-        if config_check_results[0] == false && config_check_results[1] == false {
+            failure!("Both a VM and Device Config exist.");
+            config_error = true;
+        } else if config_check_results[0] == false && config_check_results[1] == false {
             failure!("Neither Device Config nor VM Config exists");
-            return Err(NazaraError::Other(
-                "Neither Device Config nor VM Config exists".to_owned(),
-            ));
+            config_error = true;
+        }
+
+        if config_check_results[0] == true {
+            for i in 0..3 {
+                if config_unwrapped["device"]
+                    .get(config_objects_device[i])
+                    .is_none()
+                {
+                    let string = format!(
+                        "Device field exists but '{}' is empty",
+                        config_objects_device[i]
+                    );
+                    failure!("{}", string);
+                    config_error = true;
+                }
+            }
+        }
+        if config_check_results[0] == true {
+            if config_unwrapped["vm"].get("cluster").is_none() {
+                failure!("VM field exists but 'cluster' is empty");
+                config_error = true;
+            }
+        }
+
+        if config_error == true {
+            return Err(NazaraError::Other("Incorrect Config options".to_owned()));
         }
 
         let config_data: ConfigData =
