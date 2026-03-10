@@ -132,7 +132,9 @@
 
 pub mod collectors;
 pub mod configuration;
+pub mod constants;
 pub mod error;
+pub mod investigator;
 pub mod output;
 pub mod publisher;
 
@@ -145,6 +147,7 @@ use collectors::{
 use configuration::parser::{
     check_config_file, set_up_configuration, view_config_file, write_config_file,
 };
+use investigator::check_environment;
 use publisher::{
     auto_register_or_update_machine, register_machine, test_connection, update_machine,
 };
@@ -333,6 +336,18 @@ impl Nazara {
                 view_config_file()?;
                 return Ok(Some(()));
             }
+            Commands::PrepareEnvironment => {
+                let config =
+                    set_up_configuration(self.args.uri.as_deref(), self.args.token.as_deref())?;
+                let client = ThanixClient {
+                    base_url: config.get_netbox_uri().to_string(),
+                    authentication_token: config.get_api_token().to_string(),
+                    client: Client::new(),
+                };
+                test_connection(&client)?;
+                check_environment(&client, &config, true)?;
+                return Ok(Some(()));
+            }
             _ => Ok(None),
         }
     }
@@ -388,11 +403,20 @@ impl Nazara {
             .ok_or_else(|| NazaraError::Other("Configuration not initialized".into()))?;
 
         match &self.args.command {
-            Commands::Register { ip_mode } => {
+            Commands::Register {
+                ip_mode,
+                prepare_environment,
+            } => {
+                check_environment(client, config, *prepare_environment)?;
                 let mode = ip_mode.unwrap_or(IpAssignmentMode::Static);
                 register_machine(client, machine, config.clone(), mode)?
             }
-            Commands::Update { id, ip_mode } => {
+            Commands::Update {
+                id,
+                ip_mode,
+                prepare_environment,
+            } => {
+                check_environment(client, config, *prepare_environment)?;
                 let mode = ip_mode.unwrap_or(IpAssignmentMode::Static);
                 update_machine(client, machine, config.clone(), id.to_owned(), mode)?
             }
@@ -449,6 +473,10 @@ enum Commands {
         /// IP assignment mode. (default: static)
         #[arg(long, value_enum, default_value = "static")]
         ip_mode: Option<IpAssignmentMode>,
+
+        /// Create missing NetBox entities (tags) instead of failing.
+        #[arg(long)]
+        prepare_environment: bool,
     },
     /// Update a given machine by ID.
     Update {
@@ -458,6 +486,10 @@ enum Commands {
         /// IP assignment mode. (default: static)
         #[arg(long, value_enum, default_value = "static")]
         ip_mode: Option<IpAssignmentMode>,
+
+        /// Create missing NetBox entities (tags) instead of failing.
+        #[arg(long)]
+        prepare_environment: bool,
     },
     /// Attempt to detect whether an update or new registration is necessary. (DEPRECATED, old default behaviour)
     Auto {
@@ -526,6 +558,8 @@ enum Commands {
     CheckConfig,
     /// Print currently active config options.
     ViewConfig,
+    /// Create any NetBox entity that does not already exist
+    PrepareEnvironment,
 }
 
 /// The arguments that Nazara expects to get via the cli.

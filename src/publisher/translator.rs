@@ -16,11 +16,12 @@ use crate::{
     Machine,
     collectors::network::NetworkInformation,
     configuration::parser::{CommonConfig, DeviceConfig, VmConfig},
+    constants::{DHCP_TAG_REQUEST, NAZARA_TAG_REQUEST},
 };
 use serde_json::{Value, json};
 use std::{collections::HashMap, net::IpAddr};
 use thanix_client::types::{
-    NestedTagRequest, PatchedWritableDeviceWithConfigContextRequest,
+    PatchedWritableDeviceWithConfigContextRequest,
     PatchedWritableVirtualMachineWithConfigContextRequest, WritableDeviceWithConfigContextRequest,
     WritableIPAddressRequest, WritableInterfaceRequest, WritableVMInterfaceRequest,
     WritableVirtualMachineWithConfigContextRequest,
@@ -226,7 +227,6 @@ pub fn information_to_ip(
     // payload.role = todo!();
     // payload.nat_inside = todo!();
     // payload.dns_name = todo!();
-    // payload.tags = todo!();
     WritableIPAddressRequest {
         address: format!("{interface_address}"),
         status: String::from("active"),
@@ -239,6 +239,7 @@ pub fn information_to_ip(
         description: String::from("This Address was automatically created by Nazara."),
         comments: String::from("Automatically created by Nazara."),
         custom_fields: Some(HashMap::new()),
+        tags: vec![NAZARA_TAG_REQUEST.clone()],
         ..Default::default()
     }
 }
@@ -255,18 +256,7 @@ pub fn information_to_dhcp_ip(
     payload.comments =
         "This IP was observed on the host and may change. Managed by DHCP.".to_string();
 
-    payload.tags = vec![
-        NestedTagRequest {
-            name: "dhcp".to_string(),
-            slug: "dhcp".to_string(),
-            color: "9e9e9e".to_string(), // neutral grey
-        },
-        NestedTagRequest {
-            name: "nazara".to_string(),
-            slug: "nazara".to_string(),
-            color: "03a9f4".to_string(),
-        },
-    ];
+    payload.tags = vec![DHCP_TAG_REQUEST.clone(), NAZARA_TAG_REQUEST.clone()];
 
     payload
 }

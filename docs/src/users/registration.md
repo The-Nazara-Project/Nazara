@@ -101,6 +101,30 @@ sudo nazara register --ip-mode dhcp-observed
 
 This mode is to be used in cases where Netbox itself manages available IP addresses and a DHCP server syncs from that.
 
+### Preparing the NetBox environment
+
+Before registering your Device, Nazara verifies that required enitites exist in NetBox (site, role, device_type, etc.) and that
+the tags `nazara` and `dhcp` that we use to identify our entries are present.
+
+If you are running Nazara for the first time, you may need to prepare your NetBox environment. The `--prepare-environment` flag
+will automatically create required tags if they don't exist.
+
+```bash
+sudo nazara register --prepare-environment ...
+```
+
+This will:
+
+- Verifiy site, role, device_type etc. IDs are valid and exist
+- Create the `nazara` tag (used to mark all Nazara-created entries)
+- Create the `dhcp` tag (used for DHCP-observed IP addresses)
+
+You can also prepare your environment without registering:
+
+```bash
+sudo nazara prepare-environment
+```
+
 ### Common Issues
 
 #### TOML Deserialization Error
