@@ -576,7 +576,7 @@ impl ConfigData {
         file.read_to_string(&mut contents)
             .map_err(|e| NazaraError::FileOpError(e))?;
 
-        //checks if the type, role, site, and cluster fields exist and warns/errors depending on the answer
+        // checks if the type, role, site, and cluster fields exist and warns/errors depending on the answer
         let config_unwrapped: Value = toml::from_str(&contents).unwrap();
         let config_objects: [&str; 2] = ["device", "vm"]; //config entries to check for
         let config_objects_device: [&str; 3] = ["device_type", "role", "site"]; //entries under "device" to check for
@@ -589,7 +589,7 @@ impl ConfigData {
         }
         let string = format!("{:?   }", config_unwrapped.get(config_objects[0]));
         println!("{}", string);
-        //throws a warning/errror if both a device and a vm config exist or both dont exist.
+        // throws a warning/errror if both a device and a vm config exist or both dont exist.
         if config_check_results[0] == true && config_check_results[1] == true {
             failure!("Both a VM and Device Config exist.");
             config_error = true;
@@ -598,9 +598,10 @@ impl ConfigData {
             config_error = true;
         }
 
+        // checks in more detail if the device configs are all correct
         if config_check_results[0] == true {
             for i in 0..3 {
-                if config_unwrapped["device"]
+                if config_unwrapped[config_objects[0]]
                     .get(config_objects_device[i])
                     .is_none()
                 {
@@ -613,39 +614,48 @@ impl ConfigData {
                 }
             }
         }
-        if config_check_results[0] == true {
-            if config_unwrapped["vm"].get("cluster").is_none() {
+        // checks in more detail if the vm configs are all correct
+        if config_check_results[1] == true {
+            if config_unwrapped[config_objects[1]].get("cluster").is_none() {
                 failure!("VM field exists but 'cluster' is empty");
                 config_error = true;
             }
         }
 
+        // would like this to work with soft and strict validation too, because it currently fails
+        // during create_config which isnt very elegant, but if the device or vm configs are incomplete
+        // the toml parser after this aborts immediately with its own cryptic error.
         if config_error == true {
             return Err(NazaraError::Other("Incorrect Config options".to_owned()));
+        } else {
+            success!("Device/VM config is valid")
         }
 
+        // this is the part that aborts if device/vm config is incorrect
         let config_data: ConfigData =
             toml::from_str(&contents).map_err(NazaraError::DeserializationError)?;
 
+        // checks the uri and api token, creating a string of the missing configs for later errors
+        let mut error_string: String = String::from("");
         if config_data.netbox.netbox_uri.is_empty() {
-            match mode {
-                ValidationMode::Soft => {
-                    warn!("Missing required config option: 'netbox_uri'");
-                }
-                ValidationMode::Strict => {
-                    return Err(NazaraError::MissingConfigOptionError(String::from(
-                        "netbox_url",
-                    )));
-                }
-            }
+            warn!("Missing required config option: 'netbox_uri'");
+            config_error = true;
+            error_string.push_str("netbox_uri ");
+        }
+        if config_data.netbox.netbox_api_token.is_empty() {
+            warn!("Missing required config option: 'netbox_api_token'");
+            config_error = true;
+            error_string.push_str("netbox_api_token");
         }
 
-        if config_data.netbox.netbox_api_token.is_empty() {
+        // prints a warning in soft mode and aborts in strict mode
+        if config_error == true {
             match mode {
                 ValidationMode::Soft => {
-                    warn!("Missing required config option: 'netbox_api_token'");
+                    warn!("Config is missing required Netbox config options");
                 }
                 ValidationMode::Strict => {
+                    failure!("Config is missing required Netbox config options");
                     return Err(NazaraError::MissingConfigOptionError(String::from(
                         "netbox_api_token",
                     )));
