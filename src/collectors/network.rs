@@ -7,7 +7,7 @@ use rtnetlink::packet_route::link::LinkAttribute;
 use serde::Serialize;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
-use crate::{NazaraError, error::NazaraResult, info, success};
+use crate::{NazaraError, error::NazaraResult};
 
 /// This object contains information about one specific network interface.
 #[derive(Serialize, Debug, Default)]
@@ -44,7 +44,7 @@ pub struct NetworkInformation {
 /// # Returns
 /// A list of all collected network interfaces.
 pub fn construct_network_information() -> NazaraResult<Vec<NetworkInformation>> {
-    info!("Collecting Network Information...");
+    status!("Collecting Network Information...");
 
     let mut result = Vec::new();
 

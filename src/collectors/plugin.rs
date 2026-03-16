@@ -8,8 +8,8 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::process::Command;
 
+use crate::NazaraError;
 use crate::error::NazaraResult;
-use crate::{NazaraError, info};
 
 /// Executes a given script.
 ///
@@ -27,7 +27,7 @@ pub fn execute(path: Option<String>) -> NazaraResult<HashMap<String, Value>> {
         }
     };
 
-    info!(
+    status!(
         "Attempting to execute plugin at path '{}'...",
         script_path.display()
     );

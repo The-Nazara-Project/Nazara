@@ -130,12 +130,14 @@
 //!
 //! Nazara is released under the terms of the [GPL-v3.0](./LICENSE).
 
+#[macro_use]
+pub mod output;
+
 pub mod collectors;
 pub mod configuration;
 pub mod constants;
 pub mod error;
 pub mod investigator;
-pub mod output;
 pub mod publisher;
 
 use clap::{Parser, Subcommand, ValueEnum};
@@ -291,7 +293,7 @@ impl Nazara {
                 cluster_id,
                 json,
             } => {
-                info!("Writing configuration file...");
+                status!("Writing configuration file...");
                 if json.is_some() {
                     write_config_file(
                         uri,   // ignored in JSON mode
@@ -387,7 +389,7 @@ impl Nazara {
             authentication_token: config.get_api_token().to_string(),
             client: Client::new(),
         };
-        info!("Testing connection...");
+        status!("Testing connection...");
         test_connection(&client)?;
         Ok(client)
     }

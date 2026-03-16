@@ -54,3 +54,15 @@ macro_rules! info {
         }
     }};
 }
+
+#[macro_export]
+macro_rules! status {
+    ($($arg:tt)*) => {{
+        use owo_colors::OwoColorize;
+        if $crate::output::color_enabled() {
+            println!("{} {}", "[status]".magenta().bold(), format!($($arg)*));
+        } else {
+            println!("[status] {}", format!($($arg)*));
+        }
+    }};
+}

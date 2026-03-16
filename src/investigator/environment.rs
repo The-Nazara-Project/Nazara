@@ -7,7 +7,6 @@ use crate::{
     NazaraError,
     configuration::parser::{ConfigData, MachineConfig},
     error::NazaraResult,
-    info,
 };
 
 /// Check if some NetBox objects exist.
@@ -21,13 +20,15 @@ use crate::{
 ///
 /// `Ok(())` or `NazaraError` depending on operation outcome.
 pub fn check_environment_objects(client: &ThanixClient, config: &ConfigData) -> NazaraResult<()> {
-    info!("Checking configured NetBox entities exist...");
+    status!("Checking configured NetBox entities exist...");
 
     match &config.machine {
         MachineConfig::Device(device_config) => {
-            info!(
+            status!(
                 "Checking device configuration: site={}, role={}, device_type={}",
-                device_config.site, device_config.role, device_config.device_type
+                device_config.site,
+                device_config.role,
+                device_config.device_type
             );
 
             if device_config.site > 0 {
@@ -41,7 +42,7 @@ pub fn check_environment_objects(client: &ThanixClient, config: &ConfigData) -> 
             }
         }
         MachineConfig::VM(vm_config) => {
-            info!("Checking VM configuration: cluster={}", vm_config.cluster);
+            status!("Checking VM configuration: cluster={}", vm_config.cluster);
 
             if vm_config.cluster > 0 {
                 check_vm_cluster(client, vm_config.cluster)?;
@@ -63,7 +64,7 @@ pub fn check_environment_objects(client: &ThanixClient, config: &ConfigData) -> 
 ///
 /// `Ok(())` if the site has been found, returns `NazaraError::UnexpectedResponse` otherwise.
 fn check_site(client: &ThanixClient, site_id: i64) -> NazaraResult<()> {
-    info!("Checking site with ID {}...", site_id);
+    status!("Checking site with ID {}...", site_id);
     match thanix_client::paths::dcim_sites_retrieve(client, site_id)? {
         thanix_client::paths::DcimSitesRetrieveResponse::Http200(site) => {
             let name = site.name.as_deref().unwrap_or("unknown");
@@ -86,7 +87,7 @@ fn check_site(client: &ThanixClient, site_id: i64) -> NazaraResult<()> {
 ///
 /// `Ok(())` if the device_role has been found, returns `NazaraError::UnexpectedResponse` otherwise.
 fn check_device_role(client: &ThanixClient, role_id: i64) -> NazaraResult<()> {
-    info!("Checking device role with ID {}...", role_id);
+    status!("Checking device role with ID {}...", role_id);
     match thanix_client::paths::dcim_device_roles_retrieve(client, role_id)? {
         thanix_client::paths::DcimDeviceRolesRetrieveResponse::Http200(role) => {
             let name = role.name.as_deref().unwrap_or("unknown");
@@ -109,7 +110,7 @@ fn check_device_role(client: &ThanixClient, role_id: i64) -> NazaraResult<()> {
 ///
 /// `Ok(())` if the device_type has been found, returns `NazaraError::UnexpectedResponse` otherwise.
 fn check_device_type(client: &ThanixClient, device_type_id: i64) -> NazaraResult<()> {
-    info!("Checking device type with ID {}...", device_type_id);
+    status!("Checking device type with ID {}...", device_type_id);
     match thanix_client::paths::dcim_device_types_retrieve(client, device_type_id)? {
         thanix_client::paths::DcimDeviceTypesRetrieveResponse::Http200(device_type) => {
             let model = device_type.model.as_deref().unwrap_or("unknown");
@@ -132,7 +133,7 @@ fn check_device_type(client: &ThanixClient, device_type_id: i64) -> NazaraResult
 ///
 /// `Ok(())` if the vm_cluster has been found, returns `NazaraError::UnexpectedResponse` otherwise.
 fn check_vm_cluster(client: &ThanixClient, cluster_id: i64) -> NazaraResult<()> {
-    info!("Checking VM cluster with ID {}...", cluster_id);
+    status!("Checking VM cluster with ID {}...", cluster_id);
     match thanix_client::paths::virtualization_clusters_retrieve(client, cluster_id)? {
         thanix_client::paths::VirtualizationClustersRetrieveResponse::Http200(cluster) => {
             let name = cluster.name.as_deref().unwrap_or("unknown");
