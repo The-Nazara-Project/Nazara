@@ -17,6 +17,7 @@ use crate::{
     collectors::network::NetworkInformation,
     configuration::parser::{CommonConfig, DeviceConfig, VmConfig},
     constants::{DHCP_TAG_REQUEST, NAZARA_TAG_REQUEST},
+    info,
 };
 use serde_json::{Value, json};
 use std::{collections::HashMap, net::IpAddr};
@@ -162,7 +163,7 @@ pub fn information_to_interface(
     interface: &NetworkInformation,
     device_id: &i64,
 ) -> WritableInterfaceRequest {
-    println!(
+    info!(
         "Creating Network Interface payload for '{}'...",
         &interface.name
     );
@@ -190,7 +191,7 @@ pub fn information_to_vm_interface(
     interface: &NetworkInformation,
     device_id: &i64,
 ) -> WritableVMInterfaceRequest {
-    println!(
+    info!(
         "Creating Network Interface payload for '{}'...",
         &interface.name
     );
@@ -220,7 +221,7 @@ pub fn information_to_ip(
     interface_id: i64,
     is_vm: bool,
 ) -> WritableIPAddressRequest {
-    println!("Creating IP Address payload...");
+    info!("Creating IP Address payload...");
 
     // payload.vrf = todo!();
     // payload.tenant = todo!();

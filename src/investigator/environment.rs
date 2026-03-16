@@ -21,7 +21,7 @@ use crate::{
 ///
 /// `Ok(())` or `NazaraError` depending on operation outcome.
 pub fn check_environment_objects(client: &ThanixClient, config: &ConfigData) -> NazaraResult<()> {
-    println!("Checking configured NetBox entities exist...");
+    info!("Checking configured NetBox entities exist...");
 
     match &config.machine {
         MachineConfig::Device(device_config) => {

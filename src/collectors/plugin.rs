@@ -27,7 +27,7 @@ pub fn execute(path: Option<String>) -> NazaraResult<HashMap<String, Value>> {
         }
     };
 
-    println!(
+    info!(
         "Attempting to execute plugin at path '{}'...",
         script_path.display()
     );

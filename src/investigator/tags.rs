@@ -19,7 +19,7 @@ use thanix_client::util::ThanixClient;
 /// `Ok(())` if the tags are found, `NazaraError` otherwise. Except when `prepare_environment`
 /// is passed. Then it attempts to create the tags in NetBox and escalates the operation result.
 pub fn ensure_required_tags(client: &ThanixClient, prepare_environment: bool) -> NazaraResult<()> {
-    println!("Checking for required NetBox tags...");
+    info!("Checking for required NetBox tags...");
 
     for tag_name in REQUIRED_TAGS {
         match tag_exists(client, tag_name) {

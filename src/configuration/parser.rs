@@ -83,8 +83,8 @@ pub fn view_config_file() -> NazaraResult<()> {
     let config_path = get_config_path(true);
 
     if !Path::new(&config_path).exists() {
-        eprint!(
-            "[warning] No config file found at '{}' use 'nazara write-config' to write a new one.",
+        warn!(
+            "No config file found at '{}' use 'nazara write-config' to write a new one.",
             config_path.display()
         );
         return Ok(());
@@ -191,7 +191,7 @@ pub fn check_config_file() -> NazaraResult<()> {
             "[Error] Configuration file does not exist!".into(),
         ));
     }
-    println!("Checking integrity of config file...");
+    info!("Checking integrity of config file...");
     ConfigData::validate_config_file(ValidationMode::Soft)?;
     success!("Configuration file valid!");
     Ok(())
@@ -271,7 +271,7 @@ fn create_new_config(
     file.write_all(contents.as_bytes())
         .map_err(NazaraError::FileOpError)?;
 
-    println!("Checking integrity of the file...");
+    info!("Checking integrity of the file...");
     ConfigData::validate_config_file(ValidationMode::Soft)?;
     Ok(())
 }
@@ -357,7 +357,7 @@ fn update_existing_config(
     }
 
     fs::write(config_path, contents).map_err(NazaraError::FileOpError)?;
-    println!("Checking integrity of the file...");
+    info!("Checking integrity of the file...");
     ConfigData::validate_config_file(ValidationMode::Soft)?;
     success!(
         "Updated existing configuration at {} (preserved comments)",
@@ -460,12 +460,12 @@ fn write_config_from_json(config_path: &std::path::Path, json_str: &str) -> Naza
 pub fn set_up_configuration(uri: Option<&str>, token: Option<&str>) -> NazaraResult<ConfigData> {
     let mut conf_data;
 
-    println!("Checking for existing configuration file...");
+    info!("Checking for existing configuration file...");
 
     if file_exists(&get_config_path(true)) {
-        println!("Configuration file already exists. Validating...");
+        info!("Configuration file already exists. Validating...");
         ConfigData::validate_config_file(ValidationMode::Strict)?;
-        println!("Configuration file valid. Loading defaults...");
+        success!("Configuration file valid. Loading defaults...");
         conf_data = ConfigData::read_config_file()?;
 
         if let Some(x) = uri {

@@ -63,7 +63,7 @@ pub fn register_machine(
     config_data: ConfigData,
     ip_mode: IpAssignmentMode,
 ) -> NazaraResult<()> {
-    println!("Starting registration process. This may take a while...");
+    info!("Starting registration process. This may take a while...");
 
     match &config_data.machine {
         MachineConfig::Device(config) => {
@@ -233,7 +233,7 @@ pub fn auto_register_or_update_machine(
     config_data: ConfigData,
     ip_mode: IpAssignmentMode,
 ) -> NazaraResult<()> {
-    println!("Starting auto register/update process. This may take a while...");
+    info!("Starting auto register/update process. This may take a while...");
 
     // Compute effective name once (includes hostname fallback or @ expansion)
     let search_name = compute_effective_name(
@@ -583,7 +583,7 @@ fn patch_device_primary_ips(
     machine: &Machine,
     device_id: i64,
 ) -> NazaraResult<()> {
-    println!("Applying primary IPs to entry...");
+    info!("Applying primary IPs to entry...");
 
     let mut patch = PatchedWritableDeviceWithConfigContextRequest::default();
 
@@ -627,7 +627,7 @@ fn patch_vm_primary_ips(
     machine: &Machine,
     vm_id: i64,
 ) -> NazaraResult<()> {
-    println!("Applying primary IPs to entry...");
+    info!("Applying primary IPs to entry...");
 
     let mut patch = PatchedWritableVirtualMachineWithConfigContextRequest::default();
 
@@ -694,7 +694,7 @@ fn ensure_dhcp_ip(
     is_vm: bool,
     parent_id: i64,
 ) -> NazaraResult<()> {
-    println!("[DHCP-Mode] Ensuring DHCP IP assignments...");
+    info!("[DHCP-Mode] Ensuring DHCP IP assignments...");
     let existing_id = if is_vm {
         search_vm_ip(client, &ip_str.to_owned(), Some(parent_id))?
     } else {

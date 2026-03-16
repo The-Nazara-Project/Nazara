@@ -90,7 +90,7 @@ pub fn test_connection(client: &ThanixClient) -> Result<(), NazaraError> {
 /// - `netbox_version`: The version of the NetBox instance extracted from the response.
 /// - `thanix_version`: The version of the installed `thanix_client` dependency.
 fn check_version_compatiblity(netbox_version: &str, thanix_version: &str) -> bool {
-    println!("Checking API client compatibility with used NetBox version...");
+    info!("Checking API client compatibility with used NetBox version...");
     let netbox_major = get_major_verison(netbox_version);
     let thanix_major = get_major_verison(thanix_version);
 
@@ -123,7 +123,7 @@ fn get_major_verison(version: &str) -> Option<u32> {
 /// # Returns
 /// The ID of the device, if it exists. Else `None`.
 pub fn search_device(client: &ThanixClient, name: &str, serial: &str) -> NazaraResult<Option<i64>> {
-    println!("Checking if device is already registered...");
+    info!("Checking if device is already registered...");
     let payload = DcimDevicesListQuery {
         name: Some(vec![name.to_owned()]),
         serial: Some(vec![serial.to_owned()]),
@@ -143,7 +143,7 @@ pub fn search_device(client: &ThanixClient, name: &str, serial: &str) -> NazaraR
 }
 
 pub fn search_vm(client: &ThanixClient, name: &str, serial: &str) -> NazaraResult<Option<i64>> {
-    println!("Checking if virtual machine is already registered...");
+    info!("Checking if virtual machine is already registered...");
     let payload = VirtualizationVirtualMachinesListQuery {
         name: Some(vec![name.to_owned()]),
         serial: Some(vec![serial.to_owned()]),
@@ -174,7 +174,7 @@ pub fn create_device(
     client: &ThanixClient,
     payload: WritableDeviceWithConfigContextRequest,
 ) -> NazaraResult<i64> {
-    println!("Creating device in NetBox...");
+    info!("Creating device in NetBox...");
 
     match dcim_devices_create(client, payload)? {
         DcimDevicesCreateResponse::Http201(created_device) => {
@@ -203,7 +203,7 @@ pub fn update_device(
     payload: PatchedWritableDeviceWithConfigContextRequest,
     id: i64,
 ) -> NazaraResult<i64> {
-    println!("Updating device in NetBox...");
+    info!("Updating device in NetBox...");
     match dcim_devices_partial_update(client, payload, id)? {
         DcimDevicesPartialUpdateResponse::Http200(updated_device) => {
             success!("Device updated successfully!");
@@ -225,7 +225,7 @@ pub fn create_vm(
     client: &ThanixClient,
     payload: WritableVirtualMachineWithConfigContextRequest,
 ) -> NazaraResult<i64> {
-    println!("Creating virtual machine in NetBox...");
+    info!("Creating virtual machine in NetBox...");
     match virtualization_virtual_machines_create(client, payload)? {
         VirtualizationVirtualMachinesCreateResponse::Http201(created_device) => {
             success!(
@@ -255,7 +255,7 @@ pub fn update_vm(
     payload: PatchedWritableVirtualMachineWithConfigContextRequest,
     id: i64,
 ) -> NazaraResult<i64> {
-    println!("Updating Virtual machine in NetBox...");
+    info!("Updating Virtual machine in NetBox...");
 
     match virtualization_virtual_machines_partial_update(client, payload, id)? {
         VirtualizationVirtualMachinesPartialUpdateResponse::Http200(updated_device) => {
@@ -277,7 +277,7 @@ pub fn update_vm(
 /// # Returns
 /// If it is found, the ID of the MAC address object in NetBox, else will return `None`.
 pub fn search_mac_address(client: &ThanixClient, mac_address: &str) -> NazaraResult<Option<i64>> {
-    println!("Searching for mac address...");
+    info!("Searching for mac address...");
 
     let mut payload = DcimMacAddressesListQuery::default();
     payload.mac_address__ic = Some(vec![mac_address.to_string()]);
@@ -304,7 +304,7 @@ pub fn search_mac_address(client: &ThanixClient, mac_address: &str) -> NazaraRes
 /// # Returns
 /// The ID of the newly created MAC address.
 pub fn create_mac_address(client: &ThanixClient, payload: MACAddressRequest) -> NazaraResult<i64> {
-    println!("Creating MAC address in NetBox...");
+    info!("Creating MAC address in NetBox...");
     match dcim_mac_addresses_create(client, payload)? {
         thanix_client::paths::DcimMacAddressesCreateResponse::Http201(result) => {
             success!(
@@ -354,7 +354,7 @@ pub fn search_interface(
     device_id: i64,
     name: &String,
 ) -> NazaraResult<Option<i64>> {
-    println!("Searching for interface '{name}'...");
+    info!("Searching for interface '{name}'...");
 
     let payload = DcimInterfacesListQuery {
         device_id: Some(vec![device_id]),
@@ -380,7 +380,7 @@ pub fn search_vm_interface(
     vm_id: i64,
     name: &String,
 ) -> NazaraResult<Option<i64>> {
-    println!("Searching for VM interface '{name}'...");
+    info!("Searching for VM interface '{name}'...");
 
     let payload = VirtualizationInterfacesListQuery {
         virtual_machine_id: Some(vec![vm_id]),
@@ -415,7 +415,7 @@ pub fn create_interface(
     client: &ThanixClient,
     payload: WritableInterfaceRequest,
 ) -> NazaraResult<i64> {
-    println!("Creating network interface in NetBox...");
+    info!("Creating network interface in NetBox...");
 
     match dcim_interfaces_create(client, payload)? {
         DcimInterfacesCreateResponse::Http201(result) => {
@@ -433,7 +433,7 @@ pub fn create_vm_interface(
     client: &ThanixClient,
     payload: WritableVMInterfaceRequest,
 ) -> NazaraResult<i64> {
-    println!("Creating network interface in NetBox...");
+    info!("Creating network interface in NetBox...");
     match virtualization_interfaces_create(client, payload)? {
         VirtualizationInterfacesCreateResponse::Http201(result) => {
             success!(
@@ -502,7 +502,7 @@ pub fn search_ip(
     address: &String,
     device_id: Option<i64>,
 ) -> NazaraResult<Option<i64>> {
-    println!("Searching for IP Address '{address}'...");
+    info!("Searching for IP Address '{address}'...");
     let payload = IpamIpAddressesListQuery {
         address: Some(vec![address.clone()]),
         device_id: device_id.map(|x| vec![x]),
@@ -516,7 +516,7 @@ pub fn search_vm_ip(
     address: &String,
     vm_ip: Option<i64>,
 ) -> NazaraResult<Option<i64>> {
-    println!("Searching for IP Address '{address}'...");
+    info!("Searching for IP Address '{address}'...");
     let payload = IpamIpAddressesListQuery {
         address: Some(vec![address.clone()]),
         virtual_machine_id: vm_ip.map(|x| vec![x]),
@@ -551,7 +551,7 @@ fn submit_ip_query(
 /// # Returns
 /// Returns the ID of the new IPAddress object if the creation of the IP address was successful.
 pub fn create_ip(client: &ThanixClient, payload: WritableIPAddressRequest) -> NazaraResult<i64> {
-    println!("Creating new IP address object...");
+    info!("Creating new IP address object...");
     match ipam_ip_addresses_create(client, payload)? {
         IpamIpAddressesCreateResponse::Http201(result) => {
             success!(
@@ -578,7 +578,7 @@ pub fn patch_ip(
     payload: PatchedWritableIPAddressRequest,
     id: i64,
 ) -> NazaraResult<i64> {
-    println!("Patching IPs for given interface...");
+    info!("Patching IPs for given interface...");
 
     match ipam_ip_addresses_partial_update(client, payload, id)? {
         IpamIpAddressesPartialUpdateResponse::Http200(result) => Ok(result.id),
@@ -594,7 +594,7 @@ pub fn patch_ip(
 /// - `state`: The API client instance to use.
 #[allow(unused)]
 pub fn get_interface_list(state: &ThanixClient) -> NazaraResult<Vec<Interface>> {
-    println!("Retrieving list of interfaces...");
+    info!("Retrieving list of interfaces...");
 
     match dcim_interfaces_list(state, DcimInterfacesListQuery::default())? {
         DcimInterfacesListResponse::Http200(interfaces) => interfaces.results.ok_or(
@@ -614,7 +614,7 @@ pub fn get_interface_by_name(
     state: &ThanixClient,
     payload: &WritableInterfaceRequest,
 ) -> NazaraResult<Interface> {
-    println!(
+    info!(
         "Trying to retrieve interface by name '{}'...",
         &payload.name
     );

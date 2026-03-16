@@ -4,7 +4,7 @@ mod tags;
 
 use thanix_client::util::ThanixClient;
 
-use crate::{NazaraResult, configuration::parser::ConfigData};
+use crate::{NazaraResult, configuration::parser::ConfigData, info};
 
 /// Run all checks of the NetBox environment.
 ///
@@ -22,7 +22,7 @@ pub fn check_environment(
     config: &ConfigData,
     prepare_environment: bool,
 ) -> NazaraResult<()> {
-    println!("Running NetBox environment checks before registration...");
+    info!("Running NetBox environment checks before registration...");
 
     environment::check_environment_objects(client, config)?;
 

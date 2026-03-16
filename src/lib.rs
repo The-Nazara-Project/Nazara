@@ -291,7 +291,7 @@ impl Nazara {
                 cluster_id,
                 json,
             } => {
-                println!("Writing configuration file...");
+                info!("Writing configuration file...");
                 if json.is_some() {
                     write_config_file(
                         uri,   // ignored in JSON mode
@@ -369,6 +369,7 @@ impl Nazara {
         }
 
         // If we only want to do a dry run, we only have to print the collected information.
+        //? should this be an `info!` or should it remain a println?
         if self.args.dry_run {
             println!("Dry run results:");
             dbg!(&machine);
@@ -386,7 +387,7 @@ impl Nazara {
             authentication_token: config.get_api_token().to_string(),
             client: Client::new(),
         };
-        println!("Testing connection...");
+        info!("Testing connection...");
         test_connection(&client)?;
         Ok(client)
     }
