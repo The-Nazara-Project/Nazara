@@ -18,9 +18,6 @@ use std::{fs, path::PathBuf};
 use super::util::replace_key;
 use crate::NazaraError;
 use crate::error::NazaraResult;
-use crate::info;
-use crate::success;
-use crate::warn;
 
 /// Configuration state set by the configuration file.
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -191,7 +188,7 @@ pub fn check_config_file() -> NazaraResult<()> {
             "[Error] Configuration file does not exist!".into(),
         ));
     }
-    info!("Checking integrity of config file...");
+    status!("Checking integrity of config file...");
     ConfigData::validate_config_file(ValidationMode::Soft)?;
     success!("Configuration file valid!");
     Ok(())
@@ -271,7 +268,7 @@ fn create_new_config(
     file.write_all(contents.as_bytes())
         .map_err(NazaraError::FileOpError)?;
 
-    info!("Checking integrity of the file...");
+    status!("Checking integrity of the file...");
     ConfigData::validate_config_file(ValidationMode::Soft)?;
     Ok(())
 }
@@ -357,7 +354,7 @@ fn update_existing_config(
     }
 
     fs::write(config_path, contents).map_err(NazaraError::FileOpError)?;
-    info!("Checking integrity of the file...");
+    status!("Checking integrity of the file...");
     ConfigData::validate_config_file(ValidationMode::Soft)?;
     success!(
         "Updated existing configuration at {} (preserved comments)",
@@ -460,7 +457,7 @@ fn write_config_from_json(config_path: &std::path::Path, json_str: &str) -> Naza
 pub fn set_up_configuration(uri: Option<&str>, token: Option<&str>) -> NazaraResult<ConfigData> {
     let mut conf_data;
 
-    info!("Checking for existing configuration file...");
+    status!("Checking for existing configuration file...");
 
     if file_exists(&get_config_path(true)) {
         info!("Configuration file already exists. Validating...");

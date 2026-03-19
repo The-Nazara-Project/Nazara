@@ -1,5 +1,4 @@
 use crate::{NazaraError, NazaraResult, constants::REQUIRED_TAGS};
-use crate::{info, success, warn};
 use thanix_client::paths::{
     ExtrasTagsCreateResponse, ExtrasTagsListQuery, ExtrasTagsListResponse, extras_tags_create,
     extras_tags_list,
@@ -19,7 +18,7 @@ use thanix_client::util::ThanixClient;
 /// `Ok(())` if the tags are found, `NazaraError` otherwise. Except when `prepare_environment`
 /// is passed. Then it attempts to create the tags in NetBox and escalates the operation result.
 pub fn ensure_required_tags(client: &ThanixClient, prepare_environment: bool) -> NazaraResult<()> {
-    info!("Checking for required NetBox tags...");
+    status!("Checking for required NetBox tags...");
 
     for tag_name in REQUIRED_TAGS {
         match tag_exists(client, tag_name) {

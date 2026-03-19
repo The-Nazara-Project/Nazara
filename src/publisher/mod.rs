@@ -21,7 +21,7 @@ use crate::publisher::translator::{
     compute_effective_name, information_to_device, information_to_existing_device,
     information_to_existing_vm, information_to_vm,
 };
-use crate::{IpAssignmentMode, NazaraError, failure, info, success};
+use crate::{IpAssignmentMode, NazaraError};
 use crate::{
     Machine,
     collectors::network::NetworkInformation,
@@ -63,7 +63,7 @@ pub fn register_machine(
     config_data: ConfigData,
     ip_mode: IpAssignmentMode,
 ) -> NazaraResult<()> {
-    info!("Starting registration process. This may take a while...");
+    status!("Starting registration process. This may take a while...");
 
     match &config_data.machine {
         MachineConfig::Device(config) => {
@@ -233,7 +233,7 @@ pub fn auto_register_or_update_machine(
     config_data: ConfigData,
     ip_mode: IpAssignmentMode,
 ) -> NazaraResult<()> {
-    info!("Starting auto register/update process. This may take a while...");
+    status!("Starting auto register/update process. This may take a while...");
 
     // Compute effective name once (includes hostname fallback or @ expansion)
     let search_name = compute_effective_name(
@@ -398,7 +398,7 @@ fn update_nwi(
     config_data: &CommonConfig,
     interface_id: &i64,
 ) -> NazaraResult<i64> {
-    info!("Updating interface '{interface_id}' belonging to device '{device_id}'");
+    status!("Updating interface '{interface_id}' belonging to device '{device_id}'");
 
     let mac_addr = interface
         .mac_addr
@@ -448,7 +448,7 @@ fn update_vm_nwi(
     config_data: &CommonConfig,
     interface_id: &i64,
 ) -> NazaraResult<i64> {
-    info!("Updating interface '{interface_id}' belonging to device '{device_id}'");
+    status!("Updating interface '{interface_id}' belonging to device '{device_id}'");
 
     let mac_addr = interface
         .mac_addr
@@ -583,7 +583,7 @@ fn patch_device_primary_ips(
     machine: &Machine,
     device_id: i64,
 ) -> NazaraResult<()> {
-    info!("Applying primary IPs to entry...");
+    status!("Applying primary IPs to entry...");
 
     let mut patch = PatchedWritableDeviceWithConfigContextRequest::default();
 
@@ -616,7 +616,7 @@ fn patch_device_primary_ips(
     }
 
     update_device(client, patch, device_id)?;
-    info!("Patched primary IPs for device {device_id}");
+    status!("Patched primary IPs for device {device_id}");
     Ok(())
 }
 
@@ -627,7 +627,7 @@ fn patch_vm_primary_ips(
     machine: &Machine,
     vm_id: i64,
 ) -> NazaraResult<()> {
-    info!("Applying primary IPs to entry...");
+    status!("Applying primary IPs to entry...");
 
     let mut patch = PatchedWritableVirtualMachineWithConfigContextRequest::default();
 
@@ -660,7 +660,7 @@ fn patch_vm_primary_ips(
     }
 
     update_vm(client, patch, vm_id)?;
-    info!("Patched primary IPs for VM '{vm_id}'");
+    status!("Patched primary IPs for VM '{vm_id}'");
     Ok(())
 }
 
@@ -694,7 +694,7 @@ fn ensure_dhcp_ip(
     is_vm: bool,
     parent_id: i64,
 ) -> NazaraResult<()> {
-    info!("[DHCP-Mode] Ensuring DHCP IP assignments...");
+    status!("[DHCP-Mode] Ensuring DHCP IP assignments...");
     let existing_id = if is_vm {
         search_vm_ip(client, &ip_str.to_owned(), Some(parent_id))?
     } else {
@@ -707,7 +707,7 @@ fn ensure_dhcp_ip(
                 ipam_ip_addresses_retrieve(client, id)?
             {
                 if ip.assigned_object_id != Some(interface_id as u64) {
-                    info!(
+                    status!(
                         "[DHCP-Mode] Reassigning IP '{ip_str}' from interface '{:?}' to '{interface_id}'",
                         ip.assigned_object_id
                     );
@@ -734,7 +734,7 @@ fn ensure_dhcp_ip(
             }
         }
         None => {
-            info!("[DHCP-Mode] IP address '{ip_str}' is not yet registered. Registering...");
+            status!("[DHCP-Mode] IP address '{ip_str}' is not yet registered. Registering...");
             let addr = ip_str
                 .parse()
                 .map_err(|_| NazaraError::NetBoxApiError(format!("Invalid IP: {ip_str}")))?;
@@ -783,7 +783,7 @@ fn reconcile_static_device_ips(
 ) -> NazaraResult<()> {
     // IPv4
     if let Some(ip) = interface.v4ip {
-        info!("[DHCP-Mode] Reconciling static IPv4: '{ip}'");
+        status!("[DHCP-Mode] Reconciling static IPv4: '{ip}'");
 
         let ipv4_id = search_ip(client, &ip.to_string(), None)?.ok_or_else(|| {
             failure!("[DHCP-Mode] IPv4 {ip} not found in NetBox!");
@@ -820,7 +820,7 @@ fn reconcile_static_device_ips(
 
     // IPv6
     if let Some(ip) = interface.v6ip {
-        info!("[DHCP-Mode] Reconciling static IPv6: '{ip}'");
+        status!("[DHCP-Mode] Reconciling static IPv6: '{ip}'");
 
         let ipv6_id = search_ip(client, &ip.to_string(), None)?.ok_or_else(|| {
             failure!("[DHCP-Mode] IPv6 '{ip}' not found in NetBox!");
@@ -887,7 +887,7 @@ fn reconcile_static_vm_ips(
 ) -> NazaraResult<()> {
     // IPv4
     if let Some(ip) = interface.v4ip {
-        info!("[DHCP-Mode] Reconciling VM static IPv4: {ip}");
+        status!("[DHCP-Mode] Reconciling VM static IPv4: {ip}");
 
         let ipv4_id = search_vm_ip(client, &ip.to_string(), None)?.ok_or_else(|| {
             failure!("[DHCP-Mode] VM IPv4 '{ip}' not found in NetBox");
@@ -923,7 +923,7 @@ fn reconcile_static_vm_ips(
 
     // IPv6
     if let Some(ip) = interface.v6ip {
-        info!("[DHCP-Mode] Reconciling VM static IPv6: '{ip}'");
+        status!("[DHCP-Mode] Reconciling VM static IPv6: '{ip}'");
 
         let ipv6_id = search_vm_ip(client, &ip.to_string(), None)?.ok_or_else(|| {
             failure!("[DHCP-Mode] VM IPv6 '{ip}' not found in NetBox!");
