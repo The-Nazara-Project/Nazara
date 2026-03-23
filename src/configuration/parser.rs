@@ -593,13 +593,13 @@ impl ConfigData {
         if config_check_results[0] == true && config_check_results[1] == true {
             failure!("Both a VM and Device Config exist.");
             config_error = true;
-        } else if config_check_results[0] == false && config_check_results[1] == false {
+        } else if !config_check_results[0] && !config_check_results[1] {
             failure!("Neither Device Config nor VM Config exists");
             config_error = true;
         }
 
         // checks in more detail if the device configs are all correct
-        if config_check_results[0] == true {
+        if config_check_results[0] {
             for i in 0..3 {
                 if config_unwrapped[config_objects[0]]
                     .get(config_objects_device[i])
@@ -615,7 +615,7 @@ impl ConfigData {
             }
         }
         // checks in more detail if the vm configs are all correct
-        if config_check_results[1] == true {
+        if config_check_results[1] {
             if config_unwrapped[config_objects[1]].get("cluster").is_none() {
                 failure!("VM field exists but 'cluster' is empty");
                 config_error = true;
@@ -625,7 +625,7 @@ impl ConfigData {
         // would like this to work with soft and strict validation too, because it currently fails
         // during create_config which isnt very elegant, but if the device or vm configs are incomplete
         // the toml parser after this aborts immediately with its own cryptic error.
-        if config_error == true {
+        if config_error {
             return Err(NazaraError::Other("Incorrect Config options".to_owned()));
         } else {
             success!("Device/VM config is valid")
@@ -649,7 +649,7 @@ impl ConfigData {
         }
 
         // prints a warning in soft mode and aborts in strict mode
-        if config_error == true {
+        if config_error {
             match mode {
                 ValidationMode::Soft => {
                     warn!("Config is missing required Netbox config options");
