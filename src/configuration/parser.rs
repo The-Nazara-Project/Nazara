@@ -587,8 +587,7 @@ impl ConfigData {
                 config_check_results[i] = true;
             }
         }
-        let string = format!("{:?   }", config_unwrapped.get(config_objects[0]));
-        println!("{}", string);
+
         // throws a warning/errror if both a device and a vm config exist or both dont exist.
         if config_check_results[0] == true && config_check_results[1] == true {
             failure!("Both a VM and Device Config exist.");
