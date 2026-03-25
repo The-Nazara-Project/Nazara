@@ -1,4 +1,4 @@
-use crate::{NazaraError, NazaraResult, constants::REQUIRED_TAGS};
+use crate::{constants::REQUIRED_TAGS, error::*};
 use thanix_client::paths::{
     ExtrasTagsCreateResponse, ExtrasTagsListQuery, ExtrasTagsListResponse, extras_tags_create,
     extras_tags_list,

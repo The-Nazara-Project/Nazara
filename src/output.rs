@@ -11,10 +11,12 @@ pub fn color_enabled() -> bool {
 macro_rules! success {
     ($($arg:tt)*) => {{
         use owo_colors::OwoColorize;
-        if $crate::output::color_enabled() {
-            println!("{} {}", "[success]".green().bold(), format!($($arg)*));
-        } else {
-            println!("[success] {}", format!($($arg)*));
+        if *$crate::LOG_LEVEL.get().unwrap() <= $crate::LogLevelList::Error {
+            if $crate::output::color_enabled() {
+                println!("{} {}", "[success]".green().bold(), format!($($arg)*));
+            } else {
+                println!("[success] {}", format!($($arg)*));
+            }
         }
     }};
 }
@@ -23,10 +25,12 @@ macro_rules! success {
 macro_rules! failure {
     ($($arg:tt)*) => {{
         use owo_colors::OwoColorize;
-        if $crate::output::color_enabled() {
-            eprintln!("{} {}", "[error]".red().bold(), format!($($arg)*));
-        } else {
-            eprintln!("[error] {}", format!($($arg)*));
+        if *$crate::LOG_LEVEL.get().unwrap() <= $crate::LogLevelList::Fatal {
+            if $crate::output::color_enabled() {
+                eprintln!("{} {}", "[error]  ".red().bold(), format!($($arg)*));
+            } else {
+                eprintln!("[error]   {}", format!($($arg)*));
+            }
         }
     }};
 }
@@ -35,10 +39,12 @@ macro_rules! failure {
 macro_rules! warn {
     ($($arg:tt)*) => {{
         use owo_colors::OwoColorize;
-        if $crate::output::color_enabled() {
-            eprintln!("{} {}", "[warning]".yellow().bold(), format!($($arg)*));
-        } else {
-            eprintln!("[warning] {}", format!($($arg)*));
+        if *$crate::LOG_LEVEL.get().unwrap() <= $crate::LogLevelList::Warn {
+            if $crate::output::color_enabled() {
+                eprintln!("{} {}", "[warning]".yellow().bold(), format!($($arg)*));
+            } else {
+                eprintln!("[warning] {}", format!($($arg)*));
+            }
         }
     }};
 }
@@ -47,10 +53,12 @@ macro_rules! warn {
 macro_rules! info {
     ($($arg:tt)*) => {{
         use owo_colors::OwoColorize;
-        if $crate::output::color_enabled() {
-            println!("{} {}", "[info]".bright_blue().bold(), format!($($arg)*));
-        } else {
-            println!("[info] {}", format!($($arg)*));
+        if *$crate::LOG_LEVEL.get().unwrap() <= $crate::LogLevelList::Info {
+            if $crate::output::color_enabled() {
+                println!("{} {}", "[info]   ".bright_blue().bold(), format!($($arg)*));
+            } else {
+                println!("[info]    {}", format!($($arg)*));
+            }
         }
     }};
 }
@@ -59,10 +67,12 @@ macro_rules! info {
 macro_rules! status {
     ($($arg:tt)*) => {{
         use owo_colors::OwoColorize;
-        if $crate::output::color_enabled() {
-            println!("{} {}", "[status]".magenta().bold(), format!($($arg)*));
-        } else {
-            println!("[status] {}", format!($($arg)*));
+        if *$crate::LOG_LEVEL.get().unwrap() <= $crate::LogLevelList::Debug {
+            if $crate::output::color_enabled() {
+                println!("{} {}", "[status] ".magenta().bold(), format!($($arg)*));
+            } else {
+                println!("[status]  {}", format!($($arg)*));
+            }
         }
     }};
 }

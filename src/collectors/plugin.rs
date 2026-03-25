@@ -8,8 +8,7 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::process::Command;
 
-use crate::NazaraError;
-use crate::error::NazaraResult;
+use crate::error::*;
 
 /// Executes a given script.
 ///

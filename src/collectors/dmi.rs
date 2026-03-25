@@ -1,6 +1,6 @@
 //! This module provides logic to collect and process system information by using SMBIOS and DMI tables.
 
-use crate::{NazaraError, error::NazaraResult};
+use crate::error::*;
 use dmidecode::{Structure, processor::ProcessorType};
 use serde::Serialize;
 use std::fs;

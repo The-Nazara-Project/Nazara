@@ -158,11 +158,10 @@ use serde_json::Value;
 use std::collections::HashMap;
 use thanix_client::util::ThanixClient;
 
-pub use error::NazaraError;
-
 use crate::configuration::parser::ConfigData;
-#[cfg(target_os = "linux")]
-use crate::error::NazaraResult;
+use crate::error::*;
+
+use std::sync::OnceLock;
 
 // ================================================
 // =========NAZARA INFORMATION STATE===============
@@ -179,6 +178,19 @@ pub struct Nazara {
     config: Option<ConfigData>,
     client: Option<ThanixClient>,
 }
+
+#[derive(PartialEq, PartialOrd, ValueEnum, Clone, Debug)]
+pub enum LogLevelList {
+    Trace,
+    Debug,
+    Info,
+    Warn,
+    Error,
+    Fatal,
+}
+
+//pub static LOG_LEVEL: LogLevelList = LogLevelList::Debug; //
+pub static LOG_LEVEL: OnceLock<LogLevelList> = OnceLock::new();
 
 /// This struct represents your machine.
 /// It holds all information collected and allows for sharing this
@@ -237,8 +249,10 @@ impl Nazara {
     /// Returns a `NazaraResult`, escalating any errors to the top, or
     /// returning an empty `Ok(())`.
     pub fn run(&mut self) -> NazaraResult<()> {
-        Self::print_banner();
-
+        LOG_LEVEL.set(self.args.log_level.clone()).unwrap();
+        if *LOG_LEVEL.get().unwrap() <= LogLevelList::Info {
+            Self::print_banner();
+        }
         if let Some(_) = self.handle_config_commands()? {
             return Ok(());
         }
@@ -591,6 +605,10 @@ struct Args {
     /// The Path to a plugin script you want to run.
     #[arg(short, long)]
     plugin: Option<String>,
+
+    ///Debug level, defaults to Debug
+    #[arg(long, default_value = "debug", value_enum)]
+    log_level: LogLevelList,
 
     /// Subcommands.
     #[command(subcommand)]
