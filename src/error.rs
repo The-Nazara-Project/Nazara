@@ -1,3 +1,5 @@
+use crate::failure;
+
 #[derive(Debug)]
 pub enum NazaraError {
     /// Something went wrong trying to parse DMI tables.
@@ -79,7 +81,8 @@ impl std::fmt::Display for NazaraError {
                 write!(f, "Missing required config parameter: {err}")
             }
             NazaraError::DeserializationError(err) => {
-                write!(f, "Invalid config file: {err}")
+                failure!("Invalid config file");
+                write!(f, "{err}")
             }
             NazaraError::SerializationError(err) => {
                 write!(f, "Serialization error: {err}")
