@@ -245,7 +245,6 @@ impl Nazara {
 
         let machine = self.prepare_machine()?;
 
-        // TODO: Do we still need this set_up_configuration call?
         self.config = Some(set_up_configuration(
             self.args.uri.as_deref(),
             self.args.token.as_deref(),

@@ -101,7 +101,6 @@ pub fn construct_dmi_information() -> NazaraResult<DmiInformation> {
                     // If we have a UUID, construct one from the buffer, otherwise an empty string.
                     uuid: x.uuid.map_or_else(String::new, |u| u.to_string()),
                     serial: x.serial.to_owned(),
-                    // TODO
                     is_virtual: false,
                 })
             }
