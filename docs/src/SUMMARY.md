@@ -8,6 +8,7 @@
     - [Setting up a Test Environment](./contributors/test_environment.md)
     - [Testing VMs](./contributors/test_vms.md)
     - [Contribution Workflow](./contributors/contributing_workflow.md)
+    - [Documentation Workflow](./contributors/documentation_workflow.md)
     - [Dependency Policy](./contributors/dependencies.md)
     - [Security Policy](./contributors/security.md)
     - [Becoming a Packager](./contributors/becoming_packager.md)
