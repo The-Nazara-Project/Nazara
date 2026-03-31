@@ -621,9 +621,7 @@ impl ConfigData {
             }
         }
 
-        // would like this to work with soft and strict validation too, because it currently fails
-        // during create_config which isnt very elegant, but if the device or vm configs are incomplete
-        // the toml parser after this aborts immediately with its own cryptic error.
+        // FIXME: https://codeberg.org/nazara-project/Nazara/issues/178
         if config_error {
             return Err(NazaraError::Other("Incorrect Config options".to_owned()));
         } else {
