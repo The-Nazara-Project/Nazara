@@ -30,7 +30,20 @@ Nazara accepts these parameters from you:
 - `-p, --plugin <PLUGIN>`: The path to a plugin script you want to use to fill in custom fields.
 - `-h, --help`: Print help.
 - `-V, --version`: Print version.
-- `--log_level`: Changes the log level. Defaults to `debug`
+- `--log-level`: Changes the level of status messages to be printed to the terminal. Defaults to `debug`.
+
+~~~admonish info title="Hint: Log Levels" collapsible=true
+
+Valid values for `--log-level` are:
+
+- `trace`
+- `debug`
+- `info`
+- `warn`
+- `error`
+- `fatal` (suppresses all output except for fatal errors)
+
+~~~
 
 Afterwards, Nazara expects one of the following operation types to be specified:
 

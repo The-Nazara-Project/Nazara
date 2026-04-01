@@ -250,9 +250,8 @@ impl Nazara {
     /// returning an empty `Ok(())`.
     pub fn run(&mut self) -> NazaraResult<()> {
         LOG_LEVEL.set(self.args.log_level.clone()).unwrap();
-        if *LOG_LEVEL.get().unwrap() <= LogLevelList::Info {
-            Self::print_banner();
-        }
+        Self::print_banner();
+
         if let Some(_) = self.handle_config_commands()? {
             return Ok(());
         }
@@ -606,7 +605,7 @@ struct Args {
     #[arg(short, long)]
     plugin: Option<String>,
 
-    ///Debug level, defaults to Debug
+    ///Output level, defaults to Debug
     #[arg(long, default_value = "debug", value_enum)]
     log_level: LogLevelList,
 
