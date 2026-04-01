@@ -633,15 +633,15 @@ impl ConfigData {
                 warn!("VM field exists but 'cluster' is 0");
                 config_zero = true;
             }
+        }
 
-            // FIXME: https://codeberg.org/nazara-project/Nazara/issues/178
-            if config_error {
-                return Err(NazaraError::Other("Incorrect Config options".to_owned()));
-            } else if config_zero {
-                warn!("Device/VM config is valid, but values set to 0 must be changed")
-            } else {
-                success!("Device/VM config is valid")
-            }
+        //errors out if something is very wrong with the config, warns if a change needs to be made, otherwise continues
+        if config_error {
+            return Err(NazaraError::Other("Incorrect Config options".to_owned()));
+        } else if config_zero {
+            warn!("Device/VM config is valid, but values set to 0 must be changed")
+        } else {
+            success!("Device/VM config is valid")
         }
 
         // this is the part that aborts if device/vm config is incorrect
