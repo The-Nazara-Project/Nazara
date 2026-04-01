@@ -23,10 +23,10 @@ primary_ip6 = ""
 # Use [device] for devices, or [vm] if this is a virtual machine.
 # ---------------------------------------------------------------
 
-# [device]
-# device_type = 0
-# role = 0
-# site = 0
+[device]
+device_type = 0
+role = 0
+site = 0
 
 # [vm]
 # cluster = 0
