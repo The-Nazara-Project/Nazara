@@ -71,6 +71,8 @@ mod tests {
     use std::os::unix::fs::PermissionsExt;
     use std::path::PathBuf;
 
+    use crate::LogLevelList;
+
     use super::*;
 
     fn create_test_script(content: &str) -> Result<PathBuf, Box<dyn Error>> {
@@ -95,7 +97,7 @@ mod tests {
     #[test]
     fn test_validate_invalid_json() {
         let invalid_json = "Invalid JSON format";
-
+        let _ = crate::LOG_LEVEL.set(LogLevelList::Debug);
         let result = validate(invalid_json);
         assert!(result.is_err());
         if let Err(NazaraError::InvalidPluginOutput(e)) = result {
@@ -115,9 +117,8 @@ mod tests {
         #!/bin/bash
         echo "Invalid JSON"
     "#;
-
         let path = create_test_script(script_content).unwrap();
-
+        let _ = crate::LOG_LEVEL.set(LogLevelList::Debug);
         let result = execute(Some(path.to_str().unwrap().to_string()));
         assert!(result.is_err());
         if let Err(e) = result {
