@@ -19,6 +19,7 @@ use thanix_client::util::ThanixClient;
 /// is passed. Then it attempts to create the tags in NetBox and escalates the operation result.
 pub fn ensure_required_tags(client: &ThanixClient, prepare_environment: bool) -> NazaraResult<()> {
     status!("Checking for required NetBox tags...");
+    let mut tag_error = false;
 
     for tag_name in REQUIRED_TAGS {
         match tag_exists(client, tag_name) {
@@ -34,7 +35,8 @@ pub fn ensure_required_tags(client: &ThanixClient, prepare_environment: bool) ->
                         }
                     }
                 } else {
-                    warn!(
+                    tag_error = true;
+                    failure!(
                         "Tag '{}' does not exist. Use --prepare-environment to create it.",
                         tag_name
                     );
@@ -44,6 +46,9 @@ pub fn ensure_required_tags(client: &ThanixClient, prepare_environment: bool) ->
                 warn!("Could not check if tag '{}' exists: {}", tag_name, e);
             }
         }
+    }
+    if tag_error {
+        return Err(NazaraError::Other("Required tags do not exist".to_owned()));
     }
 
     success!("Tag check complete");
