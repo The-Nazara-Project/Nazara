@@ -16,8 +16,7 @@ use std::path::Path;
 use std::{fs, path::PathBuf};
 
 use super::util::replace_key;
-use crate::NazaraError;
-use crate::error::NazaraResult;
+use crate::error::*;
 
 /// Configuration state set by the configuration file.
 #[derive(Debug, Serialize, Deserialize, Clone)]

@@ -7,7 +7,7 @@
 //! Errors are escalated upwards.
 extern crate thanix_client;
 
-use crate::{NazaraError, error::NazaraResult};
+use crate::error::*;
 
 use serde_json::Value;
 use thanix_client::{

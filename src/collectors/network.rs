@@ -7,7 +7,7 @@ use rtnetlink::packet_route::link::LinkAttribute;
 use serde::Serialize;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
-use crate::{NazaraError, error::NazaraResult};
+use crate::error::*;
 
 /// This object contains information about one specific network interface.
 #[derive(Serialize, Debug, Default)]

@@ -1,5 +1,3 @@
-use crate::failure;
-
 #[derive(Debug)]
 pub enum NazaraError {
     /// Something went wrong trying to parse DMI tables.

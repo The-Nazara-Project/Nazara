@@ -4,9 +4,8 @@
 use thanix_client::util::ThanixClient;
 
 use crate::{
-    NazaraError,
     configuration::parser::{ConfigData, MachineConfig},
-    error::NazaraResult,
+    error::*,
 };
 
 /// Check if some NetBox objects exist.

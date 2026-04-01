@@ -12,7 +12,7 @@ mod api_client;
 pub mod translator;
 
 use crate::configuration::parser::{CommonConfig, MachineConfig};
-use crate::error::NazaraResult;
+
 use crate::publisher::api_client::{
     create_mac_address, create_vm, create_vm_interface, patch_ip, search_mac_address, search_vm,
     search_vm_interface, search_vm_ip, update_vm, update_vm_interface,
@@ -21,7 +21,7 @@ use crate::publisher::translator::{
     compute_effective_name, information_to_device, information_to_existing_device,
     information_to_existing_vm, information_to_vm,
 };
-use crate::{IpAssignmentMode, NazaraError};
+use crate::{IpAssignmentMode, error::*};
 use crate::{
     Machine,
     collectors::network::NetworkInformation,

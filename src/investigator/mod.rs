@@ -4,7 +4,7 @@ mod tags;
 
 use thanix_client::util::ThanixClient;
 
-use crate::{NazaraResult, configuration::parser::ConfigData};
+use crate::{configuration::parser::ConfigData, error::*};
 
 /// Run all checks of the NetBox environment.
 ///
