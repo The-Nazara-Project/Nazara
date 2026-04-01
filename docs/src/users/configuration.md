@@ -1,5 +1,25 @@
 # Configuration
 
+~~~admonish danger title="`v0.2.0`: Breaking Change in Configuration with NetBox `v4.5.x`"
+Since NetBox `v4.5.x`, NetBox requires a different format of API token in the authentication header.
+This applies for any new `v2` token. `v1` tokens are unaffected by this.
+
+In your config file, instead of:
+
+    netbox_api_token = "$TOKEN"
+
+you have to write:
+
+    netbox_api_token = "nbt_$KEY.$TOKEN"
+
+The `$KEY` value can be found in the corresponding "Key" field in the Netbox WebUI when looking at the
+API key entry.
+
+We are currently looking into updating our documentation and API client.
+
+Codeberg Issue Reference: [#179](https://codeberg.org/nazara-project/Nazara/issues/179)
+~~~
+
 Nazara supports two ways of providing configuration parameters: CLI arguments and a configuration file.
 
 Nazara accepts these parameters from you:
