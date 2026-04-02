@@ -55,7 +55,8 @@ pub fn uncomment_key(mut text: String, section: &str, key: &str) -> String {
             continue;
         }
 
-        // Replace line if we’re in the correct section and key matches
+        // Removes first 2 characters from the line if its been commented out
+        // and we’re in the correct section and key matches
         if in_section && trimmed.starts_with(&format!("# {key} =")) {
             let mut string = line.to_string();
             string.remove(0);
@@ -78,7 +79,7 @@ pub fn uncomment_section(mut text: String, section: &str) -> String {
     for line in text.lines() {
         let trimmed = line.trim();
 
-        // Detect section headers
+        // Removes first 2 characters from the section header if its been commented out
         if trimmed.starts_with(&format!("# [{section}")) && trimmed.ends_with(']') {
             let mut string = line.to_string();
             string.remove(0);
@@ -109,7 +110,7 @@ pub fn comment_out_key(mut text: String, section: &str, key: &str) -> String {
             continue;
         }
 
-        // Replace line if we’re in the correct section and key matches
+        // Adds a comment if we’re in the correct section and key matches
         if in_section && trimmed.starts_with(&format!("{key} =")) {
             new_lines.push(format!("# {}", trimmed));
         } else {
@@ -129,7 +130,7 @@ pub fn comment_out_section(mut text: String, section: &str) -> String {
     for line in text.lines() {
         let trimmed = line.trim();
 
-        // Detect section headers
+        // Adds a comment to the section header
         if trimmed.starts_with(&format!("[{section}")) && trimmed.ends_with(']') {
             new_lines.push(format!("# {}", line));
         } else {

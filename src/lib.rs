@@ -565,7 +565,7 @@ enum Commands {
         #[arg(long, conflicts_with = "json")]
         primary_ip6: Option<String>,
 
-        /// forces a new config file,
+        /// Forces a new config file, overwriting any existing configs
         #[arg(long)]
         force: bool,
 
