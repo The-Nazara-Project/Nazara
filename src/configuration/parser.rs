@@ -135,6 +135,7 @@ pub fn write_config_file(
     role: &Option<i64>,
     site: &Option<i64>,
     cluster: &Option<i64>,
+    force: &bool,
     json: &Option<String>,
 ) -> NazaraResult<()> {
     let config_path = get_config_path(true);
@@ -146,7 +147,7 @@ pub fn write_config_file(
         return write_config_from_json(&config_path, &json_str);
     }
 
-    if file_exists(&config_path) {
+    if file_exists(&config_path) && !force {
         update_existing_config(
             &config_path,
             uri,
