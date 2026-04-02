@@ -15,7 +15,7 @@ use std::io::prelude::*;
 use std::path::Path;
 use std::{fs, path::PathBuf};
 
-use super::util::replace_key;
+use super::util::*;
 use crate::error::*;
 
 /// Configuration state set by the configuration file.
@@ -334,9 +334,13 @@ fn update_existing_config(
 
     // Machine-specific
     if device_type.is_some() || role.is_some() || site.is_some() {
+        contents = uncomment_section(contents, "device");
         if !contents.contains("[device]") {
             contents.push_str("\n[device]\n");
         }
+        contents = uncomment_key(contents, "device", "device_type");
+        contents = uncomment_key(contents, "device", "role");
+        contents = uncomment_key(contents, "device", "site");
         if let Some(v) = device_type {
             contents = replace_key(contents, "device", "device_type", &v.to_string());
         }
@@ -346,11 +350,19 @@ fn update_existing_config(
         if let Some(v) = site {
             contents = replace_key(contents, "device", "site", &v.to_string());
         }
+        contents = comment_out_key(contents, "vm", "cluster");
+        contents = comment_out_section(contents, "vm")
     } else if let Some(c) = cluster {
+        contents = uncomment_section(contents, "vm");
         if !contents.contains("[vm]") {
             contents.push_str("\n[vm]\n");
         }
+        contents = uncomment_key(contents, "vm", "cluster");
         contents = replace_key(contents, "vm", "cluster", &c.to_string());
+        contents = comment_out_key(contents, "device", "device_type");
+        contents = comment_out_key(contents, "device", "role");
+        contents = comment_out_key(contents, "device", "site");
+        contents = comment_out_section(contents, "device")
     }
 
     fs::write(config_path, contents).map_err(NazaraError::FileOpError)?;
