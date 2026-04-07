@@ -786,11 +786,12 @@ fn reconcile_static_device_ips(
         status!("[DHCP-Mode] Reconciling static IPv4: '{ip}'");
 
         let ipv4_id = search_ip(client, &ip.to_string(), None)?.ok_or_else(|| {
-            failure!("[DHCP-Mode] IPv4 {ip} not found in NetBox!");
-            NazaraError::NetBoxApiError(format!(
+            let err = NazaraError::NetBoxApiError(format!(
                 "IPv4 address \"{}\" was not registered in NetBox",
                 ip
-            ))
+            ));
+            err.log(Some("DHCP-Mode"));
+            err
         })?;
 
         if let IpamIpAddressesRetrieveResponse::Http200(a) =
@@ -823,11 +824,12 @@ fn reconcile_static_device_ips(
         status!("[DHCP-Mode] Reconciling static IPv6: '{ip}'");
 
         let ipv6_id = search_ip(client, &ip.to_string(), None)?.ok_or_else(|| {
-            failure!("[DHCP-Mode] IPv6 '{ip}' not found in NetBox!");
-            NazaraError::NetBoxApiError(format!(
+            let err = NazaraError::NetBoxApiError(format!(
                 "IPv6 address \"{}\" was not registered in NetBox",
                 ip
-            ))
+            ));
+            err.log(Some("DHCP-Mode"));
+            err
         })?;
 
         if let IpamIpAddressesRetrieveResponse::Http200(a) =
@@ -890,11 +892,12 @@ fn reconcile_static_vm_ips(
         status!("[DHCP-Mode] Reconciling VM static IPv4: {ip}");
 
         let ipv4_id = search_vm_ip(client, &ip.to_string(), None)?.ok_or_else(|| {
-            failure!("[DHCP-Mode] VM IPv4 '{ip}' not found in NetBox");
-            NazaraError::NetBoxApiError(format!(
+            let err = NazaraError::NetBoxApiError(format!(
                 "IPv4 address \"{}\" was not registered in NetBox",
                 ip
-            ))
+            ));
+            err.log(Some("DHCP-Mode"));
+            err
         })?;
 
         if let IpamIpAddressesRetrieveResponse::Http200(a) =
@@ -926,11 +929,12 @@ fn reconcile_static_vm_ips(
         status!("[DHCP-Mode] Reconciling VM static IPv6: '{ip}'");
 
         let ipv6_id = search_vm_ip(client, &ip.to_string(), None)?.ok_or_else(|| {
-            failure!("[DHCP-Mode] VM IPv6 '{ip}' not found in NetBox!");
-            NazaraError::NetBoxApiError(format!(
+            let err = NazaraError::NetBoxApiError(format!(
                 "IPv6 address \"{}\" was not registered in NetBox",
                 ip
-            ))
+            ));
+            err.log(Some("DHCP-Mode"));
+            err
         })?;
 
         if let IpamIpAddressesRetrieveResponse::Http200(a) =

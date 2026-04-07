@@ -624,10 +624,10 @@ impl ConfigData {
 
         // throws a warning/errror if both a device and a vm config exist or both dont exist.
         if config_check_results[0] && config_check_results[1] {
-            failure!("Both a VM and Device Config exist.");
+            NazaraError::Other("Both a VM and Device Config exist".to_owned()).log(None);
             config_error = true;
         } else if !config_check_results[0] && !config_check_results[1] {
-            failure!("Neither Device Config nor VM Config exists");
+            NazaraError::Other("Neither Device Config nor VM Config exists".to_owned()).log(None);
             config_error = true;
         }
 
@@ -638,11 +638,11 @@ impl ConfigData {
                     .get(config_objects_device[i])
                     .is_none()
                 {
-                    let string = format!(
+                    let err = NazaraError::Other(format!(
                         "Device field exists but '{}' is empty",
                         config_objects_device[i]
-                    );
-                    failure!("{}", string);
+                    ));
+                    err.log(None);
                     config_error = true;
                 } else if config_unwrapped[config_objects[0]]
                     .get(config_objects_device[i])
@@ -661,7 +661,7 @@ impl ConfigData {
         // checks in more detail if the vm configs are all correct
         if config_check_results[1] {
             if config_unwrapped[config_objects[1]].get("cluster").is_none() {
-                failure!("VM field exists but 'cluster' is empty");
+                NazaraError::Other("VM field exists but 'cluster' is empty".to_owned()).log(None);
                 config_error = true;
             } else if config_unwrapped[config_objects[1]].get("cluster").unwrap() == 0 {
                 warn!("VM field exists but 'cluster' is 0");
@@ -673,7 +673,7 @@ impl ConfigData {
         if config_error {
             return Err(NazaraError::Other("Incorrect Config options".to_owned()));
         } else if config_zero {
-            warn!("Device/VM config is valid, but values set to 0 must be changed")
+            warn!("Device/VM config is syntactically valid, but values set to 0 must be changed")
         } else {
             success!("Device/VM config is valid")
         }
@@ -701,10 +701,8 @@ impl ConfigData {
                     warn!("Config file contains invalid Entries");
                 }
                 ValidationMode::Strict => {
-                    failure!("Config file contains invalid Entries");
-                    return Err(NazaraError::Other(
-                        "Config file contains invalid Entries".to_owned(),
-                    ));
+                    return NazaraError::Other("Config file contains invalid entries".to_owned())
+                        .fail();
                 }
             }
         }
@@ -716,10 +714,8 @@ impl ConfigData {
                     warn!("Config is missing required Netbox config options");
                 }
                 ValidationMode::Strict => {
-                    failure!("Config is missing required Netbox config options");
-                    return Err(NazaraError::MissingConfigOptionError(String::from(
-                        "netbox_api_token",
-                    )));
+                    return NazaraError::MissingConfigOptionError(String::from("netbox_api_token"))
+                        .fail();
                 }
             }
         }
