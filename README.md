@@ -27,14 +27,15 @@ NetBox. When major ports to newer NetBox versions happen - which usually include
 breaking changes - the old version of Nazara will be moved to its own branch and
 tagged accordingly.
 
-| Nazara Version   | NetBox Version      | Branch            | maintained?        |
-| ---------------- | ------------------- | ----------------- | ------------------ |
-| `v0.1.1`         | `v4.3.x`, and newer | `main`            | :white_check_mark: |
-| `v0.1.0`         | `v4.3.x`, `v4.4.x`  | `version/0.1.0`   | :x:                |
-| `v0.1.0_beta.3`  | `v4.3.x`, `v4.4.x`  | `version/beta-3`  | :x:                |
-| `v0.1.0_beta.2`  | `v4.3.x`, `v4.4.x`  | `version/beta-2`  | :x:                |
-| `v0.1.0_beta.1`  | `v4.3.x`            | `version/beta-1`  | :x:                |
-| `v0.1.0_alpha.2` | `v3.6.x`            | `version/alpha-2` | :x:                |
+| Nazara Version   | NetBox Version       | Branch            | maintained?        |
+| ---------------- | -------------------- | ----------------- | ------------------ |
+| `v0.2.0`         | `v4.3.x`, and newer  | `main`            | :white_check_mark: |
+| `v0.1.1`         | `v4.3.x`, and newer* | `version/0.1.1`   | :x:                |
+| `v0.1.0`         | `v4.3.x`, `v4.4.x`   | `version/0.1.0`   | :x:                |
+| `v0.1.0_beta.3`  | `v4.3.x`, `v4.4.x`   | `version/beta-3`  | :x:                |
+| `v0.1.0_beta.2`  | `v4.3.x`, `v4.4.x`   | `version/beta-2`  | :x:                |
+| `v0.1.0_beta.1`  | `v4.3.x`             | `version/beta-1`  | :x:                |
+| `v0.1.0_alpha.2` | `v3.6.x`             | `version/alpha-2` | :x:                |
 
 Maintenance work on these older versions is not planned.
 
@@ -61,12 +62,11 @@ cargo build --release
 This will create an executable file in the `target/release` directory.
 
 > [!IMPORTANT]
-> Running Nazara stock will cause it to use our NetBox API
-> reference client library
-> [`thanix_client`](https://codeberg.org/nazara-project/thanix_client). This
-> client was generated from the API spec of a stock NetBox instance (1.x from
-> NetBox v3.6.9 and 2.x from NetBox 4.1.0). If you encounter API request issues
-> with your NetBox instance, you may need to generate your own using
+> Running Nazara stock will cause it to use our NetBox API reference client
+> library [`thanix_client`](https://codeberg.org/nazara-project/thanix_client).
+> This client was generated from the API spec of a stock NetBox instance (1.x
+> from NetBox v3.6.9 and 2.x from NetBox 4.1.0). If you encounter API request
+> issues with your NetBox instance, you may need to generate your own using
 > [`Thanix`](https://codeberg.org/nazara-project/Thanix).
 
 ## Installation via `crates.io`
@@ -76,18 +76,21 @@ install packages globally, simply run `cargo install nazara` to install it.
 
 # Documentation
 
-The best place to find information about how to set up and use Nazara is our [User Documentation](https://nazara-project.codeberg.page/Nazara/users/).
+The best place to find information about how to set up and use Nazara is our
+[User Documentation](https://nazara-project.codeberg.page/Nazara/users/).
 
 The online version is always up-to-date with the latest released Nazara version.
 
 # Contributing
 
 If you would like to contribute to Nazara, feel free to check the
-[contributing guide](https://nazara-project.codeberg.page/Nazara/contributors/) for information on our workflow and
-check the issues section for any open issues.
+[contributing guide](https://nazara-project.codeberg.page/Nazara/contributors/)
+for information on our workflow and check the issues section for any open
+issues.
 
 > [!TIP]
-> Issues tagged `good first issue` are specifically written for and targeted towards first time outside contributors.
+> Issues tagged `good first issue` are specifically written for and targeted
+> towards first time outside contributors.
 
 # License
 
