@@ -45,6 +45,28 @@ pub enum NazaraError {
 
 pub type NazaraResult<T> = Result<T, NazaraError>;
 
+impl NazaraError {
+    /// Log this error with failure! and return it wrapped in Err(...)
+    pub fn fail<T>(self) -> NazaraResult<T> {
+        failure!("{}", self);
+        Err(self)
+    }
+
+    /// Log this error with additional context prefix.
+    /// Used when we need to log multiple errors but continue processing to fail in the end
+    /// either with the calling function or some other higher instance.
+    ///
+    /// The optional context in this case refers to the module or program part that the error
+    /// occurred in. For example: [DHCP-Mode].
+    pub fn log(&self, context: Option<&str>) {
+        if let Some(ctx) = context {
+            failure!("[{}] {}", ctx, self);
+            return;
+        }
+        failure!("{}", self);
+    }
+}
+
 impl std::fmt::Display for NazaraError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -79,8 +101,7 @@ impl std::fmt::Display for NazaraError {
                 write!(f, "Missing required config parameter: {err}")
             }
             NazaraError::DeserializationError(err) => {
-                failure!("Invalid config file");
-                write!(f, "{err}")
+                write!(f, "Invalid config file: {err}")
             }
             NazaraError::SerializationError(err) => {
                 write!(f, "Serialization error: {err}")

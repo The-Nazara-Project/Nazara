@@ -1,6 +1,6 @@
 //! Main module stub.
 
-use nazara::Nazara;
+use nazara::{Nazara, failure};
 
 // ================================================
 // =========NAZARA ENTRY POINT=====================
@@ -10,13 +10,9 @@ fn main() {
     let nazara = Nazara::new();
     match nazara {
         Ok(mut v) => match v.run() {
-            Err(e) => {
-                eprintln!("{}", e);
-            }
+            Err(e) => failure!("{}", e),
             _ => {}
         },
-        Err(e) => {
-            eprintln!("{}", e);
-        }
+        Err(e) => failure!("{}", e),
     }
 }
