@@ -15,7 +15,7 @@ use std::io::prelude::*;
 use std::path::Path;
 use std::{fs, path::PathBuf};
 
-use super::util::replace_key;
+use super::util::*;
 use crate::error::*;
 
 /// Configuration state set by the configuration file.
@@ -135,6 +135,7 @@ pub fn write_config_file(
     role: &Option<i64>,
     site: &Option<i64>,
     cluster: &Option<i64>,
+    force: &bool,
     json: &Option<String>,
 ) -> NazaraResult<()> {
     let config_path = get_config_path(true);
@@ -146,7 +147,7 @@ pub fn write_config_file(
         return write_config_from_json(&config_path, &json_str);
     }
 
-    if file_exists(&config_path) {
+    if file_exists(&config_path) && !force {
         update_existing_config(
             &config_path,
             uri,
@@ -252,14 +253,35 @@ fn create_new_config(
 
     // Machine-specific section
     if device_type.is_some() || role.is_some() || site.is_some() {
-        contents.push_str(&format!(
-            "\n[device]\ndevice_type = {}\nrole = {}\nsite = {}\n",
-            device_type.unwrap_or(0),
-            role.unwrap_or(0),
-            site.unwrap_or(0)
-        ));
+        contents = uncomment_section(contents, "device");
+        if !contents.contains("[device]") {
+            contents.push_str("\n[device]\n");
+        }
+        contents = uncomment_key(contents, "device", "device_type");
+        contents = uncomment_key(contents, "device", "role");
+        contents = uncomment_key(contents, "device", "site");
+        if let Some(v) = device_type {
+            contents = replace_key(contents, "device", "device_type", &v.to_string());
+        }
+        if let Some(v) = role {
+            contents = replace_key(contents, "device", "role", &v.to_string());
+        }
+        if let Some(v) = site {
+            contents = replace_key(contents, "device", "site", &v.to_string());
+        }
+        contents = comment_out_key(contents, "vm", "cluster");
+        contents = comment_out_section(contents, "vm");
     } else if let Some(c) = cluster {
-        contents.push_str(&format!("\n[vm]\ncluster = {}\n", c));
+        contents = uncomment_section(contents, "vm");
+        if !contents.contains("[vm]") {
+            contents.push_str("\n[vm]\n");
+        }
+        contents = uncomment_key(contents, "vm", "cluster");
+        contents = replace_key(contents, "vm", "cluster", &c.to_string());
+        contents = comment_out_key(contents, "device", "device_type");
+        contents = comment_out_key(contents, "device", "role");
+        contents = comment_out_key(contents, "device", "site");
+        contents = comment_out_section(contents, "device")
     }
 
     // Write final file
@@ -333,9 +355,13 @@ fn update_existing_config(
 
     // Machine-specific
     if device_type.is_some() || role.is_some() || site.is_some() {
+        contents = uncomment_section(contents, "device");
         if !contents.contains("[device]") {
             contents.push_str("\n[device]\n");
         }
+        contents = uncomment_key(contents, "device", "device_type");
+        contents = uncomment_key(contents, "device", "role");
+        contents = uncomment_key(contents, "device", "site");
         if let Some(v) = device_type {
             contents = replace_key(contents, "device", "device_type", &v.to_string());
         }
@@ -345,11 +371,19 @@ fn update_existing_config(
         if let Some(v) = site {
             contents = replace_key(contents, "device", "site", &v.to_string());
         }
+        contents = comment_out_key(contents, "vm", "cluster");
+        contents = comment_out_section(contents, "vm")
     } else if let Some(c) = cluster {
+        contents = uncomment_section(contents, "vm");
         if !contents.contains("[vm]") {
             contents.push_str("\n[vm]\n");
         }
+        contents = uncomment_key(contents, "vm", "cluster");
         contents = replace_key(contents, "vm", "cluster", &c.to_string());
+        contents = comment_out_key(contents, "device", "device_type");
+        contents = comment_out_key(contents, "device", "role");
+        contents = comment_out_key(contents, "device", "site");
+        contents = comment_out_section(contents, "device")
     }
 
     fs::write(config_path, contents).map_err(NazaraError::FileOpError)?;
@@ -581,6 +615,7 @@ impl ConfigData {
         let config_objects_device: [&str; 3] = ["device_type", "role", "site"]; //entries under "device" to check for
         let mut config_check_results: [bool; 2] = [false; 2];
         let mut config_error = false;
+        let mut config_zero = false;
         for i in 0..2 {
             if config_unwrapped.get(config_objects[i]).is_some() {
                 config_check_results[i] = true;
@@ -588,7 +623,7 @@ impl ConfigData {
         }
 
         // throws a warning/errror if both a device and a vm config exist or both dont exist.
-        if config_check_results[0] == true && config_check_results[1] == true {
+        if config_check_results[0] && config_check_results[1] {
             failure!("Both a VM and Device Config exist.");
             config_error = true;
         } else if !config_check_results[0] && !config_check_results[1] {
@@ -609,6 +644,17 @@ impl ConfigData {
                     );
                     failure!("{}", string);
                     config_error = true;
+                } else if config_unwrapped[config_objects[0]]
+                    .get(config_objects_device[i])
+                    .unwrap()
+                    == 0
+                {
+                    let string = format!(
+                        "Device field exists but '{}' is 0",
+                        config_objects_device[i]
+                    );
+                    warn!("{}", string);
+                    config_zero = true;
                 }
             }
         }
@@ -617,12 +663,17 @@ impl ConfigData {
             if config_unwrapped[config_objects[1]].get("cluster").is_none() {
                 failure!("VM field exists but 'cluster' is empty");
                 config_error = true;
+            } else if config_unwrapped[config_objects[1]].get("cluster").unwrap() == 0 {
+                warn!("VM field exists but 'cluster' is 0");
+                config_zero = true;
             }
         }
 
-        // FIXME: https://codeberg.org/nazara-project/Nazara/issues/178
+        //errors out if something is very wrong with the config, warns if a change needs to be made, otherwise continues
         if config_error {
             return Err(NazaraError::Other("Incorrect Config options".to_owned()));
+        } else if config_zero {
+            warn!("Device/VM config is valid, but values set to 0 must be changed")
         } else {
             success!("Device/VM config is valid")
         }
@@ -642,6 +693,20 @@ impl ConfigData {
             warn!("Missing required config option: 'netbox_api_token'");
             config_error = true;
             error_string.push_str("netbox_api_token");
+        }
+
+        if config_zero {
+            match mode {
+                ValidationMode::Soft => {
+                    warn!("Config file contains invalid Entries");
+                }
+                ValidationMode::Strict => {
+                    failure!("Config file contains invalid Entries");
+                    return Err(NazaraError::Other(
+                        "Config file contains invalid Entries".to_owned(),
+                    ));
+                }
+            }
         }
 
         // prints a warning in soft mode and aborts in strict mode

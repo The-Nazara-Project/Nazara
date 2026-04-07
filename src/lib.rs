@@ -303,6 +303,7 @@ impl Nazara {
                 site,
                 role,
                 cluster_id,
+                force,
                 json,
             } => {
                 status!("Writing configuration file...");
@@ -320,6 +321,7 @@ impl Nazara {
                         role,
                         site,
                         cluster_id,
+                        force,
                         json,
                     )?;
                 } else {
@@ -336,6 +338,7 @@ impl Nazara {
                         role,
                         site,
                         cluster_id,
+                        force,
                         &None,
                     )?;
                 }
@@ -561,6 +564,10 @@ enum Commands {
         /// Primary IPv6 address (optional)
         #[arg(long, conflicts_with = "json")]
         primary_ip6: Option<String>,
+
+        /// Forces a new config file, overwriting any existing configs
+        #[arg(long)]
+        force: bool,
 
         /// JSON of your configuration parameters. (Optional; exclusive with other options.)
         #[arg(long, conflicts_with_all = &[
