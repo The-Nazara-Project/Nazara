@@ -33,7 +33,7 @@ to its own branch and tagged accordingly.
 Maintenance work on these older versions is not planned currently.
 
 ```admonish warning
-Nazara was developed for and on Linux systems. We have no plans to support Windows or Mac in the forseeable future.
+Nazara was developed for and on Linux systems. We have no plans to support Windows or Mac in the foreseeable future.
 If you would like to add support for this, please open a discussion in our GitHub repository.
 ```
 
@@ -41,7 +41,7 @@ If you would like to add support for this, please open a discussion in our GitHu
 
 This is an overview of channels through which you can get Nazara.
 
-|Platform/Channel|Version|Offical?|
+|Platform/Channel|Version|Official?|
 |-|-|-|
 |[`crates.io`](https://crates.io/crates/nazara)|`v0.1.0`|yes|
 |openSUSE Tumbleweed|--coming soon--|--coming soon--|

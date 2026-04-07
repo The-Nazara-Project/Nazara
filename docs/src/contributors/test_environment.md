@@ -49,12 +49,12 @@ Simply select a username and password of your wishes.
     - Site
     (And depending on what you want to work on, replicate the custom fields you need 1:1 from your production instance.)
     
-    If you want to specifiy and play around with some optional fields, you must create the objects you reference (like e.g Tenants) first.
+    If you want to specify and play around with some optional fields, you must create the objects you reference (like e.g Tenants) first.
 
 7. After that's done, take the IDs of these objects and place it into the corresponding fields in the `~/.nazara/config.toml`
 
 ```admonish important
-Currently, the generation of the config file is still a bit wonky, so if it isnt generated upon first executing nazara, copy and paste
+Currently, the generation of the config file is still a bit wonky, so if it is not generated upon first executing nazara, copy and paste
 the template from the README or `src/configuration/config_template.toml`.
 ```
 

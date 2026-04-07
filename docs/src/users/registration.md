@@ -72,7 +72,7 @@ To do so, pass the `--ip-mode` to either the `register` or `update` command to s
 
 Default behaviour of Nazara. Simply registers everything without paying attention to any environments.
 
-**This may crash if the device's IP addresses change, no reconcilliation will take place.**
+**This may crash if the device's IP addresses change, no reconciliation will take place.**
 
 ```bash
 sudo nazara register --ip-mode static
@@ -103,7 +103,7 @@ This mode is to be used in cases where Netbox itself manages available IP addres
 
 ### Preparing the NetBox environment
 
-Before registering your Device, Nazara verifies that required enitites exist in NetBox (site, role, device_type, etc.) and that
+Before registering your Device, Nazara verifies that required entities exist in NetBox (site, role, device_type, etc.) and that
 the tags `nazara` and `dhcp` that we use to identify our entries are present.
 
 If you are running Nazara for the first time, you may need to prepare your NetBox environment. The `--prepare-environment` flag
@@ -115,7 +115,7 @@ sudo nazara register --prepare-environment ...
 
 This will:
 
-- Verifiy site, role, device_type etc. IDs are valid and exist
+- Verify site, role, device_type etc. IDs are valid and exist
 - Create the `nazara` tag (used to mark all Nazara-created entries)
 - Create the `dhcp` tag (used for DHCP-observed IP addresses)
 

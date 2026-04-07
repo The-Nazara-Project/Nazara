@@ -61,7 +61,7 @@ Examples of good or bad branch names would look like this:
 
 ```
 
-### 2. Make meaningful committs
+### 2. Make meaningful commits
 
 It is important to pay attention to the scope of your contribution. To this end please only make changes in one Pull Request which are related to your specific contribution.
 

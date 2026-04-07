@@ -32,7 +32,7 @@ Authors should include any relevant documentation updates in their contribution 
 PR that include said updates.
 
 ~~~admonish important title="Important for Maintainers" collapsible=true
-In the event that a contributor links their documentaion changes in a separate PR, both PRs are to be
+In the event that a contributor links their documentation changes in a separate PR, both PRs are to be
 treated as one.
 
 Meaning: If the code PR is approved but the docs PR needs changes, neither one is to be merged and vise versa.
@@ -40,7 +40,7 @@ Meaning: If the code PR is approved but the docs PR needs changes, neither one i
 
 Cosmetic changes or strictly code internal ones (like code cleanup, performance improvements, etc.) are generally
 not covered by the duty to document unless explicitly told otherwise by a maintainer or such a time
-where architectual decision forms (ADFs) are implemented.
+where architectural decision forms (ADFs) are implemented.
 
 ## Formatting and Style
 
@@ -52,7 +52,7 @@ Use examples liberally: A short snipped demonstrating the most common use case i
 ## The Review Process
 
 Any changes to documentation will be reviewed by maintainers for the quality criteria mentioned below.
-Only after the review is successfuly will the changed be merged. The review validates:
+Only after the review is successfully will the changed be merged. The review validates:
 
 - **Technical accuracy and sufficient depth:** The document matches implemented behaviour and guides are executable.
 - **Completeness:** All affected changes are documented.
@@ -66,16 +66,16 @@ All documentation should have a professional and inclusive tone. Gender-neutral 
 based nouns like "maintainer" or "developer") should be used. Idioms or jokes should be avoided alongside
 terms that may be interpreted offensively.
 
-Documentation should go into approriate detail for the intended target group (i.e. Users or Developers) and
+Documentation should go into appropriate detail for the intended target group (i.e. Users or Developers) and
 not omit any details or become vague when talking about specific topics.
 
 If a feature is not yet implemented or there are currently known bugs or Issues, a "Known Issues" section
 should be appended at the bottom of the document listing these issues and their corresponding Codeberg Issue
 if applicable.
 
-Include expected output or other steps which the reader can use to verfiy operation outcomes in any instructional guide.
+Include expected output or other steps which the reader can use to verify operation outcomes in any instructional guide.
 
-## Version Compatiblity
+## Version Compatibility
 
 Currently, the documentation cannot be hosted for individual specific versions of Nazara. Instead,
 the currently public documentation of Nazara is always valid for the latest release.
@@ -111,7 +111,7 @@ you have to write:
 
     netbox_api_token = "nbt_$KEY.$TOKEN"
 
-Codeberg Issue Refernce: [#179](https://codeberg.org/nazara-project/Nazara/issues/179)
+Codeberg Issue Reference: [#179](https://codeberg.org/nazara-project/Nazara/issues/179)
 ```
 
 The Codeberg Issue Reference can also be a link to a commit that introduced a breaking change between Nazara releases.
@@ -129,6 +129,6 @@ the corresponding issue where possible.
 
 You could face X here, if so, please do Y. We are working on a fix.
 
-Codeberg Issue Refernce: [#000](LINK)
+Codeberg Issue Reference: [#000](LINK)
 ```
 ~~~

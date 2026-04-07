@@ -18,7 +18,7 @@ and abort gracefully with a helpful error message and error code.
 We only want to panic, when the issue we encounter is **both catastrophic and unfixable by the user**.
 
 ~~~admonish example
-These are szenarios in which we **don't want to panic**:
+These are scenarios in which we **don't want to panic**:
 
 - When input or config parameters are missing
 - When connection to NetBox fails
@@ -31,7 +31,7 @@ While we want to panic in these cases:
 ~~~
 
 Instead of panicking, we write custom error types to wrap errors of certain functions and include a well formatted error message alongside the error.
-For an exampel on how that looks, please check and of the `error.rs` files found in any of Nazara's packages.
+For an example on how that looks, please check and of the `error.rs` files found in any of Nazara's packages.
 
 ~~~admonish example collapsible=true title="Example:`src/publisher/error.rs`"
 In this example, you can see how we write our custom error types and are able to wrap errors that we receive from other functions
@@ -58,7 +58,7 @@ in discussion with maintainers, devs and other contributors about their approach
 
 ## Documenting Code
 
-For a smilar reason, we encourage devs to properly document their contributions.
+For a similar reason, we encourage devs to properly document their contributions.
 This includes but is not limited to:
 
 - Using inline comments to explain possibly hard to understand syntax
@@ -103,7 +103,7 @@ occur. This can help debugging immensely.
 ```rust
 /// This function does X.
 ///
-/// # Paramters
+/// # Parameters
 /// - `path: &str` - The path to a file
 ///
 /// # Returns
@@ -179,7 +179,7 @@ match some_func(x) => {
         success!("This worked!");
     },
     Err(e) => {
-        failure!("An error occured: {}", e);
+        failure!("An error occurred: {}", e);
         // Handle the error.
     }
 }

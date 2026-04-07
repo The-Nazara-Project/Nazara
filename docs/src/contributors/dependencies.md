@@ -13,7 +13,7 @@ We only accept external dependencies that meet all of these criteria:
 When submitting a PR with a new dependency, please explain why it is needed and why no other alternative was suitable.
 ```
 
-## Preferance Guidelines
+## Preference Guidelines
 
 We prefer:
 
@@ -21,7 +21,7 @@ We prefer:
 - **Zero-dependency alternatives** over large general-purpose crates
 - **Lean and well-maintained** crates over obscure or overly complex ones
 
-The goal is not to avoid dependencies at all ocsts - only to avoid unnecessary, unstable, insecure or high-maintenance ones.
+The goal is not to avoid dependencies at all - only to avoid unnecessary, unstable, insecure or high-maintenance ones.
 
 ~~~admonish info
 In addition to manual review, we use `cargo audit` to automatically check, whether our dependencies have known

@@ -39,7 +39,7 @@ sudo systemctl enable --now libvirtd
 #### 2. Create Linux VM
 
 Replace `$ISO_PATH` with the path to the ISO file and `$DISK_PATH` to the path
-where you want your virtual disk to be localted.
+where you want your virtual disk to be located.
 
 1. Create a new virtual disk image
 

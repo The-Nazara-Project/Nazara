@@ -39,7 +39,7 @@ Throw the downloaded YAML file into `Thanix` to generate a new crate. You will g
 wherever you executed it containing a completely new `thanix_client` repo.
 
 **Take the `src` directory from that output and copy it**, in its entirety, into the `thanix_client` repository
-you cloned from GitHub. If prompted, agree to overtwrite all existing files.
+you cloned from GitHub. If prompted, agree to overwrite all existing files.
 
 **Update the version numbers in `thanix_client` accordingly**.
 
