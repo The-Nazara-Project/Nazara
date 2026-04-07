@@ -1,4 +1,19 @@
 -------------------------------------------------------------------
+Tue Apr 07 16:44:00 UTC 2026 - Tiara Hock <tiara.dev@proton.me>
+
+- 0.2.0
+    * Add support for processing DHCP managed IP addresses
+    * Add environment checker and preparation functionality for required tags
+    * Add documentation workflow
+    * Add user selectable levels of status reporting
+    * Improve config parser error reporting
+    * Improve configuration user guide
+    * Fix bug in write-config creating invalid config files
+    * Fix error handling and status reporting on CLI
+    * Fix typos in documentation
+    * Fix wrong information in root contributing documentation
+
+-------------------------------------------------------------------
 Tue Jan 13 08:58:02 UTC 2026 - Tiara Hock <tiara.dev@proton.me>
 
 - 0.1.1
