@@ -4,6 +4,7 @@
 - [Design Documents](./design/index.md)
     - [Nazara's Architecture Guide](./design/001-architecture.md)
     - [Code Style Guide](./design/002-code_style.md)
+    - [Error Handling Guide](./design/003-error_handling.md)
 - [Contributor Documentation](contributors/index.md)
     - [Setting up a Test Environment](./contributors/test_environment.md)
     - [Testing VMs](./contributors/test_vms.md)
