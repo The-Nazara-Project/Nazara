@@ -200,6 +200,40 @@ You can see it in the URL of your browser. In our case:
 <pre><code>sudo nazara update --id 57
 </code></pre>
 <p>This will then update the entry for you.</p>
+<h3 id="dhcp-compatibility"><a class="header" href="#dhcp-compatibility">DHCP Compatibility</a></h3>
+<h4 id="static-mode"><a class="header" href="#static-mode"><code>static</code> Mode</a></h4>
+<p>Default behavior of Nazara. Simply registers everything without paying attention to any environments.</p>
+<p><strong>This may crash if the device's IP addresses change, no reconciliation will take place.</strong></p>
+<pre><code class="language-bash">sudo nazara register --ip-mode static
+</code></pre>
+<h4 id="dhcp-ignored-mode"><a class="header" href="#dhcp-ignored-mode"><code>dhcp-ignored</code> Mode</a></h4>
+<p>In cases where a DHCP servers syncs IP addresses with NetBox, <strong>any registration or update of IP addresses will be skipped</strong>.</p>
+<pre><code class="language-bash">sudo nazara register --ip-mode dhcp-ignored
+</code></pre>
+<h4 id="dhcp-observed-mode"><a class="header" href="#dhcp-observed-mode"><code>dhcp-observed</code> Mode</a></h4>
+<p>The most complex mode, this will register the device or VM with <strong>all IP addresses, as they are currently discovered</strong>.
+Nazara will try to reconcile the IP addresses it discovers, with what is present in NetBox.</p>
+<p>If the address does not exist, it will be created, if it is assigned to a different interface, it will be reassigned.</p>
+<p><strong>The IP addresses will be tagged with <code>dhcp</code> tags.</strong></p>
+<pre><code class="language-bash">sudo nazara register --ip-mode dhcp-observed
+</code></pre>
+<p>This mode is to be used in cases where Netbox itself manages available IP addresses and a DHCP server syncs from that.</p>
+<h3 id="preparing-the-netbox-environment"><a class="header" href="#preparing-the-netbox-environment">Preparing the NetBox environment</a></h3>
+<p>Before registering your Device, Nazara verifies that required entities exist in NetBox (site, role, device_type, etc.) and that
+the tags <code>nazara</code> and <code>dhcp</code> that we use to identify our entries are present.</p>
+<p>If you are running Nazara for the first time, you may need to prepare your NetBox environment. The <code>--prepare-environment</code> flag
+will automatically create required tags if they don't exist.</p>
+<pre><code class="language-bash">sudo nazara register --prepare-environment ...
+</code></pre>
+<p>This will:</p>
+<ul>
+<li>Verify site, role, device_type etc. IDs are valid and exist</li>
+<li>Create the <code>nazara</code> tag (used to mark all Nazara-created entries)</li>
+<li>Create the <code>dhcp</code> tag (used for DHCP-observed IP addresses)</li>
+</ul>
+<p>You can also prepare your environment without registering:</p>
+<pre><code class="language-bash">sudo nazara prepare-environment
+</code></pre>
 <h3 id="common-issues"><a class="header" href="#common-issues">Common Issues</a></h3>
 <h4 id="ip-xxxx-has-not-been-registered-in-netbox"><a class="header" href="#ip-xxxx-has-not-been-registered-in-netbox">IP "X.X.X.X" has not been registered in NetBox</a></h4>
 <p>This is a common issue with environments that use DHCP
@@ -209,7 +243,7 @@ has not been registered with NetBox beforehand, so there is no IP entry to updat
 as the update process is forbidden from doing so.</p>
 <p>Alternatively, you can delete and re-register the device.¹</p>
 <p>We are actively working on a managed mode that forbids Nazara's
-IP management alltogether in cases where you have a different source
+IP management altogether in cases where you have a different source
 of truth for them.</p>
 <small>
 ¹ Not recommended if you touch your device entries manually.

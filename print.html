@@ -167,6 +167,8 @@
 <p><strong>Welcome to Nazara's documentation hub!</strong></p>
 <p>Nazara is a Rust tool used to automate the registration and update process of machines and VMs in the
 IPAM tool <a href="https://netboxlabs.com/docs/netbox/">NetBox</a>.</p>
+<p>This documentation is split by target group. Check the navigation bar on the left hand side for all pieces of
+information that are relevant for you.</p>
 <div id="admonition-found-a-bug" class="admonition admonish-bug" role="note" aria-labelledby="admonition-found-a-bug-title">
 <div class="admonition-title">
 <div id="admonition-found-a-bug-title">
@@ -184,12 +186,13 @@ of Nazara is compatible with which version of NetBox (and if we still support it
 versions of NetBox happen - which usually includes breaking changes - the old version of Nazara will be moved
 to its own branch and tagged accordingly.</p>
 <div class="table-wrapper"><table><thead><tr><th>Nazara Version</th><th>NetBox Version</th><th>Branch</th><th>maintained?</th></tr></thead><tbody>
-<tr><td><code>v0.1.1</code></td><td><code>v4.3.x</code>, <code>v4.4.x</code>, <code>4.5.x</code></td><td><code>main</code></td><td>yes</td></tr>
-<tr><td><code>v0.1.0</code></td><td><code>v4.3.x</code>, <code>v4.4.x</code> and newer</td><td><code>version/0.1.0</code></td><td>no</td></tr>
-<tr><td><code>v0.1.0_beta.3</code></td><td><code>v4.3.x</code>, <code>v4.4.x</code> and newer</td><td><code>version/beta-3</code></td><td>no</td></tr>
-<tr><td><code>v0.1.0_beta.2</code></td><td><code>v4.3.x</code>, <code>v4.4.x</code></td><td><code>version/beta-2</code></td><td>no</td></tr>
-<tr><td><code>v0.1.0_beta.1</code></td><td><code>v4.3.x</code></td><td><code>version/beta-1</code></td><td>no</td></tr>
-<tr><td><code>v0.1.0_alpha.2</code></td><td><code>v3.6.x</code></td><td><code>version/alpha-2</code></td><td>no</td></tr>
+<tr><td><code>v0.2.0</code></td><td><code>v4.3.x</code>, and newer</td><td><code>main</code></td><td>✅</td></tr>
+<tr><td><code>v0.1.1</code></td><td><code>v4.3.x</code>, <code>v4.4.x</code>, <code>4.5.x</code>*</td><td><code>version/0.1.1</code></td><td>❌</td></tr>
+<tr><td><code>v0.1.0</code></td><td><code>v4.3.x</code>, <code>v4.4.x</code></td><td><code>version/0.1.0</code></td><td>❌</td></tr>
+<tr><td><code>v0.1.0_beta.3</code></td><td><code>v4.3.x</code>, <code>v4.4.x</code></td><td><code>version/beta-3</code></td><td>❌</td></tr>
+<tr><td><code>v0.1.0_beta.2</code></td><td><code>v4.3.x</code>, <code>v4.4.x</code></td><td><code>version/beta-2</code></td><td>❌</td></tr>
+<tr><td><code>v0.1.0_beta.1</code></td><td><code>v4.3.x</code></td><td><code>version/beta-1</code></td><td>❌</td></tr>
+<tr><td><code>v0.1.0_alpha.2</code></td><td><code>v3.6.x</code></td><td><code>version/alpha-2</code></td><td>❌</td></tr>
 </tbody></table>
 </div>
 <p>Maintenance work on these older versions is not planned currently.</p>
@@ -201,13 +204,13 @@ to its own branch and tagged accordingly.</p>
 <a class="admonition-anchor-link" href="intro.html#admonition-warning"></a>
 </div>
 <div>
-<p>Nazara was developed for and on Linux systems. We have no plans to support Windows or Mac in the forseeable future.
+<p>Nazara was developed for and on Linux systems. We have no plans to support Windows or Mac in the foreseeable future.
 If you would like to add support for this, please open a discussion in our GitHub repository.</p>
 </div>
 </div>
 <h2 id="distribution-channels"><a class="header" href="#distribution-channels">Distribution Channels</a></h2>
 <p>This is an overview of channels through which you can get Nazara.</p>
-<div class="table-wrapper"><table><thead><tr><th>Platform/Channel</th><th>Version</th><th>Offical?</th></tr></thead><tbody>
+<div class="table-wrapper"><table><thead><tr><th>Platform/Channel</th><th>Version</th><th>Official?</th></tr></thead><tbody>
 <tr><td><a href="https://crates.io/crates/nazara"><code>crates.io</code></a></td><td><code>v0.1.0</code></td><td>yes</td></tr>
 <tr><td>openSUSE Tumbleweed</td><td>--coming soon--</td><td>--coming soon--</td></tr>
 </tbody></table>
@@ -285,8 +288,10 @@ parameters like serial number or UUID. Though these methods are less reliable.</
 <p>In any way, the publisher then decides whether a POST or PATCH request shall be made.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="nazara-code-style-guide"><a class="header" href="#nazara-code-style-guide">Nazara Code Style Guide</a></h1>
 <h2 id="general-guide"><a class="header" href="#general-guide">General Guide</a></h2>
-<p>In regards to formatting, we follow the current Rust code style set by the Cargo formatter (<code>cargo fmt</code>).</p>
-<p>The easiest way to enforce this, is using <code>pre-commit</code> to automatically format and check any code before it is committed.</p>
+<p>In regards to formatting, we follow the current Rust code style set by the Cargo
+formatter (<code>cargo fmt</code>).</p>
+<p>The easiest way to enforce this, is using <code>pre-commit</code> to automatically format
+and check any code before it is committed.</p>
 <div id="admonition-info" class="admonition admonish-info" role="note" aria-labelledby="admonition-info-title">
 <div class="admonition-title">
 <div id="admonition-info-title">
@@ -299,9 +304,11 @@ parameters like serial number or UUID. Though these methods are less reliable.</
 </div>
 </div>
 <h2 id="panics"><a class="header" href="#panics">Panics</a></h2>
-<p>We heavily discourage the use of the <code>panic!()</code> macro when aborting the process. Instead, we prefer to handle an error
-and abort gracefully with a helpful error message and error code.</p>
-<p>We only want to panic, when the issue we encounter is <strong>both catastrophic and unfixable by the user</strong>.</p>
+<p>We heavily discourage the use of the <code>panic!()</code> macro when aborting the process.
+Instead, we prefer to handle an error and abort gracefully with a helpful error
+message and error code.</p>
+<p>We only want to panic, when the issue we encounter is <strong>both catastrophic and
+unfixable by the user</strong>.</p>
 <div id="admonition-example" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-title">
 <div class="admonition-title">
 <div id="admonition-example-title">
@@ -310,7 +317,7 @@ and abort gracefully with a helpful error message and error code.</p>
 <a class="admonition-anchor-link" href="design/002-code_style.html#admonition-example"></a>
 </div>
 <div>
-<p>These are szenarios in which we <strong>don't want to panic</strong>:</p>
+<p>These are scenarios in which we <strong>don't want to panic</strong>:</p>
 <ul>
 <li>When input or config parameters are missing</li>
 <li>When connection to NetBox fails</li>
@@ -323,18 +330,13 @@ and abort gracefully with a helpful error message and error code.</p>
 </ul>
 </div>
 </div>
-<p>Instead of panicking, we write custom error types to wrap errors of certain functions and include a well formatted error message alongside the error.
-For an exampel on how that looks, please check and of the <code>error.rs</code> files found in any of Nazara's packages.</p>
-<details id="admonition-examplesrcpublishererrorrs" class="admonition admonish-example" role="note" aria-labelledby="admonition-examplesrcpublishererrorrs-title">
-<summary class="admonition-title">
-<div id="admonition-examplesrcpublishererrorrs-title">
-<p>Example:<code>src/publisher/error.rs</code></p>
-</div>
-<a class="admonition-anchor-link" href="design/002-code_style.html#admonition-examplesrcpublishererrorrs"></a>
-</summary>
-<div>
-<p>In this example, you can see how we write our custom error types and are able to wrap errors that we receive from other functions
-in order to escalate them properly.</p>
+<p>Instead of panicking, we write custom error types to wrap errors of certain
+functions and include a well formatted error message alongside the error.</p>
+<p>For detailed information on Nazara's error handling approach, including the
+<code>NazaraError</code> enum and best practices, see the
+<a href="design/./003-error_handling.html">Error Handling Guide</a>.</p>
+<p>````admonish example collapsible=true title="Example:<code>src/error.rs</code>"
+In this example, you can get an overview over the <code>error.rs</code> module and get an idea on how to handle errors in the code.</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>#[derive(Debug)]
@@ -383,6 +385,28 @@ pub enum NazaraError {
 }
 
 pub type NazaraResult&lt;T&gt; = Result&lt;T, NazaraError&gt;;
+
+impl NazaraError {
+    /// Log this error with failure! and return it wrapped in Err(...)
+    pub fn fail&lt;T&gt;(self) -&gt; NazaraResult&lt;T&gt; {
+        failure!("{}", self);
+        Err(self)
+    }
+
+    /// Log this error with additional context prefix.
+    /// Used when we need to log multiple errors but continue processing to fail in the end
+    /// either with the calling function or some other higher instance.
+    ///
+    /// The optional context in this case refers to the module or program part that the error
+    /// occurred in. For example: [DHCP-Mode].
+    pub fn log(&amp;self, context: Option&lt;&amp;str&gt;) {
+        if let Some(ctx) = context {
+            failure!("[{}] {}", ctx, self);
+            return;
+        }
+        failure!("{}", self);
+    }
+}
 
 impl std::fmt::Display for NazaraError {
     fn fmt(&amp;self, f: &amp;mut std::fmt::Formatter&lt;'_&gt;) -&gt; std::fmt::Result {
@@ -514,40 +538,42 @@ impl From&lt;toml::de::Error&gt; for NazaraError {
     }
 }
 <span class="boring">}</span></code></pre></pre>
-</div>
-</details>
-<h2 id="focus-on-readability"><a class="header" href="#focus-on-readability">Focus on Readability</a></h2>
-<p>When writing code, we value readability above complexity.</p>
-<p>Rust offers a lot of possibilities when it comes to reducing code down into a one-line statement. And that's nice,
-and sometimes even necessary.</p>
-<p>However, we want to take a <strong>readability first</strong> approach with our codebase. Both to aid maintainability and
-increase accessibility for newcomers.</p>
-<p>Of course, sometimes using Rust's more "advanced" features will drastically improve performance. So a balance has
-to be struck between readability and performance. It is very hard to define a solid policy for this, so
-this is a decision every developer and contributor has to do for themselves and - when necessary - engage
-in discussion with maintainers, devs and other contributors about their approach and possible alternatives.</p>
-<h2 id="documenting-code"><a class="header" href="#documenting-code">Documenting Code</a></h2>
-<p>For a smilar reason, we encourage devs to properly document their contributions.
-This includes but is not limited to:</p>
-<ul>
-<li>Using inline comments to explain possibly hard to understand syntax</li>
-<li>Using Rust's powerful docstring feature to properly document functions, structs and modules</li>
-<li>Adding to this documentation when applicable</li>
-<li>Filling out Issue and PR templates appropriately to aid maintainers review their changes</li>
-</ul>
-<p>The following examples will show you an ideal docstring style.</p>
-<details id="admonition-example-documenting-functions" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-documenting-functions-title">
-<summary class="admonition-title">
-<div id="admonition-example-documenting-functions-title">
-<p>Example: Documenting Functions</p>
-</div>
-<a class="admonition-anchor-link" href="design/002-code_style.html#admonition-example-documenting-functions"></a>
-</summary>
-<div>
-<p><strong>Documenting Functions:</strong></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>/// This function does X.
+<pre><code>
+## Focus on Readability
+
+When writing code, we value readability above complexity.
+
+Rust offers a lot of possibilities when it comes to reducing code down into a
+one-line statement. And that's nice, and sometimes even necessary.
+
+However, we want to take a **readability first** approach with our codebase.
+Both to aid maintainability and increase accessibility for newcomers.
+
+Of course, sometimes using Rust's more "advanced" features will drastically
+improve performance. So a balance has to be struck between readability and
+performance. It is very hard to define a solid policy for this, so this is a
+decision every developer and contributor has to do for themselves and - when
+necessary - engage in discussion with maintainers, devs and other contributors
+about their approach and possible alternatives.
+
+## Documenting Code
+
+For a similar reason, we encourage devs to properly document their
+contributions. This includes but is not limited to:
+
+- Using inline comments to explain possibly hard to understand syntax
+- Using Rust's powerful docstring feature to properly document functions,
+  structs and modules
+- Adding to this documentation when applicable
+- Filling out Issue and PR templates appropriately to aid maintainers review
+  their changes
+
+The following examples will show you an ideal docstring style.
+
+````admonish example title="Example: Documenting Functions" collapsible=true
+**Documenting Functions:**
+```rust
+/// This function does X.
 ///
 /// This function does X by doing Y using Z. (Detailed explanation optional)
 ///
@@ -560,24 +586,26 @@ This includes but is not limited to:</p>
 pub fn foo(arg: str) -&gt; Result&lt;str, Err&gt; {
  // ...
 }
-<span class="boring">}</span></code></pre></pre>
-<p>While not universally used by all projects, we use <code># Parameters</code> and <code># Returns</code>
-sections, especially for larger functions.</p>
-<p>If a function does not take arguments, the <code># Parameters</code> section can be omitted.
-However, if the function does not return (<code>!</code> type) - or returns <code>()</code>, this has to be indicated
-in the <code># Returns</code> section.</p>
-<p>Other sections we use are:</p>
-<ul>
-<li><code># Aborts</code> - If the function aborts the program. (E.g When input parameters are missing)</li>
-<li><code># Panics</code> - If the function can cause a <code>panic!()</code>.</li>
-</ul>
-<p>For both of these sections, list all - or at least the most common - reasons this behaviour can
-occur. This can help debugging immensely.</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>/// This function does X.
+```
+While not universally used by all projects, we use `# Parameters` and `# Returns`
+sections, especially for larger functions.
+
+If a function does not take arguments, the `# Parameters` section can be omitted.
+However, if the function does not return (`!` type) - or returns `()`, this has to be indicated
+in the `# Returns` section.
+
+Other sections we use are:
+
+* `# Aborts` - If the function aborts the program. (E.g When input parameters are missing)
+* `# Panics` - If the function can cause a `panic!()`.
+
+For both of these sections, list all - or at least the most common - reasons this behaviour can
+occur. This can help debugging immensely.
+
+```rust
+/// This function does X.
 ///
-/// # Paramters
+/// # Parameters
 /// - `path: &amp;str` - The path to a file
 ///
 /// # Returns
@@ -594,9 +622,8 @@ pub fn read_file(path: &amp;str) -&gt; String {
         }
     }
 }
-<span class="boring">}</span></code></pre></pre>
-</div>
-</details>
+```
+</code></pre>
 <details id="admonition-example-documenting-structs" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-documenting-structs-title">
 <summary class="admonition-title">
 <div id="admonition-example-documenting-structs-title">
@@ -649,22 +676,30 @@ Maintainers may ask you to stick to the given format for your contribution.</p>
 </div>
 </div>
 <p>We are aware that to some of you, this feels like cluttering the code files.
-However, we believe that properly documenting our code is the key to providing a more
-inclusive and more maintainable development experience for all.</p>
+However, we believe that properly documenting our code is the key to providing a
+more inclusive and more maintainable development experience for all.</p>
 <h2 id="terminal-outputuser-interface"><a class="header" href="#terminal-outputuser-interface">Terminal Output/User Interface</a></h2>
-<p>When it is necessary to inform the user about a process, we want to make it short, but as expressive as possible.
-For this, the following styles apply:</p>
+<p>When it is necessary to inform the user about a process, we want to make it
+short, but as expressive as possible. For this, the following styles apply:</p>
 <ul>
-<li><code>Process X has been started...</code> - Basic white text indicates the current process.</li>
-<li><code>\x1b[32m[success]\x1b[0m Something has succeeded</code> - Green colored <code>[success]</code> prefix before the message.</li>
-<li><code>\x1b[31m[error]\x1b[0m Something has failed!</code> - Red colored <code>[error]</code> prefix before error message. <em>This should
-automatically be added by our custom error types when they are given a error message.</em></li>
-<li><code>\ẋ1b[36m[info]\x1b[0m Information level message.</code> - Light blue colored <code>[info]</code> prefix.</li>
-<li><code>\x1b[33m[warning]\x1b[0m Something went wrong, but we can continue...</code> - Yellow colored <code>[warning]</code> prefix.</li>
+<li><code>Process X has been started...</code> - Basic white text indicates the current
+process.</li>
+<li><code>\x1b[32m[success]\x1b[0m Something has succeeded</code> - Green colored <code>[success]</code>
+prefix before the message.</li>
+<li><code>\x1b[31m[error]\x1b[0m Something has failed!</code> - Red colored <code>[error]</code> prefix
+before error message. <em>This should automatically be added by our custom error
+types when they are given a error message.</em></li>
+<li><code>\x1b[36m[info]\x1b[0m Information level message.</code> - Light blue colored
+<code>[info]</code> prefix.</li>
+<li><code>\x1b[33m[warning]\x1b[0m Something went wrong, but we can continue...</code> -
+Yellow colored <code>[warning]</code> prefix.</li>
 </ul>
-<p>To unify this coloring we have implemented several macros to be used for these status messages. These apply
-formatting and colors automatically and disable colors when the host's terminal does not support it.</p>
-<p>The macros are called <code>success!</code>, <code>warn!</code>, <code>failure!</code>, <code>info!</code> you can find a usage example below.</p>
+<p>To unify this coloring we have implemented several macros to be used for these
+status messages. These apply formatting and colors automatically and disable
+colors when the host's terminal does not support it.</p>
+<p>The macros are called <code>success!</code>, <code>warn!</code>, <code>failure!</code>, <code>info!</code>. For information
+on when to use these macros and how they integrate with <code>NazaraError</code>, see the
+<a href="design/./003-error_handling.html">Error Handling Guide</a>.</p>
 <details id="admonition-example-status-message-macros" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-status-message-macros-title">
 <summary class="admonition-title">
 <div id="admonition-example-status-message-macros-title">
@@ -680,13 +715,385 @@ formatting and colors automatically and disable colors when the host's terminal 
         success!("This worked!");
     },
     Err(e) =&gt; {
-        failure!("An error occured: {}", e);
+        failure!("An error occurred: {}", e);
         // Handle the error.
     }
 }
 <span class="boring">}</span></code></pre></pre>
 </div>
 </details>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="nazara-error-handling-guide"><a class="header" href="#nazara-error-handling-guide">Nazara Error Handling Guide</a></h1>
+<h2 id="philosophy"><a class="header" href="#philosophy">Philosophy</a></h2>
+<p>Nazara follows a <strong>"fail gracefully"</strong> philosophy. We prefer returning descriptive errors over panicking, reserving panics only for truly catastrophic and unfixable situations.</p>
+<p><strong>Core Principles:</strong></p>
+<ul>
+<li><strong>Single Source of Truth</strong>: Error messages are defined once in <code>NazaraError</code> variants and displayed consistently</li>
+<li><strong>Immediate Feedback</strong>: Errors are logged immediately using the <code>failure!</code> macro for user visibility</li>
+<li><strong>Clean Propagation</strong>: Most functions use the <code>?</code> operator without logging noise</li>
+<li><strong>Context When Needed</strong>: Optional context prefixes indicate which module or operation triggered the error</li>
+</ul>
+<h2 id="the-nazaraerror-enum"><a class="header" href="#the-nazaraerror-enum">The NazaraError Enum</a></h2>
+<p>All errors in Nazara are represented by the <code>NazaraError</code> enum in <code>src/error.rs</code>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum NazaraError {
+    /// Something went wrong trying to parse DMI tables.
+    Dmi(dmidecode::InvalidEntryPointError),
+    /// Used to indicate that the collection of system data failed.
+    UnableToCollectData(String),
+    /// Used for handling errors during file operations.
+    FileOpError(std::io::Error),
+    /// Indicates that a required config option is missing from the config file.
+    MissingConfigOptionError(String),
+    /// An error occurred while accessing data returned by NetBox.
+    NetBoxApiError(String),
+    /// Expects a `String` message. Used for edge cases and general purpose error cases.
+    Other(String),
+    // ... other variants
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="display-trait-implementation"><a class="header" href="#display-trait-implementation">Display Trait Implementation</a></h3>
+<p>Every <code>NazaraError</code> variant implements <code>std::fmt::Display</code> to provide user-friendly error messages:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl std::fmt::Display for NazaraError {
+    fn fmt(&amp;self, f: &amp;mut std::fmt::Formatter&lt;'_&gt;) -&gt; std::fmt::Result {
+        match self {
+            NazaraError::FileOpError(err) =&gt; {
+                write!(f, "File operation failed: {err}")
+            }
+            NazaraError::NetBoxApiError(msg) =&gt; {
+                write!(f, "NetBox API Error: {msg}")
+            }
+            NazaraError::Other(msg) =&gt; f.write_str(&amp;msg),
+            // ... other variants
+        }
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<div id="admonition-important" class="admonition admonish-tip" role="note" aria-labelledby="admonition-important-title">
+<div class="admonition-title">
+<div id="admonition-important-title">
+<p>Important</p>
+</div>
+<a class="admonition-anchor-link" href="design/003-error_handling.html#admonition-important"></a>
+</div>
+<div>
+<p>The <code>Display</code> implementation should <strong>never</strong> call <code>failure!</code> or any other logging macro. It should only format the error message.</p>
+</div>
+</div>
+<h2 id="convenience-methods"><a class="header" href="#convenience-methods">Convenience Methods</a></h2>
+<p>The <code>NazaraError</code> enum provides two convenience methods for common error handling patterns:</p>
+<h3 id="fail---log-and-return"><a class="header" href="#fail---log-and-return"><code>fail()</code> - Log and Return</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl NazaraError {
+    /// Log this error with failure! and return it wrapped in Err(...)
+    pub fn fail&lt;T&gt;(self) -&gt; NazaraResult&lt;T&gt; {
+        failure!("{}", self);
+        Err(self)
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Purpose:</strong> Combines logging and returning into a single operation.</p>
+<details id="admonition-example-using-the-fail-function-to-log-and-return-an-error" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-using-the-fail-function-to-log-and-return-an-error-title">
+<summary class="admonition-title">
+<div id="admonition-example-using-the-fail-function-to-log-and-return-an-error-title">
+<p>Example: Using the fail-function to log and return an error</p>
+</div>
+<a class="admonition-anchor-link" href="design/003-error_handling.html#admonition-example-using-the-fail-function-to-log-and-return-an-error"></a>
+</summary>
+<div>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>return NazaraError::Other("Config file contains invalid entries".to_owned()).fail();
+<span class="boring">}</span></code></pre></pre>
+</div>
+</details>
+<h3 id="log---log-with-context"><a class="header" href="#log---log-with-context"><code>log()</code> - Log with Context</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl NazaraError {
+    /// Log this error with additional context prefix.
+    /// Used when we need to log multiple errors but continue processing to fail in the end
+    /// either with the calling function or some other higher instance.
+    ///
+    /// The optional context in this case refers to the module or program part that the error
+    /// occurred in. For example: [DHCP-Mode].
+    pub fn log(&amp;self, context: Option&lt;&amp;str&gt;) {
+        if let Some(ctx) = context {
+            failure!("[{}] {}", ctx, self);
+            return;
+        }
+        failure!("{}", self);
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Purpose:</strong> Log errors with optional context when you need to accumulate multiple errors before failing.</p>
+<details id="admonition-example-logging-an-error-but-continue-processing" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-logging-an-error-but-continue-processing-title">
+<summary class="admonition-title">
+<div id="admonition-example-logging-an-error-but-continue-processing-title">
+<p>Example: Logging an error but continue processing</p>
+</div>
+<a class="admonition-anchor-link" href="design/003-error_handling.html#admonition-example-logging-an-error-but-continue-processing"></a>
+</summary>
+<div>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Accumulate errors, fail at the end
+for validation in validations {
+    if !validation.is_valid() {
+        let err = NazaraError::Other(format!("Validation '{}' failed", validation.name()));
+        err.log(None);
+        error_count += 1;
+    }
+}
+
+if error_count &gt; 0 {
+    return NazaraError::Other("Multiple validations failed".to_owned()).fail();
+}
+<span class="boring">}</span></code></pre></pre>
+</div>
+</details>
+<details id="admonition-example-logging-an-error-with-context" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-logging-an-error-with-context-title">
+<summary class="admonition-title">
+<div id="admonition-example-logging-an-error-with-context-title">
+<p>Example: Logging an error with context</p>
+</div>
+<a class="admonition-anchor-link" href="design/003-error_handling.html#admonition-example-logging-an-error-with-context"></a>
+</summary>
+<div>
+<p><code>context</code> indicates where or why this error has occurred. For example when working with the <code>ip-mode</code> flags,
+errors rooted in the changes of IP addresses by DHCP or something similar have the context "DHCP-Mode".</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let err = NazaraError::NetBoxApiError("IPv4 not found".to_owned());
+err.log(Some("DHCP-Mode"));
+return Err(err);
+<span class="boring">}</span></code></pre></pre>
+</div>
+</details>
+<h2 id="examples"><a class="header" href="#examples">Examples</a></h2>
+<details id="admonition-example-logging-with-return" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-logging-with-return-title">
+<summary class="admonition-title">
+<div id="admonition-example-logging-with-return-title">
+<p>Example: Logging with Return</p>
+</div>
+<a class="admonition-anchor-link" href="design/003-error_handling.html#admonition-example-logging-with-return"></a>
+</summary>
+<div>
+<p>Use when an error is terminal and should be returned immediately.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>return NazaraError::Other("Config file contains invalid entries".to_owned()).fail();
+<span class="boring">}</span></code></pre></pre>
+</div>
+</details>
+<details id="admonition-example-log-with-context-then-return" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-log-with-context-then-return-title">
+<summary class="admonition-title">
+<div id="admonition-example-log-with-context-then-return-title">
+<p>Example: Log with Context, Then Return</p>
+</div>
+<a class="admonition-anchor-link" href="design/003-error_handling.html#admonition-example-log-with-context-then-return"></a>
+</summary>
+<div>
+<p>Use when the error needs additional module/operation context.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let err = NazaraError::NetBoxApiError(
+    format!("IPv4 address \"{}\" was not registered in NetBox", ip)
+);
+err.log(Some("DHCP-Mode"));
+return Err(err);
+<span class="boring">}</span></code></pre></pre>
+<p>Or in a closure (for use with <code>ok_or_else</code>):</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let ipv4_id = search_ip(client, &amp;ip.to_string(), None)?.ok_or_else(|| {
+    let err = NazaraError::NetBoxApiError(format!("IPv4 \"{}\" not found", ip));
+    err.log(Some("DHCP-Mode"));
+    err
+})?;
+<span class="boring">}</span></code></pre></pre>
+</div>
+</details>
+<details id="admonition-example-accumulate-errors-fail-later" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-accumulate-errors-fail-later-title">
+<summary class="admonition-title">
+<div id="admonition-example-accumulate-errors-fail-later-title">
+<p>Example: Accumulate Errors, Fail Later</p>
+</div>
+<a class="admonition-anchor-link" href="design/003-error_handling.html#admonition-example-accumulate-errors-fail-later"></a>
+</summary>
+<div>
+<p>Use when processing multiple items and collecting all errors before failing.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut config_errors = Vec::new();
+
+for field in required_fields {
+    if config.get(field).is_none() {
+        let err = NazaraError::MissingConfigOptionError(field.to_string());
+        err.log(None);
+        config_errors.push(err);
+    }
+}
+
+if !config_errors.is_empty() {
+    return NazaraError::Other("Missing required config fields".to_owned()).fail();
+}
+<span class="boring">}</span></code></pre></pre>
+</div>
+</details>
+<details id="admonition-example-custom-user-facing-messages" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-custom-user-facing-messages-title">
+<summary class="admonition-title">
+<div id="admonition-example-custom-user-facing-messages-title">
+<p>Example: Custom User-Facing Messages</p>
+</div>
+<a class="admonition-anchor-link" href="design/003-error_handling.html#admonition-example-custom-user-facing-messages"></a>
+</summary>
+<div>
+<p>When you need to provide specific user guidance, use <code>failure!</code> directly.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>failure!(
+    "Tag '{}' does not exist. Use --prepare-environment to create it.",
+    tag_name
+);
+<span class="boring">}</span></code></pre></pre>
+<p>This is clearer than trying to fit the guidance into a <code>NazaraError</code> variant's display message.</p>
+</div>
+</details>
+<h2 id="when-to-use-what"><a class="header" href="#when-to-use-what">When to Use What</a></h2>
+<h3 id="use-fail-when"><a class="header" href="#use-fail-when">Use <code>.fail()</code> when:</a></h3>
+<ul>
+<li>The error is terminal (nothing else can be done)</li>
+<li>The error message is sufficient (no additional context needed)</li>
+<li>You want clean, single-line error handling</li>
+<li>This is the 90% common case</li>
+</ul>
+<h3 id="use-log-when"><a class="header" href="#use-log-when">Use <code>.log()</code> when:</a></h3>
+<ul>
+<li>You need to accumulate multiple errors before failing</li>
+<li>You want to add module/operation context</li>
+<li>The error should be logged but processing should continue</li>
+<li>You need to track multiple issues</li>
+</ul>
+<h3 id="use-failure-directly-when"><a class="header" href="#use-failure-directly-when">Use <code>failure!</code> directly when:</a></h3>
+<ul>
+<li>You need a custom message with user guidance</li>
+<li>The message is temporary/debugging (will be replaced later)</li>
+<li>You're providing feedback before returning a different error</li>
+</ul>
+<h3 id="dont-use-either-when"><a class="header" href="#dont-use-either-when">Don't use either when:</a></h3>
+<ul>
+<li>You can simply return the error with <code>?</code> (no logging needed)</li>
+<li>The caller will handle the error (low-level utilities)</li>
+<li>The error will be logged by the caller anyway</li>
+</ul>
+<h2 id="best-practices"><a class="header" href="#best-practices">Best Practices</a></h2>
+<h3 id="1-choose-the-right-error-variant"><a class="header" href="#1-choose-the-right-error-variant">1. Choose the Right Error Variant</a></h3>
+<p>Prefer specific variants over <code>Other</code> when possible:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// GOOD
+return NazaraError::MissingConfigOptionError("netbox_uri".to_owned()).fail();
+
+// OK (when no specific variant fits)
+return NazaraError::Other("Custom error message".to_owned()).fail();
+<span class="boring">}</span></code></pre></pre>
+<h3 id="2-include-context-in-error-messages"><a class="header" href="#2-include-context-in-error-messages">2. Include Context in Error Messages</a></h3>
+<p>When using <code>Other</code>, make the message descriptive:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// GOOD
+return NazaraError::Other("Config file contains invalid entries".to_owned()).fail();
+
+// BAD
+return NazaraError::Other("Error".to_owned()).fail();
+<span class="boring">}</span></code></pre></pre>
+<h3 id="3-use-context-for-module-identification"><a class="header" href="#3-use-context-for-module-identification">3. Use Context for Module Identification</a></h3>
+<p>When logging with context, use module or operation names:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>err.log(Some("DHCP-Mode"));
+err.log(Some("Config-Parser"));
+<span class="boring">}</span></code></pre></pre>
+<h3 id="4-dont-duplicate-error-messages"><a class="header" href="#4-dont-duplicate-error-messages">4. Don't Duplicate Error Messages</a></h3>
+<p>The error message should be defined once—in the <code>Display</code> implementation or the error construction:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// GOOD
+let msg = "Config file contains invalid entries".to_owned();
+failure!("{}", msg);
+return Err(NazaraError::Other(msg));
+
+// REDUNDANT (duplicates the message)
+failure!("Config file contains invalid entries");
+return NazaraError::Other("Config file contains invalid entries".to_owned()).fail();
+<span class="boring">}</span></code></pre></pre>
+<h3 id="5-let-errors-propagate"><a class="header" href="#5-let-errors-propagate">5. Let Errors Propagate</a></h3>
+<p>For low-level utility functions, just return errors. Let the caller decide whether to log:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// In a low-level utility
+pub fn read_config_file() -&gt; NazaraResult&lt;ConfigData&gt; {
+    let mut file = File::open(get_config_path(true))?;  // Just propagate
+    // ...
+}
+
+// In the calling function
+let config = read_config_file()
+    .map_err(|e| e.log(None))?;  // Log here
+<span class="boring">}</span></code></pre></pre>
+<h2 id="error-flow"><a class="header" href="#error-flow">Error Flow</a></h2>
+<pre><code>[Deep Function] → Creates/Returns NazaraError
+        ↓ (via ? operator)
+[Middle Function] → Propagates with ?
+        ↓ (via ? operator)
+[Application Logic] → Logs with .fail() or .log()
+        ↓
+[main.rs] → Catches error, logs with failure!
+        ↓
+[stderr] → User sees formatted error message
+</code></pre>
+<h2 id="example-complete-error-handling-flow"><a class="header" href="#example-complete-error-handling-flow">Example: Complete Error Handling Flow</a></h2>
+<p>Here's how error handling works in a real scenario:</p>
+<pre><pre class="playground"><code class="language-rust">// 1. Low-level function (no logging, just propagation)
+pub fn read_config_file() -&gt; NazaraResult&lt;ConfigData&gt; {
+    let mut file = File::open(get_config_path(true))?;
+    let mut contents = String::new();
+    file.read_to_string(&amp;mut contents)?;
+    toml::from_str(&amp;contents).map_err(NazaraError::DeserializationError)
+}
+
+// 2. Mid-level function (propagates errors)
+pub fn validate_config(config: &amp;ConfigData) -&gt; NazaraResult&lt;()&gt; {
+    if config.netbox_uri.is_empty() {
+        return Err(NazaraError::MissingConfigOptionError("netbox_uri".to_owned()));
+    }
+    Ok(())
+}
+
+// 3. Application logic (logs and returns)
+pub fn setup_configuration() -&gt; NazaraResult&lt;ConfigData&gt; {
+    let config = read_config_file()?;
+    validate_config(&amp;config)?;
+    
+    if config.is_invalid() {
+        return NazaraError::Other("Config validation failed".to_owned()).fail();
+    }
+    
+    Ok(config)
+}
+
+// 4. Main entry point (logs final error)
+fn main() {
+    match nazara::run() {
+        Ok(_) =&gt; success!("All done!"),
+        Err(e) =&gt; failure!("{}", e),  // Uses failure! for consistency
+    }
+}</code></pre></pre>
+<p>Remember: <strong>Errors should be logged once, at the appropriate level, with sufficient context.</strong></p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="contributing-to-nazara"><a class="header" href="#contributing-to-nazara">Contributing to Nazara</a></h1>
 <p>Thank you for considering contributing to Nazara!</p>
 <p>The following documents should provide you with all the information you need to start contributing to Nazara.</p>
@@ -756,7 +1163,7 @@ into the Nazara config file at <code>~/.nazara/config.toml</code></p>
 <li>Site
 (And depending on what you want to work on, replicate the custom fields you need 1:1 from your production instance.)</li>
 </ul>
-<p>If you want to specifiy and play around with some optional fields, you must create the objects you reference (like e.g Tenants) first.</p>
+<p>If you want to specify and play around with some optional fields, you must create the objects you reference (like e.g Tenants) first.</p>
 </li>
 <li>
 <p>After that's done, take the IDs of these objects and place it into the corresponding fields in the <code>~/.nazara/config.toml</code></p>
@@ -770,7 +1177,7 @@ into the Nazara config file at <code>~/.nazara/config.toml</code></p>
 <a class="admonition-anchor-link" href="contributors/test_environment.html#admonition-important"></a>
 </div>
 <div>
-<p>Currently, the generation of the config file is still a bit wonky, so if it isnt generated upon first executing nazara, copy and paste
+<p>Currently, the generation of the config file is still a bit wonky, so if it is not generated upon first executing nazara, copy and paste
 the template from the README or <code>src/configuration/config_template.toml</code>.</p>
 </div>
 </div>
@@ -819,7 +1226,7 @@ sudo systemctl enable --now libvirtd
 </code></pre>
 <h4 id="2-create-linux-vm"><a class="header" href="#2-create-linux-vm">2. Create Linux VM</a></h4>
 <p>Replace <code>$ISO_PATH</code> with the path to the ISO file and <code>$DISK_PATH</code> to the path
-where you want your virtual disk to be localted.</p>
+where you want your virtual disk to be located.</p>
 <ol>
 <li>Create a new virtual disk image</li>
 </ol>
@@ -1019,7 +1426,7 @@ raised by these tools.</p>
 <p><code>feature/add-vm-creation</code>, rather than <code>add-vm</code></p>
 </div>
 </div>
-<h3 id="2-make-meaningful-committs"><a class="header" href="#2-make-meaningful-committs">2. Make meaningful committs</a></h3>
+<h3 id="2-make-meaningful-commits"><a class="header" href="#2-make-meaningful-commits">2. Make meaningful commits</a></h3>
 <p>It is important to pay attention to the scope of your contribution. To this end please only make changes in one Pull Request which are related to your specific contribution.</p>
 <p>This makes it easier for us to review your PR and to keep the commit history clean. (If you encounter something else you want to change,
 which is not directly linked to your contribution, please open a PR on a separate branch for this change.)</p>
@@ -1087,6 +1494,146 @@ license(s) as the project at the time of contribution.</p>
 <p>You also grant the project maintainers the right to relicense the project, including your contribution, under any
 future version of those license(s), or under any other license that is free and open source software (FOSS) and
 compatible with the current license(s).</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="documenting-nazara"><a class="header" href="#documenting-nazara">Documenting Nazara</a></h1>
+<details id="admonition-hint" class="admonition admonish-tip" role="note" aria-labelledby="admonition-hint-title">
+<summary class="admonition-title">
+<div id="admonition-hint-title">
+<p>Hint</p>
+</div>
+<a class="admonition-anchor-link" href="contributors/documentation_workflow.html#admonition-hint"></a>
+</summary>
+<div>
+<p>This information is pretty much applicable to all repositories of the Nazara project.</p>
+</div>
+</details>
+<p>This document will give you an overview about our documentation process. What needs to be documented,
+where does it go and who is responsible for keeping documentation clean is all part of this guide.</p>
+<h2 id="what-needs-to-be-documented"><a class="header" href="#what-needs-to-be-documented">What needs to be documented?</a></h2>
+<p>Anything that has implication for people outside the immediate contributor team needs clear documentation.
+This includes function behaviour users rely on, steps packagers follow to produce artifacts, and processes maintainers
+use to operate or fix the project.</p>
+<p>Specifically, document:</p>
+<ul>
+<li><strong>User-facing Features</strong>: Installation steps, configuration methods and their parameters, upgrade instructions,
+error reporting check list, or Nazara's behaviour like CLI commands, etc.</li>
+<li><strong>Contributor Workflows</strong>: Everything from code quality, to documentation or steps to contribute, how to set
+up a dev environment or choose and issue to work on needs to be documented if the process changes.</li>
+<li><strong>Maintainer &amp; Packaging Procedures:</strong> Release workflow and how to update <code>thanix_client</code> in case NetBox changes
+their API again are the key points here. Also approval criteria for PRs or anything else Maintainers should know.</li>
+</ul>
+<h2 id="who-needs-to-document-things"><a class="header" href="#who-needs-to-document-things">Who needs to document things?</a></h2>
+<p>Documentation is a shared responsibility of all project contributors. Anyone who changes behaviour, packaging, or
+operations must update relevant documentation as part of the same change. This keeps docs accurate and prevents
+silent divergence between code and documentation.</p>
+<p>Authors should include any relevant documentation updates in their contribution or link to a separate
+PR that include said updates.</p>
+<details id="admonition-important-for-maintainers" class="admonition admonish-tip" role="note" aria-labelledby="admonition-important-for-maintainers-title">
+<summary class="admonition-title">
+<div id="admonition-important-for-maintainers-title">
+<p>Important for Maintainers</p>
+</div>
+<a class="admonition-anchor-link" href="contributors/documentation_workflow.html#admonition-important-for-maintainers"></a>
+</summary>
+<div>
+<p>In the event that a contributor links their documentation changes in a separate PR, both PRs are to be
+treated as one.</p>
+<p>Meaning: If the code PR is approved but the docs PR needs changes, neither one is to be merged and vise versa.</p>
+</div>
+</details>
+<p>Cosmetic changes or strictly code internal ones (like code cleanup, performance improvements, etc.) are generally
+not covered by the duty to document unless explicitly told otherwise by a maintainer or such a time
+where architectural decision forms (ADFs) are implemented.</p>
+<h2 id="formatting-and-style"><a class="header" href="#formatting-and-style">Formatting and Style</a></h2>
+<p>Write documentation that is both readable and actionable. Aim for clear, direct sentences and break
+long topics into smaller pages using headings.</p>
+<p>Use examples liberally: A short snipped demonstrating the most common use case is a good actionable example.</p>
+<h2 id="the-review-process"><a class="header" href="#the-review-process">The Review Process</a></h2>
+<p>Any changes to documentation will be reviewed by maintainers for the quality criteria mentioned below.
+Only after the review is successfully will the changed be merged. The review validates:</p>
+<ul>
+<li><strong>Technical accuracy and sufficient depth:</strong> The document matches implemented behaviour and guides are executable.</li>
+<li><strong>Completeness:</strong> All affected changes are documented.</li>
+<li><strong>Readability:</strong> The documentation is free of typos or grammatical errors.</li>
+<li><strong>Style and Inclusivity</strong>: Language follows the project's expectations and quality criteria,
+all images have appropriate alt text descriptions for people using screen readers.</li>
+</ul>
+<h2 id="quality-criteria"><a class="header" href="#quality-criteria">Quality Criteria</a></h2>
+<p>All documentation should have a professional and inclusive tone. Gender-neutral language (like they/them or role
+based nouns like "maintainer" or "developer") should be used. Idioms or jokes should be avoided alongside
+terms that may be interpreted offensively.</p>
+<p>Documentation should go into appropriate detail for the intended target group (i.e. Users or Developers) and
+not omit any details or become vague when talking about specific topics.</p>
+<p>If a feature is not yet implemented or there are currently known bugs or Issues, a "Known Issues" section
+should be appended at the bottom of the document listing these issues and their corresponding Codeberg Issue
+if applicable.</p>
+<p>Include expected output or other steps which the reader can use to verify operation outcomes in any instructional guide.</p>
+<h2 id="version-compatibility"><a class="header" href="#version-compatibility">Version Compatibility</a></h2>
+<p>Currently, the documentation cannot be hosted for individual specific versions of Nazara. Instead,
+the currently public documentation of Nazara is always valid for the latest release.</p>
+<p>Our CI will check for newly created releases and build all changes to the <code>docs/</code> directory and publish them here.</p>
+<h2 id="examples-1"><a class="header" href="#examples-1">Examples</a></h2>
+<details id="admonition-example-gender-inclusive-language" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-gender-inclusive-language-title">
+<summary class="admonition-title">
+<div id="admonition-example-gender-inclusive-language-title">
+<p>Example: Gender Inclusive Language</p>
+</div>
+<a class="admonition-anchor-link" href="contributors/documentation_workflow.html#admonition-example-gender-inclusive-language"></a>
+</summary>
+<div>
+<p>Instead of</p>
+<pre><code>When a user finds a bug, he should open a. issue.
+</code></pre>
+<p>write</p>
+<pre><code>If a user discovers a bug, they should open an issue.
+</code></pre>
+</div>
+</details>
+<details id="admonition-example-documenting-breaking-changes" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-documenting-breaking-changes-title">
+<summary class="admonition-title">
+<div id="admonition-example-documenting-breaking-changes-title">
+<p>Example: Documenting Breaking Changes</p>
+</div>
+<a class="admonition-anchor-link" href="contributors/documentation_workflow.html#admonition-example-documenting-breaking-changes"></a>
+</summary>
+<div>
+<p>Breaking changes should be documented at the top of the file in a warning box.</p>
+<pre><code>~~~admonish warning title="v0.2.0: Breaking Change in Configuration"
+Since NetBox `v4.5.x`, NetBox requires a different format of API token in the authentication header.
+This applies for any new `v2` token. `v1` tokens are unaffected by this.
+
+In your config file, instead of:
+
+    netbox_api_token = "$TOKEN"
+
+you have to write:
+
+    netbox_api_token = "nbt_$KEY.$TOKEN"
+
+Codeberg Issue Reference: [#179](https://codeberg.org/nazara-project/Nazara/issues/179)
+</code></pre>
+<p>The Codeberg Issue Reference can also be a link to a commit that introduced a breaking change between Nazara releases.</p>
+</div>
+</details>
+<details id="admonition-example-documenting-known-issues" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-documenting-known-issues-title">
+<summary class="admonition-title">
+<div id="admonition-example-documenting-known-issues-title">
+<p>Example: Documenting Known Issues</p>
+</div>
+<a class="admonition-anchor-link" href="contributors/documentation_workflow.html#admonition-example-documenting-known-issues"></a>
+</summary>
+<div>
+<p><strong>This should be used sparingly</strong> as we should focus on fixing these issues instead of documenting them.</p>
+<p>However, for anything that a user can face during the use of Nazara or its side projects, which is expected but currently
+not fixed we should document it at the relevant passage with in a similar style as used above while referencing
+the corresponding issue where possible.</p>
+<pre><code>~~~admonish warning title="v0.2.0: Breaking Change in Configuration"
+
+You could face X here, if so, please do Y. We are working on a fix.
+
+Codeberg Issue Reference: [#000](LINK)
+</code></pre>
+</div>
+</details>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="dependencies"><a class="header" href="#dependencies">Dependencies</a></h1>
 <p>To keep Nazara secure, lightweight, and maintainable, we follow a strict policy on introducing external dependencies.</p>
 <p>We only accept external dependencies that meet all of these criteria:</p>
@@ -1107,14 +1654,14 @@ compatible with the current license(s).</p>
 <p>When submitting a PR with a new dependency, please explain why it is needed and why no other alternative was suitable.</p>
 </div>
 </div>
-<h2 id="preferance-guidelines"><a class="header" href="#preferance-guidelines">Preferance Guidelines</a></h2>
+<h2 id="preference-guidelines"><a class="header" href="#preference-guidelines">Preference Guidelines</a></h2>
 <p>We prefer:</p>
 <ul>
 <li><strong>Standard Library</strong> functionality wherever possible</li>
 <li><strong>Zero-dependency alternatives</strong> over large general-purpose crates</li>
 <li><strong>Lean and well-maintained</strong> crates over obscure or overly complex ones</li>
 </ul>
-<p>The goal is not to avoid dependencies at all ocsts - only to avoid unnecessary, unstable, insecure or high-maintenance ones.</p>
+<p>The goal is not to avoid dependencies at all - only to avoid unnecessary, unstable, insecure or high-maintenance ones.</p>
 <div id="admonition-info-1" class="admonition admonish-info" role="note" aria-labelledby="admonition-info-1-title">
 <div class="admonition-title">
 <div id="admonition-info-1-title">
@@ -1327,7 +1874,7 @@ It is generated by <a href="https://codeberg.org/nazara-project/Thanix">Thanix</
 <p>Throw the downloaded YAML file into <code>Thanix</code> to generate a new crate. You will get a new directory
 wherever you executed it containing a completely new <code>thanix_client</code> repo.</p>
 <p><strong>Take the <code>src</code> directory from that output and copy it</strong>, in its entirety, into the <code>thanix_client</code> repository
-you cloned from GitHub. If prompted, agree to overtwrite all existing files.</p>
+you cloned from GitHub. If prompted, agree to overwrite all existing files.</p>
 <p><strong>Update the version numbers in <code>thanix_client</code> accordingly</strong>.</p>
 <p>Test build the crate by running:</p>
 <pre><code>$ cargo build --release
@@ -1406,6 +1953,28 @@ and also plan on attaching these to every release going forward as an easy way t
 <pre><code class="language-bash">sudo dpkg -i nazara_0.1.0-1_amd64.deb
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="configuration"><a class="header" href="#configuration">Configuration</a></h1>
+<div id="admonition-v020-breaking-change-in-configuration-with-netbox-v45x" class="admonition admonish-danger" role="note" aria-labelledby="admonition-v020-breaking-change-in-configuration-with-netbox-v45x-title">
+<div class="admonition-title">
+<div id="admonition-v020-breaking-change-in-configuration-with-netbox-v45x-title">
+<p><code>v0.2.0</code>: Breaking Change in Configuration with NetBox <code>v4.5.x</code></p>
+</div>
+<a class="admonition-anchor-link" href="users/configuration.html#admonition-v020-breaking-change-in-configuration-with-netbox-v45x"></a>
+</div>
+<div>
+<p>Since NetBox <code>v4.5.x</code>, NetBox requires a different format of API token in the authentication header.
+This applies for any new <code>v2</code> token. <code>v1</code> tokens are unaffected by this.</p>
+<p>In your config file, instead of:</p>
+<pre><code>netbox_api_token = "$TOKEN"
+</code></pre>
+<p>you have to write:</p>
+<pre><code>netbox_api_token = "nbt_$KEY.$TOKEN"
+</code></pre>
+<p>The <code>$KEY</code> value can be found in the corresponding "Key" field in the Netbox WebUI when looking at the
+API key entry.</p>
+<p>We are currently looking into updating our documentation and API client.</p>
+<p>Codeberg Issue Reference: <a href="https://codeberg.org/nazara-project/Nazara/issues/179">#179</a></p>
+</div>
+</div>
 <p>Nazara supports two ways of providing configuration parameters: CLI arguments and a configuration file.</p>
 <p>Nazara accepts these parameters from you:</p>
 <ul>
@@ -1415,7 +1984,27 @@ and also plan on attaching these to every release going forward as an easy way t
 <li><code>-p, --plugin &lt;PLUGIN&gt;</code>: The path to a plugin script you want to use to fill in custom fields.</li>
 <li><code>-h, --help</code>: Print help.</li>
 <li><code>-V, --version</code>: Print version.</li>
+<li><code>--log-level</code>: Changes the level of status messages to be printed to the terminal. Defaults to <code>debug</code>.</li>
 </ul>
+<details id="admonition-hint-log-levels" class="admonition admonish-info" role="note" aria-labelledby="admonition-hint-log-levels-title">
+<summary class="admonition-title">
+<div id="admonition-hint-log-levels-title">
+<p>Hint: Log Levels</p>
+</div>
+<a class="admonition-anchor-link" href="users/configuration.html#admonition-hint-log-levels"></a>
+</summary>
+<div>
+<p>Valid values for <code>--log-level</code> are:</p>
+<ul>
+<li><code>trace</code></li>
+<li><code>debug</code></li>
+<li><code>info</code></li>
+<li><code>warn</code></li>
+<li><code>error</code></li>
+<li><code>fatal</code> (suppresses all output except for fatal errors)</li>
+</ul>
+</div>
+</details>
 <p>Afterwards, Nazara expects one of the following operation types to be specified:</p>
 <ul>
 <li><code>register</code>: Register a new device or vm in NetBox.</li>
@@ -1424,8 +2013,8 @@ and also plan on attaching these to every release going forward as an easy way t
 registration or update is needed.</li>
 </ul>
 <h2 id="configuring-via-cli"><a class="header" href="#configuring-via-cli">Configuring via CLI</a></h2>
-<p>Here is an example for passing these parameters on using the CLI:</p>
-<pre><code class="language-bash">sudo nazara --uri &lt;API_URL&gt; --token &lt;API_TOKEN&gt; &lt;OPERATION&gt; . . .
+<p>For the most detailed guide on how to configure nazara via CLI, please make use of the <code>help</code> function.</p>
+<pre><code class="language-bash">sudo nazara --help
 </code></pre>
 <p>When launching Nazara for the first time, a configuration file will be written at <code>$HOME/.config/nazara/config.toml</code>.
 You can use CLI parameters to override your settings in the config file.</p>
@@ -1475,10 +2064,10 @@ primary_ip6 = ""
 # Use [device] for devices, or [vm] if this is a virtual machine.
 # ---------------------------------------------------------------
 
-# [device]
-# device_type = 0
-# role = 0
-# site = 0
+[device]
+device_type = 0
+role = 0
+site = 0
 
 # [vm]
 # cluster = 0
@@ -1515,8 +2104,39 @@ name = "aurora@"
 <p>The <code>write-config</code> allows you to change individual parameters, or perform a bulk
 update by passing a <code>JSON</code> structure via CLI. <strong>These options are exclusive.
 Passing both is disallowed.</strong></p>
-<p>For further information on how to configure Nazara, run <code>nazara --help</code> or visit
-<a href="https://nazara-project.codeberg.page/Nazara">our documentation</a>.</p>
+<div id="admonition-example-using-write-config-to-change-config-parameters" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-using-write-config-to-change-config-parameters-title">
+<div class="admonition-title">
+<div id="admonition-example-using-write-config-to-change-config-parameters-title">
+<p>Example: Using <code>write-config</code> to change config parameters</p>
+</div>
+<a class="admonition-anchor-link" href="users/configuration.html#admonition-example-using-write-config-to-change-config-parameters"></a>
+</div>
+<div>
+<p>These examples show you how you can edit your config file from the command line.</p>
+<pre><code class="language-bash"># Pass arguments individually
+sudo nazara write-config --uri https://netbox.sampleorg.com
+</code></pre>
+<p>Or in batches using JSON:</p>
+<pre><code class="language-bash">sudo nazara write-config --json '{
+  "netbox": {
+    "netbox_uri": "https://netbox.example.com",
+    "netbox_api_token": "abcd1234"
+  },
+  "common": {
+    "name": "test-device",
+    "description": "A physical test machine",
+    "comments": "Created for testing purposes",
+    "status": "active"
+  },
+  "device": {
+    "device_type": 1,
+    "role": 2,
+    "site": 3
+  }
+}'
+</code></pre>
+</div>
+</div>
 <p><em>Please note that this section is still a work in progress and all information is subject to change.</em></p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="registering-a-device-or-vm"><a class="header" href="#registering-a-device-or-vm">Registering a Device or VM</a></h1>
 <p>Registering a device with Nazara is as straight forward as
@@ -1579,7 +2199,44 @@ of allowed config parameters, please refer to our <a href="https://codeberg.org/
 </details>
 <h3 id="2-run-nazara-register"><a class="header" href="#2-run-nazara-register">2. Run <code>nazara register</code></a></h3>
 <p>To register your device, simply run</p>
-<pre><code class="language-bash">nazara register
+<pre><code class="language-bash">sudo nazara register
+</code></pre>
+<p>This will register your device, its interfaces and ip-addresses <strong>statically</strong> in NetBox.</p>
+<p>If you are in an environment where IP addresses are managed by DHCP, Nazara offers several DHCP modes to handle this.</p>
+<p>To do so, pass the <code>--ip-mode</code> to either the <code>register</code> or <code>update</code> command to switch between modes.</p>
+<h3 id="dhcp-compatibility"><a class="header" href="#dhcp-compatibility">DHCP Compatibility</a></h3>
+<h4 id="static-mode"><a class="header" href="#static-mode"><code>static</code> Mode</a></h4>
+<p>Default behaviour of Nazara. Simply registers everything without paying attention to any environments.</p>
+<p><strong>This may crash if the device's IP addresses change, no reconciliation will take place.</strong></p>
+<pre><code class="language-bash">sudo nazara register --ip-mode static
+</code></pre>
+<h4 id="dhcp-ignored-mode"><a class="header" href="#dhcp-ignored-mode"><code>dhcp-ignored</code> Mode</a></h4>
+<p>In cases where a DHCP servers syncs IP addresses with NetBox, <strong>any registration or update of IP addresses will be skipped</strong>.</p>
+<pre><code class="language-bash">sudo nazara register --ip-mode dhcp-ignored
+</code></pre>
+<h4 id="dhcp-observed-mode"><a class="header" href="#dhcp-observed-mode"><code>dhcp-observed</code> Mode</a></h4>
+<p>The most complex mode, this will register the device or VM with <strong>all IP addresses, as they are currently discovered</strong>.
+Nazara will try to reconcile the IP addresses it discovers, with what is present in NetBox.</p>
+<p>If the address does not exist, it will be created, if it is assigned to a different interface, it will be reassigned.</p>
+<p><strong>The IP addresses will be tagged with <code>dhcp</code> tags.</strong></p>
+<pre><code class="language-bash">sudo nazara register --ip-mode dhcp-observed
+</code></pre>
+<p>This mode is to be used in cases where Netbox itself manages available IP addresses and a DHCP server syncs from that.</p>
+<h3 id="preparing-the-netbox-environment"><a class="header" href="#preparing-the-netbox-environment">Preparing the NetBox environment</a></h3>
+<p>Before registering your Device, Nazara verifies that required entities exist in NetBox (site, role, device_type, etc.) and that
+the tags <code>nazara</code> and <code>dhcp</code> that we use to identify our entries are present.</p>
+<p>If you are running Nazara for the first time, you may need to prepare your NetBox environment. The <code>--prepare-environment</code> flag
+will automatically create required tags if they don't exist.</p>
+<pre><code class="language-bash">sudo nazara register --prepare-environment ...
+</code></pre>
+<p>This will:</p>
+<ul>
+<li>Verify site, role, device_type etc. IDs are valid and exist</li>
+<li>Create the <code>nazara</code> tag (used to mark all Nazara-created entries)</li>
+<li>Create the <code>dhcp</code> tag (used for DHCP-observed IP addresses)</li>
+</ul>
+<p>You can also prepare your environment without registering:</p>
+<pre><code class="language-bash">sudo nazara prepare-environment
 </code></pre>
 <h3 id="common-issues"><a class="header" href="#common-issues">Common Issues</a></h3>
 <h4 id="toml-deserialization-error"><a class="header" href="#toml-deserialization-error">TOML Deserialization Error</a></h4>
@@ -1651,6 +2308,40 @@ You can see it in the URL of your browser. In our case:
 <pre><code>sudo nazara update --id 57
 </code></pre>
 <p>This will then update the entry for you.</p>
+<h3 id="dhcp-compatibility-1"><a class="header" href="#dhcp-compatibility-1">DHCP Compatibility</a></h3>
+<h4 id="static-mode-1"><a class="header" href="#static-mode-1"><code>static</code> Mode</a></h4>
+<p>Default behavior of Nazara. Simply registers everything without paying attention to any environments.</p>
+<p><strong>This may crash if the device's IP addresses change, no reconciliation will take place.</strong></p>
+<pre><code class="language-bash">sudo nazara register --ip-mode static
+</code></pre>
+<h4 id="dhcp-ignored-mode-1"><a class="header" href="#dhcp-ignored-mode-1"><code>dhcp-ignored</code> Mode</a></h4>
+<p>In cases where a DHCP servers syncs IP addresses with NetBox, <strong>any registration or update of IP addresses will be skipped</strong>.</p>
+<pre><code class="language-bash">sudo nazara register --ip-mode dhcp-ignored
+</code></pre>
+<h4 id="dhcp-observed-mode-1"><a class="header" href="#dhcp-observed-mode-1"><code>dhcp-observed</code> Mode</a></h4>
+<p>The most complex mode, this will register the device or VM with <strong>all IP addresses, as they are currently discovered</strong>.
+Nazara will try to reconcile the IP addresses it discovers, with what is present in NetBox.</p>
+<p>If the address does not exist, it will be created, if it is assigned to a different interface, it will be reassigned.</p>
+<p><strong>The IP addresses will be tagged with <code>dhcp</code> tags.</strong></p>
+<pre><code class="language-bash">sudo nazara register --ip-mode dhcp-observed
+</code></pre>
+<p>This mode is to be used in cases where Netbox itself manages available IP addresses and a DHCP server syncs from that.</p>
+<h3 id="preparing-the-netbox-environment-1"><a class="header" href="#preparing-the-netbox-environment-1">Preparing the NetBox environment</a></h3>
+<p>Before registering your Device, Nazara verifies that required entities exist in NetBox (site, role, device_type, etc.) and that
+the tags <code>nazara</code> and <code>dhcp</code> that we use to identify our entries are present.</p>
+<p>If you are running Nazara for the first time, you may need to prepare your NetBox environment. The <code>--prepare-environment</code> flag
+will automatically create required tags if they don't exist.</p>
+<pre><code class="language-bash">sudo nazara register --prepare-environment ...
+</code></pre>
+<p>This will:</p>
+<ul>
+<li>Verify site, role, device_type etc. IDs are valid and exist</li>
+<li>Create the <code>nazara</code> tag (used to mark all Nazara-created entries)</li>
+<li>Create the <code>dhcp</code> tag (used for DHCP-observed IP addresses)</li>
+</ul>
+<p>You can also prepare your environment without registering:</p>
+<pre><code class="language-bash">sudo nazara prepare-environment
+</code></pre>
 <h3 id="common-issues-1"><a class="header" href="#common-issues-1">Common Issues</a></h3>
 <h4 id="ip-xxxx-has-not-been-registered-in-netbox"><a class="header" href="#ip-xxxx-has-not-been-registered-in-netbox">IP "X.X.X.X" has not been registered in NetBox</a></h4>
 <p>This is a common issue with environments that use DHCP
@@ -1660,7 +2351,7 @@ has not been registered with NetBox beforehand, so there is no IP entry to updat
 as the update process is forbidden from doing so.</p>
 <p>Alternatively, you can delete and re-register the device.¹</p>
 <p>We are actively working on a managed mode that forbids Nazara's
-IP management alltogether in cases where you have a different source
+IP management altogether in cases where you have a different source
 of truth for them.</p>
 <small>
 ¹ Not recommended if you touch your device entries manually.

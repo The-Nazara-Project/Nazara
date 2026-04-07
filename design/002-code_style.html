@@ -162,8 +162,10 @@
                         <div class="content-wrap">
                             <h1 id="nazara-code-style-guide"><a class="header" href="#nazara-code-style-guide">Nazara Code Style Guide</a></h1>
 <h2 id="general-guide"><a class="header" href="#general-guide">General Guide</a></h2>
-<p>In regards to formatting, we follow the current Rust code style set by the Cargo formatter (<code>cargo fmt</code>).</p>
-<p>The easiest way to enforce this, is using <code>pre-commit</code> to automatically format and check any code before it is committed.</p>
+<p>In regards to formatting, we follow the current Rust code style set by the Cargo
+formatter (<code>cargo fmt</code>).</p>
+<p>The easiest way to enforce this, is using <code>pre-commit</code> to automatically format
+and check any code before it is committed.</p>
 <div id="admonition-info" class="admonition admonish-info" role="note" aria-labelledby="admonition-info-title">
 <div class="admonition-title">
 <div id="admonition-info-title">
@@ -176,9 +178,11 @@
 </div>
 </div>
 <h2 id="panics"><a class="header" href="#panics">Panics</a></h2>
-<p>We heavily discourage the use of the <code>panic!()</code> macro when aborting the process. Instead, we prefer to handle an error
-and abort gracefully with a helpful error message and error code.</p>
-<p>We only want to panic, when the issue we encounter is <strong>both catastrophic and unfixable by the user</strong>.</p>
+<p>We heavily discourage the use of the <code>panic!()</code> macro when aborting the process.
+Instead, we prefer to handle an error and abort gracefully with a helpful error
+message and error code.</p>
+<p>We only want to panic, when the issue we encounter is <strong>both catastrophic and
+unfixable by the user</strong>.</p>
 <div id="admonition-example" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-title">
 <div class="admonition-title">
 <div id="admonition-example-title">
@@ -187,7 +191,7 @@ and abort gracefully with a helpful error message and error code.</p>
 <a class="admonition-anchor-link" href="#admonition-example"></a>
 </div>
 <div>
-<p>These are szenarios in which we <strong>don't want to panic</strong>:</p>
+<p>These are scenarios in which we <strong>don't want to panic</strong>:</p>
 <ul>
 <li>When input or config parameters are missing</li>
 <li>When connection to NetBox fails</li>
@@ -200,18 +204,13 @@ and abort gracefully with a helpful error message and error code.</p>
 </ul>
 </div>
 </div>
-<p>Instead of panicking, we write custom error types to wrap errors of certain functions and include a well formatted error message alongside the error.
-For an exampel on how that looks, please check and of the <code>error.rs</code> files found in any of Nazara's packages.</p>
-<details id="admonition-examplesrcpublishererrorrs" class="admonition admonish-example" role="note" aria-labelledby="admonition-examplesrcpublishererrorrs-title">
-<summary class="admonition-title">
-<div id="admonition-examplesrcpublishererrorrs-title">
-<p>Example:<code>src/publisher/error.rs</code></p>
-</div>
-<a class="admonition-anchor-link" href="#admonition-examplesrcpublishererrorrs"></a>
-</summary>
-<div>
-<p>In this example, you can see how we write our custom error types and are able to wrap errors that we receive from other functions
-in order to escalate them properly.</p>
+<p>Instead of panicking, we write custom error types to wrap errors of certain
+functions and include a well formatted error message alongside the error.</p>
+<p>For detailed information on Nazara's error handling approach, including the
+<code>NazaraError</code> enum and best practices, see the
+<a href="./003-error_handling.html">Error Handling Guide</a>.</p>
+<p>````admonish example collapsible=true title="Example:<code>src/error.rs</code>"
+In this example, you can get an overview over the <code>error.rs</code> module and get an idea on how to handle errors in the code.</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>#[derive(Debug)]
@@ -260,6 +259,28 @@ pub enum NazaraError {
 }
 
 pub type NazaraResult&lt;T&gt; = Result&lt;T, NazaraError&gt;;
+
+impl NazaraError {
+    /// Log this error with failure! and return it wrapped in Err(...)
+    pub fn fail&lt;T&gt;(self) -&gt; NazaraResult&lt;T&gt; {
+        failure!("{}", self);
+        Err(self)
+    }
+
+    /// Log this error with additional context prefix.
+    /// Used when we need to log multiple errors but continue processing to fail in the end
+    /// either with the calling function or some other higher instance.
+    ///
+    /// The optional context in this case refers to the module or program part that the error
+    /// occurred in. For example: [DHCP-Mode].
+    pub fn log(&amp;self, context: Option&lt;&amp;str&gt;) {
+        if let Some(ctx) = context {
+            failure!("[{}] {}", ctx, self);
+            return;
+        }
+        failure!("{}", self);
+    }
+}
 
 impl std::fmt::Display for NazaraError {
     fn fmt(&amp;self, f: &amp;mut std::fmt::Formatter&lt;'_&gt;) -&gt; std::fmt::Result {
@@ -391,40 +412,42 @@ impl From&lt;toml::de::Error&gt; for NazaraError {
     }
 }
 <span class="boring">}</span></code></pre></pre>
-</div>
-</details>
-<h2 id="focus-on-readability"><a class="header" href="#focus-on-readability">Focus on Readability</a></h2>
-<p>When writing code, we value readability above complexity.</p>
-<p>Rust offers a lot of possibilities when it comes to reducing code down into a one-line statement. And that's nice,
-and sometimes even necessary.</p>
-<p>However, we want to take a <strong>readability first</strong> approach with our codebase. Both to aid maintainability and
-increase accessibility for newcomers.</p>
-<p>Of course, sometimes using Rust's more "advanced" features will drastically improve performance. So a balance has
-to be struck between readability and performance. It is very hard to define a solid policy for this, so
-this is a decision every developer and contributor has to do for themselves and - when necessary - engage
-in discussion with maintainers, devs and other contributors about their approach and possible alternatives.</p>
-<h2 id="documenting-code"><a class="header" href="#documenting-code">Documenting Code</a></h2>
-<p>For a smilar reason, we encourage devs to properly document their contributions.
-This includes but is not limited to:</p>
-<ul>
-<li>Using inline comments to explain possibly hard to understand syntax</li>
-<li>Using Rust's powerful docstring feature to properly document functions, structs and modules</li>
-<li>Adding to this documentation when applicable</li>
-<li>Filling out Issue and PR templates appropriately to aid maintainers review their changes</li>
-</ul>
-<p>The following examples will show you an ideal docstring style.</p>
-<details id="admonition-example-documenting-functions" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-documenting-functions-title">
-<summary class="admonition-title">
-<div id="admonition-example-documenting-functions-title">
-<p>Example: Documenting Functions</p>
-</div>
-<a class="admonition-anchor-link" href="#admonition-example-documenting-functions"></a>
-</summary>
-<div>
-<p><strong>Documenting Functions:</strong></p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>/// This function does X.
+<pre><code>
+## Focus on Readability
+
+When writing code, we value readability above complexity.
+
+Rust offers a lot of possibilities when it comes to reducing code down into a
+one-line statement. And that's nice, and sometimes even necessary.
+
+However, we want to take a **readability first** approach with our codebase.
+Both to aid maintainability and increase accessibility for newcomers.
+
+Of course, sometimes using Rust's more "advanced" features will drastically
+improve performance. So a balance has to be struck between readability and
+performance. It is very hard to define a solid policy for this, so this is a
+decision every developer and contributor has to do for themselves and - when
+necessary - engage in discussion with maintainers, devs and other contributors
+about their approach and possible alternatives.
+
+## Documenting Code
+
+For a similar reason, we encourage devs to properly document their
+contributions. This includes but is not limited to:
+
+- Using inline comments to explain possibly hard to understand syntax
+- Using Rust's powerful docstring feature to properly document functions,
+  structs and modules
+- Adding to this documentation when applicable
+- Filling out Issue and PR templates appropriately to aid maintainers review
+  their changes
+
+The following examples will show you an ideal docstring style.
+
+````admonish example title="Example: Documenting Functions" collapsible=true
+**Documenting Functions:**
+```rust
+/// This function does X.
 ///
 /// This function does X by doing Y using Z. (Detailed explanation optional)
 ///
@@ -437,24 +460,26 @@ This includes but is not limited to:</p>
 pub fn foo(arg: str) -&gt; Result&lt;str, Err&gt; {
  // ...
 }
-<span class="boring">}</span></code></pre></pre>
-<p>While not universally used by all projects, we use <code># Parameters</code> and <code># Returns</code>
-sections, especially for larger functions.</p>
-<p>If a function does not take arguments, the <code># Parameters</code> section can be omitted.
-However, if the function does not return (<code>!</code> type) - or returns <code>()</code>, this has to be indicated
-in the <code># Returns</code> section.</p>
-<p>Other sections we use are:</p>
-<ul>
-<li><code># Aborts</code> - If the function aborts the program. (E.g When input parameters are missing)</li>
-<li><code># Panics</code> - If the function can cause a <code>panic!()</code>.</li>
-</ul>
-<p>For both of these sections, list all - or at least the most common - reasons this behaviour can
-occur. This can help debugging immensely.</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>/// This function does X.
+```
+While not universally used by all projects, we use `# Parameters` and `# Returns`
+sections, especially for larger functions.
+
+If a function does not take arguments, the `# Parameters` section can be omitted.
+However, if the function does not return (`!` type) - or returns `()`, this has to be indicated
+in the `# Returns` section.
+
+Other sections we use are:
+
+* `# Aborts` - If the function aborts the program. (E.g When input parameters are missing)
+* `# Panics` - If the function can cause a `panic!()`.
+
+For both of these sections, list all - or at least the most common - reasons this behaviour can
+occur. This can help debugging immensely.
+
+```rust
+/// This function does X.
 ///
-/// # Paramters
+/// # Parameters
 /// - `path: &amp;str` - The path to a file
 ///
 /// # Returns
@@ -471,9 +496,8 @@ pub fn read_file(path: &amp;str) -&gt; String {
         }
     }
 }
-<span class="boring">}</span></code></pre></pre>
-</div>
-</details>
+```
+</code></pre>
 <details id="admonition-example-documenting-structs" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-documenting-structs-title">
 <summary class="admonition-title">
 <div id="admonition-example-documenting-structs-title">
@@ -526,22 +550,30 @@ Maintainers may ask you to stick to the given format for your contribution.</p>
 </div>
 </div>
 <p>We are aware that to some of you, this feels like cluttering the code files.
-However, we believe that properly documenting our code is the key to providing a more
-inclusive and more maintainable development experience for all.</p>
+However, we believe that properly documenting our code is the key to providing a
+more inclusive and more maintainable development experience for all.</p>
 <h2 id="terminal-outputuser-interface"><a class="header" href="#terminal-outputuser-interface">Terminal Output/User Interface</a></h2>
-<p>When it is necessary to inform the user about a process, we want to make it short, but as expressive as possible.
-For this, the following styles apply:</p>
+<p>When it is necessary to inform the user about a process, we want to make it
+short, but as expressive as possible. For this, the following styles apply:</p>
 <ul>
-<li><code>Process X has been started...</code> - Basic white text indicates the current process.</li>
-<li><code>\x1b[32m[success]\x1b[0m Something has succeeded</code> - Green colored <code>[success]</code> prefix before the message.</li>
-<li><code>\x1b[31m[error]\x1b[0m Something has failed!</code> - Red colored <code>[error]</code> prefix before error message. <em>This should
-automatically be added by our custom error types when they are given a error message.</em></li>
-<li><code>\ẋ1b[36m[info]\x1b[0m Information level message.</code> - Light blue colored <code>[info]</code> prefix.</li>
-<li><code>\x1b[33m[warning]\x1b[0m Something went wrong, but we can continue...</code> - Yellow colored <code>[warning]</code> prefix.</li>
+<li><code>Process X has been started...</code> - Basic white text indicates the current
+process.</li>
+<li><code>\x1b[32m[success]\x1b[0m Something has succeeded</code> - Green colored <code>[success]</code>
+prefix before the message.</li>
+<li><code>\x1b[31m[error]\x1b[0m Something has failed!</code> - Red colored <code>[error]</code> prefix
+before error message. <em>This should automatically be added by our custom error
+types when they are given a error message.</em></li>
+<li><code>\x1b[36m[info]\x1b[0m Information level message.</code> - Light blue colored
+<code>[info]</code> prefix.</li>
+<li><code>\x1b[33m[warning]\x1b[0m Something went wrong, but we can continue...</code> -
+Yellow colored <code>[warning]</code> prefix.</li>
 </ul>
-<p>To unify this coloring we have implemented several macros to be used for these status messages. These apply
-formatting and colors automatically and disable colors when the host's terminal does not support it.</p>
-<p>The macros are called <code>success!</code>, <code>warn!</code>, <code>failure!</code>, <code>info!</code> you can find a usage example below.</p>
+<p>To unify this coloring we have implemented several macros to be used for these
+status messages. These apply formatting and colors automatically and disable
+colors when the host's terminal does not support it.</p>
+<p>The macros are called <code>success!</code>, <code>warn!</code>, <code>failure!</code>, <code>info!</code>. For information
+on when to use these macros and how they integrate with <code>NazaraError</code>, see the
+<a href="./003-error_handling.html">Error Handling Guide</a>.</p>
 <details id="admonition-example-status-message-macros" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-status-message-macros-title">
 <summary class="admonition-title">
 <div id="admonition-example-status-message-macros-title">
@@ -557,7 +589,7 @@ formatting and colors automatically and disable colors when the host's terminal 
         success!("This worked!");
     },
     Err(e) =&gt; {
-        failure!("An error occured: {}", e);
+        failure!("An error occurred: {}", e);
         // Handle the error.
     }
 }
@@ -577,7 +609,7 @@ formatting and colors automatically and disable colors when the host's terminal 
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../contributors/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../design/003-error_handling.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -591,7 +623,7 @@ formatting and colors automatically and disable colors when the host's terminal 
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../contributors/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../design/003-error_handling.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Testing VMs - Nazara - Documentation</title>
+        <title>Documentation Workflow - Nazara - Documentation</title>
 
 
         <!-- Custom HTML head -->
@@ -160,180 +160,146 @@
                 <div id="content" class="content">
                     <main>
                         <div class="content-wrap">
-                            <h1 id="testing-vms"><a class="header" href="#testing-vms">Testing VMs</a></h1>
-<p>In the previous chapter, you read up on how to set up a local
-NetBox instance using <a href="https://github.com/netbox-community/netbox-docker">netbox-docker</a>.</p>
-<p>This guide will show you how to set up a VM that you can register/update on this container
-using Nazara.</p>
-<h2 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h2>
+                            <h1 id="documenting-nazara"><a class="header" href="#documenting-nazara">Documenting Nazara</a></h1>
+<details id="admonition-hint" class="admonition admonish-tip" role="note" aria-labelledby="admonition-hint-title">
+<summary class="admonition-title">
+<div id="admonition-hint-title">
+<p>Hint</p>
+</div>
+<a class="admonition-anchor-link" href="#admonition-hint"></a>
+</summary>
+<div>
+<p>This information is pretty much applicable to all repositories of the Nazara project.</p>
+</div>
+</details>
+<p>This document will give you an overview about our documentation process. What needs to be documented,
+where does it go and who is responsible for keeping documentation clean is all part of this guide.</p>
+<h2 id="what-needs-to-be-documented"><a class="header" href="#what-needs-to-be-documented">What needs to be documented?</a></h2>
+<p>Anything that has implication for people outside the immediate contributor team needs clear documentation.
+This includes function behaviour users rely on, steps packagers follow to produce artifacts, and processes maintainers
+use to operate or fix the project.</p>
+<p>Specifically, document:</p>
 <ul>
-<li>Host machine with the <code>netbox-docker</code> deployment running locally</li>
-<li>Virtualization software (QEMU/KVM)</li>
-<li>A Linux ISO of your choosing</li>
+<li><strong>User-facing Features</strong>: Installation steps, configuration methods and their parameters, upgrade instructions,
+error reporting check list, or Nazara's behaviour like CLI commands, etc.</li>
+<li><strong>Contributor Workflows</strong>: Everything from code quality, to documentation or steps to contribute, how to set
+up a dev environment or choose and issue to work on needs to be documented if the process changes.</li>
+<li><strong>Maintainer &amp; Packaging Procedures:</strong> Release workflow and how to update <code>thanix_client</code> in case NetBox changes
+their API again are the key points here. Also approval criteria for PRs or anything else Maintainers should know.</li>
 </ul>
-<h2 id="create-a-new-linux-vm"><a class="header" href="#create-a-new-linux-vm">Create a new Linux VM</a></h2>
-<details id="admonition-use-a-gui-to-createmanager-vms" class="admonition admonish-tip" role="note" aria-labelledby="admonition-use-a-gui-to-createmanager-vms-title">
+<h2 id="who-needs-to-document-things"><a class="header" href="#who-needs-to-document-things">Who needs to document things?</a></h2>
+<p>Documentation is a shared responsibility of all project contributors. Anyone who changes behaviour, packaging, or
+operations must update relevant documentation as part of the same change. This keeps docs accurate and prevents
+silent divergence between code and documentation.</p>
+<p>Authors should include any relevant documentation updates in their contribution or link to a separate
+PR that include said updates.</p>
+<details id="admonition-important-for-maintainers" class="admonition admonish-tip" role="note" aria-labelledby="admonition-important-for-maintainers-title">
 <summary class="admonition-title">
-<div id="admonition-use-a-gui-to-createmanager-vms-title">
-<p>Use a GUI to create/manager VMs</p>
+<div id="admonition-important-for-maintainers-title">
+<p>Important for Maintainers</p>
 </div>
-<a class="admonition-anchor-link" href="#admonition-use-a-gui-to-createmanager-vms"></a>
+<a class="admonition-anchor-link" href="#admonition-important-for-maintainers"></a>
 </summary>
 <div>
-<p>For creating and managing VMs, we recommend you use a tool like <code>virt-manager</code>.</p>
-<p>You can find a step-by-step guide on how to create a new VM <a href="https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/6/html/virtualization_getting_started_guide/sec-virtualization_getting_started-quickstart_virt-manager-create_vm">here</a></p>
+<p>In the event that a contributor links their documentation changes in a separate PR, both PRs are to be
+treated as one.</p>
+<p>Meaning: If the code PR is approved but the docs PR needs changes, neither one is to be merged and vise versa.</p>
 </div>
 </details>
-<h3 id="using-the-terminal"><a class="header" href="#using-the-terminal">Using the Terminal</a></h3>
-<div id="admonition-info" class="admonition admonish-info" role="note" aria-labelledby="admonition-info-title">
-<div class="admonition-title">
-<div id="admonition-info-title">
-<p>Info</p>
-</div>
-<a class="admonition-anchor-link" href="#admonition-info"></a>
-</div>
-<div>
-<p>These examples are specifically for openSUSE Tumbleweed.</p>
-<p>For package names on other distros, please refer to the list below
-or check your distro's package lists.</p>
-</div>
-</div>
-<h4 id="1-install-required-packages"><a class="header" href="#1-install-required-packages">1. Install required packages</a></h4>
-<pre><code class="language-bash">sudo zypper install -y qemu-kvm libvirt virt-manager virt-install bridge-utils
-sudo systemctl enable --now libvirtd
-</code></pre>
-<h4 id="2-create-linux-vm"><a class="header" href="#2-create-linux-vm">2. Create Linux VM</a></h4>
-<p>Replace <code>$ISO_PATH</code> with the path to the ISO file and <code>$DISK_PATH</code> to the path
-where you want your virtual disk to be located.</p>
-<ol>
-<li>Create a new virtual disk image</li>
-</ol>
-<pre><code class="language-bash">qemu-img create -f qcow2 $DISK_PATH 20G
-</code></pre>
-<ol start="2">
-<li>Create the Virtual Machine</li>
-</ol>
-<pre><code class="language-bash">sudo virt-install \
-    --name nazara-test-vm \
-    --ram 2048 \
-    --vcpus 2 \
-    --os-type linux \
-    --os-variant $VARIANT \
-    --network network=default \
-    --graphics spice \
-    --cdrom $ISO_PATH \
-    --disk path=$DISK_PATH,format=qcow2
-</code></pre>
-<details id="admonition-example-creating-ubuntu-vm" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-creating-ubuntu-vm-title">
-<summary class="admonition-title">
-<div id="admonition-example-creating-ubuntu-vm-title">
-<p>Example: Creating Ubuntu VM</p>
-</div>
-<a class="admonition-anchor-link" href="#admonition-example-creating-ubuntu-vm"></a>
-</summary>
-<div>
-<p>This is an example on how to create a new VM using Ubuntu Desktop 25.10.</p>
-<ol>
-<li>Create the virtual disk</li>
-</ol>
-<pre><code class="language-bash">qemu-img create -f qcow2 /var/lib/libvirt/images/ubuntu.qcow2 20G
-</code></pre>
-<ol start="2">
-<li>Create the VM</li>
-</ol>
-<pre><code class="language-bash">sudo virt-install \
-  --name nazara-test-vm-ubuntu \
-  --ram 2048 \
-  --vcpus 2 \
-  --os-type linux \
-  --os-variant ubuntu25.10 \
-  --network network=default \
-  --graphics spice \
-  --cdrom /home/user/Downloads/ubuntu-25-10-desktop-amd64.iso \
-  --disk path=/var/lib/libvirt/images/ubuntu.qcow2,format=qcow2
-</code></pre>
-</div>
-</details>
-<details id="admonition-example-creating-opensuse-tumbleweed-vm" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-creating-opensuse-tumbleweed-vm-title">
-<summary class="admonition-title">
-<div id="admonition-example-creating-opensuse-tumbleweed-vm-title">
-<p>Example: Creating openSUSE Tumbleweed VM</p>
-</div>
-<a class="admonition-anchor-link" href="#admonition-example-creating-opensuse-tumbleweed-vm"></a>
-</summary>
-<div>
-<p>This is an example on how to create a new VM with openSUSE Tumbleweed.</p>
-<pre><code class="language-bash">qemu-img create -f qcow2 /var/lib/libvirt/images/tumbleweed.qcow2 20G
-</code></pre>
-<ol start="2">
-<li>Create the VM</li>
-</ol>
-<pre><code class="language-bash">sudo virt-install \
-  --name nazara-test-vm-tumbleweed \
-  --ram 2048 \
-  --vcpus 2 \
-  --os-type linux \
-  --os-variant opensuse-tumbleweed \
-  --network network=default \
-  --graphics spice \
-  --cdrom /home/user/Downloads/ubuntu-25-10-desktop-amd64.iso \
-  --disk path=/var/lib/libvirt/images/ubuntu.qcow2,format=qcow2
-</code></pre>
-</div>
-</details>
-<p><strong>Network Notes</strong>:</p>
+<p>Cosmetic changes or strictly code internal ones (like code cleanup, performance improvements, etc.) are generally
+not covered by the duty to document unless explicitly told otherwise by a maintainer or such a time
+where architectural decision forms (ADFs) are implemented.</p>
+<h2 id="formatting-and-style"><a class="header" href="#formatting-and-style">Formatting and Style</a></h2>
+<p>Write documentation that is both readable and actionable. Aim for clear, direct sentences and break
+long topics into smaller pages using headings.</p>
+<p>Use examples liberally: A short snipped demonstrating the most common use case is a good actionable example.</p>
+<h2 id="the-review-process"><a class="header" href="#the-review-process">The Review Process</a></h2>
+<p>Any changes to documentation will be reviewed by maintainers for the quality criteria mentioned below.
+Only after the review is successfully will the changed be merged. The review validates:</p>
 <ul>
-<li>Default NAT (<code>virbr0</code>) -&gt; host reachable from VM at <code>192.168.122.1</code> (on openSUSE)</li>
-<li>Optional: Use bridge or host-only network for static IP</li>
+<li><strong>Technical accuracy and sufficient depth:</strong> The document matches implemented behaviour and guides are executable.</li>
+<li><strong>Completeness:</strong> All affected changes are documented.</li>
+<li><strong>Readability:</strong> The documentation is free of typos or grammatical errors.</li>
+<li><strong>Style and Inclusivity</strong>: Language follows the project's expectations and quality criteria,
+all images have appropriate alt text descriptions for people using screen readers.</li>
 </ul>
-<h2 id="transfer-nazara-to-the-vm"><a class="header" href="#transfer-nazara-to-the-vm">Transfer Nazara to the VM</a></h2>
-<p>If you used the standard network option for your VM, it is most likely not able
-to connect to the internet directly. This means you cannot pull Nazara's GitHub repo.</p>
-<p>You can however, move your binary and config file from your host machine to your VM
-using SSH.</p>
-<p>First check if you can reach the NetBox instance from your VM.
-Then simply run this bash script to copy everything else over:</p>
-<pre><code class="language-bash">#!/bin/bash
-
-# Usage: ./copy_to_vm.sh &lt;VM_IP&gt; &lt;VM_USER&gt; &lt;PATH_TO_NAZARA_PROJECT&gt;
-# Example:
-# ./copy_to_vm.sh 192.168.122.123 alice /home/user/Nazara
-
-set -e
-
-VM_IP="$1"
-VM_USER="$2"
-PROJECT_PATH="$3"
-
-if [[ -z "$VM_IP" || -z "$VM_USER" || -z "$PROJECT_PATH" ]]; then
-    echo "Usage: $0 &lt;VM_IP&gt; &lt;VM_USER&gt; &lt;PATH_TO_NAZARA_PROJECT&gt;"
-    exit 1
-fi
-
-NAZARA_BINARY="$PROJECT_PATH/target/release/nazara"
-CONFIG_FILE="/root/.config/nazara/config.toml"
-
-if [[ ! -f "$NAZARA_BINARY" ]]; then
-    echo "Error: Nazara binary not found at $NAZARA_BINARY"
-    exit 1
-fi
-
-if [[ ! -f "$CONFIG_FILE" ]]; then
-    echo "Error: config.toml not found at $CONFIG_FILE"
-    exit 1
-fi
-
-echo "Copying Nazara binary to VM home directory..."
-scp "$NAZARA_BINARY" "$VM_USER@$VM_IP:/home/$VM_USER/"
-
-echo "Copying config file to VM root config directory..."
-ssh "$VM_USER@$VM_IP" "sudo mkdir -p /root/.config/nazara"
-scp "$CONFIG_FILE" "$VM_USER@$VM_IP:/tmp/config.toml"
-ssh "$VM_USER@$VM_IP" "sudo mv /tmp/config.toml /root/.config/nazara/config.toml"
-
-echo "Done!"
-
+<h2 id="quality-criteria"><a class="header" href="#quality-criteria">Quality Criteria</a></h2>
+<p>All documentation should have a professional and inclusive tone. Gender-neutral language (like they/them or role
+based nouns like "maintainer" or "developer") should be used. Idioms or jokes should be avoided alongside
+terms that may be interpreted offensively.</p>
+<p>Documentation should go into appropriate detail for the intended target group (i.e. Users or Developers) and
+not omit any details or become vague when talking about specific topics.</p>
+<p>If a feature is not yet implemented or there are currently known bugs or Issues, a "Known Issues" section
+should be appended at the bottom of the document listing these issues and their corresponding Codeberg Issue
+if applicable.</p>
+<p>Include expected output or other steps which the reader can use to verify operation outcomes in any instructional guide.</p>
+<h2 id="version-compatibility"><a class="header" href="#version-compatibility">Version Compatibility</a></h2>
+<p>Currently, the documentation cannot be hosted for individual specific versions of Nazara. Instead,
+the currently public documentation of Nazara is always valid for the latest release.</p>
+<p>Our CI will check for newly created releases and build all changes to the <code>docs/</code> directory and publish them here.</p>
+<h2 id="examples"><a class="header" href="#examples">Examples</a></h2>
+<details id="admonition-example-gender-inclusive-language" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-gender-inclusive-language-title">
+<summary class="admonition-title">
+<div id="admonition-example-gender-inclusive-language-title">
+<p>Example: Gender Inclusive Language</p>
+</div>
+<a class="admonition-anchor-link" href="#admonition-example-gender-inclusive-language"></a>
+</summary>
+<div>
+<p>Instead of</p>
+<pre><code>When a user finds a bug, he should open a. issue.
 </code></pre>
+<p>write</p>
+<pre><code>If a user discovers a bug, they should open an issue.
+</code></pre>
+</div>
+</details>
+<details id="admonition-example-documenting-breaking-changes" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-documenting-breaking-changes-title">
+<summary class="admonition-title">
+<div id="admonition-example-documenting-breaking-changes-title">
+<p>Example: Documenting Breaking Changes</p>
+</div>
+<a class="admonition-anchor-link" href="#admonition-example-documenting-breaking-changes"></a>
+</summary>
+<div>
+<p>Breaking changes should be documented at the top of the file in a warning box.</p>
+<pre><code>~~~admonish warning title="v0.2.0: Breaking Change in Configuration"
+Since NetBox `v4.5.x`, NetBox requires a different format of API token in the authentication header.
+This applies for any new `v2` token. `v1` tokens are unaffected by this.
+
+In your config file, instead of:
+
+    netbox_api_token = "$TOKEN"
+
+you have to write:
+
+    netbox_api_token = "nbt_$KEY.$TOKEN"
+
+Codeberg Issue Reference: [#179](https://codeberg.org/nazara-project/Nazara/issues/179)
+</code></pre>
+<p>The Codeberg Issue Reference can also be a link to a commit that introduced a breaking change between Nazara releases.</p>
+</div>
+</details>
+<details id="admonition-example-documenting-known-issues" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-documenting-known-issues-title">
+<summary class="admonition-title">
+<div id="admonition-example-documenting-known-issues-title">
+<p>Example: Documenting Known Issues</p>
+</div>
+<a class="admonition-anchor-link" href="#admonition-example-documenting-known-issues"></a>
+</summary>
+<div>
+<p><strong>This should be used sparingly</strong> as we should focus on fixing these issues instead of documenting them.</p>
+<p>However, for anything that a user can face during the use of Nazara or its side projects, which is expected but currently
+not fixed we should document it at the relevant passage with in a similar style as used above while referencing
+the corresponding issue where possible.</p>
+<pre><code>~~~admonish warning title="v0.2.0: Breaking Change in Configuration"
+
+You could face X here, if so, please do Y. We are working on a fix.
+
+Codeberg Issue Reference: [#000](LINK)
+</code></pre>
+</div>
+</details>
 
                         </div>
                         <div id="sidetoc">
@@ -343,11 +309,11 @@ echo "Done!"
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../contributors/test_environment.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../contributors/contributing_workflow.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../contributors/contributing_workflow.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../contributors/dependencies.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -357,11 +323,11 @@ echo "Done!"
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../contributors/test_environment.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../contributors/contributing_workflow.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../contributors/contributing_workflow.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../contributors/dependencies.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

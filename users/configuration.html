@@ -161,6 +161,28 @@
                     <main>
                         <div class="content-wrap">
                             <h1 id="configuration"><a class="header" href="#configuration">Configuration</a></h1>
+<div id="admonition-v020-breaking-change-in-configuration-with-netbox-v45x" class="admonition admonish-danger" role="note" aria-labelledby="admonition-v020-breaking-change-in-configuration-with-netbox-v45x-title">
+<div class="admonition-title">
+<div id="admonition-v020-breaking-change-in-configuration-with-netbox-v45x-title">
+<p><code>v0.2.0</code>: Breaking Change in Configuration with NetBox <code>v4.5.x</code></p>
+</div>
+<a class="admonition-anchor-link" href="#admonition-v020-breaking-change-in-configuration-with-netbox-v45x"></a>
+</div>
+<div>
+<p>Since NetBox <code>v4.5.x</code>, NetBox requires a different format of API token in the authentication header.
+This applies for any new <code>v2</code> token. <code>v1</code> tokens are unaffected by this.</p>
+<p>In your config file, instead of:</p>
+<pre><code>netbox_api_token = "$TOKEN"
+</code></pre>
+<p>you have to write:</p>
+<pre><code>netbox_api_token = "nbt_$KEY.$TOKEN"
+</code></pre>
+<p>The <code>$KEY</code> value can be found in the corresponding "Key" field in the Netbox WebUI when looking at the
+API key entry.</p>
+<p>We are currently looking into updating our documentation and API client.</p>
+<p>Codeberg Issue Reference: <a href="https://codeberg.org/nazara-project/Nazara/issues/179">#179</a></p>
+</div>
+</div>
 <p>Nazara supports two ways of providing configuration parameters: CLI arguments and a configuration file.</p>
 <p>Nazara accepts these parameters from you:</p>
 <ul>
@@ -170,7 +192,27 @@
 <li><code>-p, --plugin &lt;PLUGIN&gt;</code>: The path to a plugin script you want to use to fill in custom fields.</li>
 <li><code>-h, --help</code>: Print help.</li>
 <li><code>-V, --version</code>: Print version.</li>
+<li><code>--log-level</code>: Changes the level of status messages to be printed to the terminal. Defaults to <code>debug</code>.</li>
 </ul>
+<details id="admonition-hint-log-levels" class="admonition admonish-info" role="note" aria-labelledby="admonition-hint-log-levels-title">
+<summary class="admonition-title">
+<div id="admonition-hint-log-levels-title">
+<p>Hint: Log Levels</p>
+</div>
+<a class="admonition-anchor-link" href="#admonition-hint-log-levels"></a>
+</summary>
+<div>
+<p>Valid values for <code>--log-level</code> are:</p>
+<ul>
+<li><code>trace</code></li>
+<li><code>debug</code></li>
+<li><code>info</code></li>
+<li><code>warn</code></li>
+<li><code>error</code></li>
+<li><code>fatal</code> (suppresses all output except for fatal errors)</li>
+</ul>
+</div>
+</details>
 <p>Afterwards, Nazara expects one of the following operation types to be specified:</p>
 <ul>
 <li><code>register</code>: Register a new device or vm in NetBox.</li>
@@ -179,8 +221,8 @@
 registration or update is needed.</li>
 </ul>
 <h2 id="configuring-via-cli"><a class="header" href="#configuring-via-cli">Configuring via CLI</a></h2>
-<p>Here is an example for passing these parameters on using the CLI:</p>
-<pre><code class="language-bash">sudo nazara --uri &lt;API_URL&gt; --token &lt;API_TOKEN&gt; &lt;OPERATION&gt; . . .
+<p>For the most detailed guide on how to configure nazara via CLI, please make use of the <code>help</code> function.</p>
+<pre><code class="language-bash">sudo nazara --help
 </code></pre>
 <p>When launching Nazara for the first time, a configuration file will be written at <code>$HOME/.config/nazara/config.toml</code>.
 You can use CLI parameters to override your settings in the config file.</p>
@@ -230,10 +272,10 @@ primary_ip6 = ""
 # Use [device] for devices, or [vm] if this is a virtual machine.
 # ---------------------------------------------------------------
 
-# [device]
-# device_type = 0
-# role = 0
-# site = 0
+[device]
+device_type = 0
+role = 0
+site = 0
 
 # [vm]
 # cluster = 0
@@ -270,8 +312,39 @@ name = "aurora@"
 <p>The <code>write-config</code> allows you to change individual parameters, or perform a bulk
 update by passing a <code>JSON</code> structure via CLI. <strong>These options are exclusive.
 Passing both is disallowed.</strong></p>
-<p>For further information on how to configure Nazara, run <code>nazara --help</code> or visit
-<a href="https://nazara-project.codeberg.page/Nazara">our documentation</a>.</p>
+<div id="admonition-example-using-write-config-to-change-config-parameters" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-using-write-config-to-change-config-parameters-title">
+<div class="admonition-title">
+<div id="admonition-example-using-write-config-to-change-config-parameters-title">
+<p>Example: Using <code>write-config</code> to change config parameters</p>
+</div>
+<a class="admonition-anchor-link" href="#admonition-example-using-write-config-to-change-config-parameters"></a>
+</div>
+<div>
+<p>These examples show you how you can edit your config file from the command line.</p>
+<pre><code class="language-bash"># Pass arguments individually
+sudo nazara write-config --uri https://netbox.sampleorg.com
+</code></pre>
+<p>Or in batches using JSON:</p>
+<pre><code class="language-bash">sudo nazara write-config --json '{
+  "netbox": {
+    "netbox_uri": "https://netbox.example.com",
+    "netbox_api_token": "abcd1234"
+  },
+  "common": {
+    "name": "test-device",
+    "description": "A physical test machine",
+    "comments": "Created for testing purposes",
+    "status": "active"
+  },
+  "device": {
+    "device_type": 1,
+    "role": 2,
+    "site": 3
+  }
+}'
+</code></pre>
+</div>
+</div>
 <p><em>Please note that this section is still a work in progress and all information is subject to change.</em></p>
 
                         </div>

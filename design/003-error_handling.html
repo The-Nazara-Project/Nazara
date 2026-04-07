@@ -1,0 +1,591 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Error Handling Guide - Nazara - Documentation</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../theme/pagetoc.css">
+        <link rel="stylesheet" href="../theme/mdbook-admonish.css">
+
+        <!-- MathJax -->
+        <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Nazara - Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://codeberg.org/nazara-project/Nazara" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <div class="content-wrap">
+                            <h1 id="nazara-error-handling-guide"><a class="header" href="#nazara-error-handling-guide">Nazara Error Handling Guide</a></h1>
+<h2 id="philosophy"><a class="header" href="#philosophy">Philosophy</a></h2>
+<p>Nazara follows a <strong>"fail gracefully"</strong> philosophy. We prefer returning descriptive errors over panicking, reserving panics only for truly catastrophic and unfixable situations.</p>
+<p><strong>Core Principles:</strong></p>
+<ul>
+<li><strong>Single Source of Truth</strong>: Error messages are defined once in <code>NazaraError</code> variants and displayed consistently</li>
+<li><strong>Immediate Feedback</strong>: Errors are logged immediately using the <code>failure!</code> macro for user visibility</li>
+<li><strong>Clean Propagation</strong>: Most functions use the <code>?</code> operator without logging noise</li>
+<li><strong>Context When Needed</strong>: Optional context prefixes indicate which module or operation triggered the error</li>
+</ul>
+<h2 id="the-nazaraerror-enum"><a class="header" href="#the-nazaraerror-enum">The NazaraError Enum</a></h2>
+<p>All errors in Nazara are represented by the <code>NazaraError</code> enum in <code>src/error.rs</code>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum NazaraError {
+    /// Something went wrong trying to parse DMI tables.
+    Dmi(dmidecode::InvalidEntryPointError),
+    /// Used to indicate that the collection of system data failed.
+    UnableToCollectData(String),
+    /// Used for handling errors during file operations.
+    FileOpError(std::io::Error),
+    /// Indicates that a required config option is missing from the config file.
+    MissingConfigOptionError(String),
+    /// An error occurred while accessing data returned by NetBox.
+    NetBoxApiError(String),
+    /// Expects a `String` message. Used for edge cases and general purpose error cases.
+    Other(String),
+    // ... other variants
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="display-trait-implementation"><a class="header" href="#display-trait-implementation">Display Trait Implementation</a></h3>
+<p>Every <code>NazaraError</code> variant implements <code>std::fmt::Display</code> to provide user-friendly error messages:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl std::fmt::Display for NazaraError {
+    fn fmt(&amp;self, f: &amp;mut std::fmt::Formatter&lt;'_&gt;) -&gt; std::fmt::Result {
+        match self {
+            NazaraError::FileOpError(err) =&gt; {
+                write!(f, "File operation failed: {err}")
+            }
+            NazaraError::NetBoxApiError(msg) =&gt; {
+                write!(f, "NetBox API Error: {msg}")
+            }
+            NazaraError::Other(msg) =&gt; f.write_str(&amp;msg),
+            // ... other variants
+        }
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<div id="admonition-important" class="admonition admonish-tip" role="note" aria-labelledby="admonition-important-title">
+<div class="admonition-title">
+<div id="admonition-important-title">
+<p>Important</p>
+</div>
+<a class="admonition-anchor-link" href="#admonition-important"></a>
+</div>
+<div>
+<p>The <code>Display</code> implementation should <strong>never</strong> call <code>failure!</code> or any other logging macro. It should only format the error message.</p>
+</div>
+</div>
+<h2 id="convenience-methods"><a class="header" href="#convenience-methods">Convenience Methods</a></h2>
+<p>The <code>NazaraError</code> enum provides two convenience methods for common error handling patterns:</p>
+<h3 id="fail---log-and-return"><a class="header" href="#fail---log-and-return"><code>fail()</code> - Log and Return</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl NazaraError {
+    /// Log this error with failure! and return it wrapped in Err(...)
+    pub fn fail&lt;T&gt;(self) -&gt; NazaraResult&lt;T&gt; {
+        failure!("{}", self);
+        Err(self)
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Purpose:</strong> Combines logging and returning into a single operation.</p>
+<details id="admonition-example-using-the-fail-function-to-log-and-return-an-error" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-using-the-fail-function-to-log-and-return-an-error-title">
+<summary class="admonition-title">
+<div id="admonition-example-using-the-fail-function-to-log-and-return-an-error-title">
+<p>Example: Using the fail-function to log and return an error</p>
+</div>
+<a class="admonition-anchor-link" href="#admonition-example-using-the-fail-function-to-log-and-return-an-error"></a>
+</summary>
+<div>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>return NazaraError::Other("Config file contains invalid entries".to_owned()).fail();
+<span class="boring">}</span></code></pre></pre>
+</div>
+</details>
+<h3 id="log---log-with-context"><a class="header" href="#log---log-with-context"><code>log()</code> - Log with Context</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl NazaraError {
+    /// Log this error with additional context prefix.
+    /// Used when we need to log multiple errors but continue processing to fail in the end
+    /// either with the calling function or some other higher instance.
+    ///
+    /// The optional context in this case refers to the module or program part that the error
+    /// occurred in. For example: [DHCP-Mode].
+    pub fn log(&amp;self, context: Option&lt;&amp;str&gt;) {
+        if let Some(ctx) = context {
+            failure!("[{}] {}", ctx, self);
+            return;
+        }
+        failure!("{}", self);
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Purpose:</strong> Log errors with optional context when you need to accumulate multiple errors before failing.</p>
+<details id="admonition-example-logging-an-error-but-continue-processing" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-logging-an-error-but-continue-processing-title">
+<summary class="admonition-title">
+<div id="admonition-example-logging-an-error-but-continue-processing-title">
+<p>Example: Logging an error but continue processing</p>
+</div>
+<a class="admonition-anchor-link" href="#admonition-example-logging-an-error-but-continue-processing"></a>
+</summary>
+<div>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Accumulate errors, fail at the end
+for validation in validations {
+    if !validation.is_valid() {
+        let err = NazaraError::Other(format!("Validation '{}' failed", validation.name()));
+        err.log(None);
+        error_count += 1;
+    }
+}
+
+if error_count &gt; 0 {
+    return NazaraError::Other("Multiple validations failed".to_owned()).fail();
+}
+<span class="boring">}</span></code></pre></pre>
+</div>
+</details>
+<details id="admonition-example-logging-an-error-with-context" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-logging-an-error-with-context-title">
+<summary class="admonition-title">
+<div id="admonition-example-logging-an-error-with-context-title">
+<p>Example: Logging an error with context</p>
+</div>
+<a class="admonition-anchor-link" href="#admonition-example-logging-an-error-with-context"></a>
+</summary>
+<div>
+<p><code>context</code> indicates where or why this error has occurred. For example when working with the <code>ip-mode</code> flags,
+errors rooted in the changes of IP addresses by DHCP or something similar have the context "DHCP-Mode".</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let err = NazaraError::NetBoxApiError("IPv4 not found".to_owned());
+err.log(Some("DHCP-Mode"));
+return Err(err);
+<span class="boring">}</span></code></pre></pre>
+</div>
+</details>
+<h2 id="examples"><a class="header" href="#examples">Examples</a></h2>
+<details id="admonition-example-logging-with-return" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-logging-with-return-title">
+<summary class="admonition-title">
+<div id="admonition-example-logging-with-return-title">
+<p>Example: Logging with Return</p>
+</div>
+<a class="admonition-anchor-link" href="#admonition-example-logging-with-return"></a>
+</summary>
+<div>
+<p>Use when an error is terminal and should be returned immediately.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>return NazaraError::Other("Config file contains invalid entries".to_owned()).fail();
+<span class="boring">}</span></code></pre></pre>
+</div>
+</details>
+<details id="admonition-example-log-with-context-then-return" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-log-with-context-then-return-title">
+<summary class="admonition-title">
+<div id="admonition-example-log-with-context-then-return-title">
+<p>Example: Log with Context, Then Return</p>
+</div>
+<a class="admonition-anchor-link" href="#admonition-example-log-with-context-then-return"></a>
+</summary>
+<div>
+<p>Use when the error needs additional module/operation context.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let err = NazaraError::NetBoxApiError(
+    format!("IPv4 address \"{}\" was not registered in NetBox", ip)
+);
+err.log(Some("DHCP-Mode"));
+return Err(err);
+<span class="boring">}</span></code></pre></pre>
+<p>Or in a closure (for use with <code>ok_or_else</code>):</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let ipv4_id = search_ip(client, &amp;ip.to_string(), None)?.ok_or_else(|| {
+    let err = NazaraError::NetBoxApiError(format!("IPv4 \"{}\" not found", ip));
+    err.log(Some("DHCP-Mode"));
+    err
+})?;
+<span class="boring">}</span></code></pre></pre>
+</div>
+</details>
+<details id="admonition-example-accumulate-errors-fail-later" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-accumulate-errors-fail-later-title">
+<summary class="admonition-title">
+<div id="admonition-example-accumulate-errors-fail-later-title">
+<p>Example: Accumulate Errors, Fail Later</p>
+</div>
+<a class="admonition-anchor-link" href="#admonition-example-accumulate-errors-fail-later"></a>
+</summary>
+<div>
+<p>Use when processing multiple items and collecting all errors before failing.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut config_errors = Vec::new();
+
+for field in required_fields {
+    if config.get(field).is_none() {
+        let err = NazaraError::MissingConfigOptionError(field.to_string());
+        err.log(None);
+        config_errors.push(err);
+    }
+}
+
+if !config_errors.is_empty() {
+    return NazaraError::Other("Missing required config fields".to_owned()).fail();
+}
+<span class="boring">}</span></code></pre></pre>
+</div>
+</details>
+<details id="admonition-example-custom-user-facing-messages" class="admonition admonish-example" role="note" aria-labelledby="admonition-example-custom-user-facing-messages-title">
+<summary class="admonition-title">
+<div id="admonition-example-custom-user-facing-messages-title">
+<p>Example: Custom User-Facing Messages</p>
+</div>
+<a class="admonition-anchor-link" href="#admonition-example-custom-user-facing-messages"></a>
+</summary>
+<div>
+<p>When you need to provide specific user guidance, use <code>failure!</code> directly.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>failure!(
+    "Tag '{}' does not exist. Use --prepare-environment to create it.",
+    tag_name
+);
+<span class="boring">}</span></code></pre></pre>
+<p>This is clearer than trying to fit the guidance into a <code>NazaraError</code> variant's display message.</p>
+</div>
+</details>
+<h2 id="when-to-use-what"><a class="header" href="#when-to-use-what">When to Use What</a></h2>
+<h3 id="use-fail-when"><a class="header" href="#use-fail-when">Use <code>.fail()</code> when:</a></h3>
+<ul>
+<li>The error is terminal (nothing else can be done)</li>
+<li>The error message is sufficient (no additional context needed)</li>
+<li>You want clean, single-line error handling</li>
+<li>This is the 90% common case</li>
+</ul>
+<h3 id="use-log-when"><a class="header" href="#use-log-when">Use <code>.log()</code> when:</a></h3>
+<ul>
+<li>You need to accumulate multiple errors before failing</li>
+<li>You want to add module/operation context</li>
+<li>The error should be logged but processing should continue</li>
+<li>You need to track multiple issues</li>
+</ul>
+<h3 id="use-failure-directly-when"><a class="header" href="#use-failure-directly-when">Use <code>failure!</code> directly when:</a></h3>
+<ul>
+<li>You need a custom message with user guidance</li>
+<li>The message is temporary/debugging (will be replaced later)</li>
+<li>You're providing feedback before returning a different error</li>
+</ul>
+<h3 id="dont-use-either-when"><a class="header" href="#dont-use-either-when">Don't use either when:</a></h3>
+<ul>
+<li>You can simply return the error with <code>?</code> (no logging needed)</li>
+<li>The caller will handle the error (low-level utilities)</li>
+<li>The error will be logged by the caller anyway</li>
+</ul>
+<h2 id="best-practices"><a class="header" href="#best-practices">Best Practices</a></h2>
+<h3 id="1-choose-the-right-error-variant"><a class="header" href="#1-choose-the-right-error-variant">1. Choose the Right Error Variant</a></h3>
+<p>Prefer specific variants over <code>Other</code> when possible:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// GOOD
+return NazaraError::MissingConfigOptionError("netbox_uri".to_owned()).fail();
+
+// OK (when no specific variant fits)
+return NazaraError::Other("Custom error message".to_owned()).fail();
+<span class="boring">}</span></code></pre></pre>
+<h3 id="2-include-context-in-error-messages"><a class="header" href="#2-include-context-in-error-messages">2. Include Context in Error Messages</a></h3>
+<p>When using <code>Other</code>, make the message descriptive:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// GOOD
+return NazaraError::Other("Config file contains invalid entries".to_owned()).fail();
+
+// BAD
+return NazaraError::Other("Error".to_owned()).fail();
+<span class="boring">}</span></code></pre></pre>
+<h3 id="3-use-context-for-module-identification"><a class="header" href="#3-use-context-for-module-identification">3. Use Context for Module Identification</a></h3>
+<p>When logging with context, use module or operation names:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>err.log(Some("DHCP-Mode"));
+err.log(Some("Config-Parser"));
+<span class="boring">}</span></code></pre></pre>
+<h3 id="4-dont-duplicate-error-messages"><a class="header" href="#4-dont-duplicate-error-messages">4. Don't Duplicate Error Messages</a></h3>
+<p>The error message should be defined once—in the <code>Display</code> implementation or the error construction:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// GOOD
+let msg = "Config file contains invalid entries".to_owned();
+failure!("{}", msg);
+return Err(NazaraError::Other(msg));
+
+// REDUNDANT (duplicates the message)
+failure!("Config file contains invalid entries");
+return NazaraError::Other("Config file contains invalid entries".to_owned()).fail();
+<span class="boring">}</span></code></pre></pre>
+<h3 id="5-let-errors-propagate"><a class="header" href="#5-let-errors-propagate">5. Let Errors Propagate</a></h3>
+<p>For low-level utility functions, just return errors. Let the caller decide whether to log:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// In a low-level utility
+pub fn read_config_file() -&gt; NazaraResult&lt;ConfigData&gt; {
+    let mut file = File::open(get_config_path(true))?;  // Just propagate
+    // ...
+}
+
+// In the calling function
+let config = read_config_file()
+    .map_err(|e| e.log(None))?;  // Log here
+<span class="boring">}</span></code></pre></pre>
+<h2 id="error-flow"><a class="header" href="#error-flow">Error Flow</a></h2>
+<pre><code>[Deep Function] → Creates/Returns NazaraError
+        ↓ (via ? operator)
+[Middle Function] → Propagates with ?
+        ↓ (via ? operator)
+[Application Logic] → Logs with .fail() or .log()
+        ↓
+[main.rs] → Catches error, logs with failure!
+        ↓
+[stderr] → User sees formatted error message
+</code></pre>
+<h2 id="example-complete-error-handling-flow"><a class="header" href="#example-complete-error-handling-flow">Example: Complete Error Handling Flow</a></h2>
+<p>Here's how error handling works in a real scenario:</p>
+<pre><pre class="playground"><code class="language-rust">// 1. Low-level function (no logging, just propagation)
+pub fn read_config_file() -&gt; NazaraResult&lt;ConfigData&gt; {
+    let mut file = File::open(get_config_path(true))?;
+    let mut contents = String::new();
+    file.read_to_string(&amp;mut contents)?;
+    toml::from_str(&amp;contents).map_err(NazaraError::DeserializationError)
+}
+
+// 2. Mid-level function (propagates errors)
+pub fn validate_config(config: &amp;ConfigData) -&gt; NazaraResult&lt;()&gt; {
+    if config.netbox_uri.is_empty() {
+        return Err(NazaraError::MissingConfigOptionError("netbox_uri".to_owned()));
+    }
+    Ok(())
+}
+
+// 3. Application logic (logs and returns)
+pub fn setup_configuration() -&gt; NazaraResult&lt;ConfigData&gt; {
+    let config = read_config_file()?;
+    validate_config(&amp;config)?;
+    
+    if config.is_invalid() {
+        return NazaraError::Other("Config validation failed".to_owned()).fail();
+    }
+    
+    Ok(config)
+}
+
+// 4. Main entry point (logs final error)
+fn main() {
+    match nazara::run() {
+        Ok(_) =&gt; success!("All done!"),
+        Err(e) =&gt; failure!("{}", e),  // Uses failure! for consistency
+    }
+}</code></pre></pre>
+<p>Remember: <strong>Errors should be logged once, at the appropriate level, with sufficient context.</strong></p>
+
+                        </div>
+                        <div id="sidetoc">
+                            <nav id="pagetoc"></nav>
+                        </div>
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../design/002-code_style.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../contributors/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../design/002-code_style.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../contributors/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../theme/pagetoc.js"></script>
+
+
+    </div>
+    </body>
+</html>
