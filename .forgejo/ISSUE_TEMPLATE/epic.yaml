@@ -11,7 +11,7 @@ body:
         value: >
             **NOTE** This form is for maintainers only.
             If you have any questions or are looking for assistance,
-            please refer to our [discussion section](https://github.com/orgs/The-Nazara-Project/discussions).
+            please refer to our [our documentation](https://nazara-project.codeberg.page/Nazara/).
 
             Also, if you have an issue to report, please report it using the Bug Report template.
     - type: input

@@ -11,7 +11,7 @@ body:
       value: >
         **NOTE**: Please only use this form for submitting _well-formed_ proposals
         to extend or enhance Nazara in some form. If you are trying to solve a problem,
-        or need help bringing your idea inot an actionable form, please use our [discussion section](https://github.com/orgs/The-Nazara-Project/discussions).
+        or need help bringing your idea into an actionable form, please use our [discussion section](https://github.com/orgs/The-Nazara-Project/discussions).
   - type: input
     attributes:
       label: Nazara Version
@@ -44,6 +44,7 @@ body:
         - CLI Frontend
         - Data Collection
         - Payload Translation
+        - Mine Is Not Listed
     validations:
       required: true
   - type: textarea
@@ -52,7 +53,7 @@ body:
       description: >
         Describe your idea in detail. Include any specific requirements
         for your plan to work as well as the supposed benefit your feature will bring.
-        Also include an rough actionplan - if possible.
+        Also include an rough action plan - if possible.
         Feature requests with unclear or missing action plan may take longer to process.
     validations:
       required: true

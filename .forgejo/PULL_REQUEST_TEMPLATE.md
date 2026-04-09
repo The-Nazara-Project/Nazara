@@ -12,10 +12,12 @@ You also grant the project maintainers the right to relicense the project, inclu
 
 - [ ] Add new feature
 - [ ] Behaviour change
+- [ ] Bugfix
 - [ ] Deprecation
 - [ ] Security changes
 - [ ] Tests
 - [ ] Documentation changed
+- [ ] Dependency
 - [ ] General Maintenance
 
 ## Links
@@ -27,10 +29,6 @@ Fixes:
 <!-- In case your changes track an existing EPIC or larger parent issue, link it below: -->
 
 Tracks:
-
-<!-- Check this box if your PR fixes the issue(s) linked above -->
-
-- [ ] DONE
 
 ## Documentation
 

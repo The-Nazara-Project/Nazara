@@ -11,7 +11,7 @@ body:
       value: >
         **NOTE**: Please only use this form to report _reproducible bugs_ in Nazara.
         If you have any questions or are looking for assistance,
-        please refer to our [discussion section](https://github.com/orgs/The-Nazara-Project/discussions).
+        please refer to [our documentation](https://nazara-project.codeberg.page/Nazara/).
   - type: input
     attributes:
       label: Nazara Version
@@ -61,7 +61,7 @@ body:
     attributes:
       label: Expected Behaviour
       description: >
-        Please describe what you exepected to happen.
+        Please describe what you expected to happen.
   - type: textarea
     attributes:
       label: Steps to Reproduce

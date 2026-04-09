@@ -23,12 +23,12 @@ body:
       description: What section do you want to change?
       multiple: false
       options:
-        - Installation/Update
-        - Usage
-        - Configuration
-        - API Connection
-        - Code documentation
-        - Contribution Guide
+        - Design/Architecture
+        - Code Style
+        - Contributor
+        - Maintainer
+        - Packaging
+        - User Documentation
         - Security Policy
         - License
         - Other

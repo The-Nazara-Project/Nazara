@@ -9,7 +9,7 @@ body:
     attributes:
       label: Proposed Changes
       description: >
-        Describe in detail what changes you ahve in mind.
+        Describe in detail what changes you have in mind.
     validations:
       required: true
   - type: textarea
